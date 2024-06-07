@@ -1,0 +1,46 @@
+method abs(val : Int) returns (res : Int)
+    ensures val < 0 ==> res == -val
+    ensures val >= 0 ==> res == val
+{
+    if (val < 0) {
+        res := -val;
+    } else {
+        res := val;
+    }
+}
+
+function abs1(x : Int, threshold : Int): Bool 
+{
+    x >= threshold || x <= -threshold
+}
+
+method has_close_elements(numbers: Seq[Int], threshold: Int) returns (flag : Bool)
+    requires threshold > 0
+    ensures flag ==> (exists i: Int, j: Int :: i >= 0 && j >= 0 && i < |numbers| && j < |numbers| && i != j && !abs1(numbers[i] - numbers[j], threshold))
+{
+    flag := false;
+    var i: Int := 0;
+    while (i < |numbers|)
+        invariant 0 <= i && i <= |numbers|
+        invariant flag == (exists i1: Int, j1: Int :: i1 >= 0 && j1 >= 0 && i1 < i && j1 < |numbers| && i1 != j1 && !abs1(numbers[i1] - numbers[j1], threshold))
+    {
+        var j: Int := 0;
+        while (j < |numbers|)
+            invariant 0 <= i && i < |numbers|
+            invariant 0 <= j && j <= |numbers|
+            invariant flag == (exists i1: Int, j1: Int :: i1 >= 0 && j1 >= 0 && (i1 < i && j1 < |numbers| || i1 == i && j1 < j) && i1 != j1 && !abs1(numbers[i1] - numbers[j1], threshold))
+        {
+            if (i != j)
+            {
+                var distance: Int := abs(numbers[i] - numbers[j]);
+                if (distance < threshold)
+                {
+                    flag := true;
+                }
+
+            }
+            j := j + 1;
+        }
+        i := i + 1;
+    }
+}

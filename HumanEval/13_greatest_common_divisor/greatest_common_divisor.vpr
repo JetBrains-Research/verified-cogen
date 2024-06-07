@@ -1,0 +1,17 @@
+// recursive version should be more promising
+
+method greatest_common_divisor(a: Int, b: Int) returns (gcd: Int)
+    requires a != 0 || b != 0 
+    ensures gcd != 0 
+{
+    var x : Int := a;
+    var y : Int := b;
+    while (y != 0)
+        invariant x != 0 || y != 0
+    {
+        var temp : Int := y;
+        y := x % y;
+        x := temp;
+    }
+    gcd := x;
+}

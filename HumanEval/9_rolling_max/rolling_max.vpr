@@ -1,0 +1,30 @@
+field val : Int
+
+method rolling_max(numbers: Seq[Int]) returns (res : Seq[Int])
+    ensures |numbers| == |res|
+    ensures forall i : Int :: i >= 0 && i < |numbers| ==> numbers[i] <= res[i]
+    ensures forall i : Int :: i >= 0 && i + 1 < |numbers| ==> res[i] <= res[i + 1]
+{
+    var running_max: Ref := null;
+    res := Seq[Int]();
+
+    var i : Int := 0;
+    while (i < |numbers|) 
+        invariant i >= 0 && i <= |numbers|
+        invariant |res| == i
+        invariant forall i1 : Int :: i1 >= 0 && i1 < i ==> numbers[i1] <= res[i1]
+        invariant old(running_max) == null || ( old(running_max) != null && old(running_max).val <= running_max.val)
+        invariant |res| > 0 ==> acc(running_max.val)
+        invariant |res| > 0 ==> res[|res| - 1] == running_max.val
+        invariant forall i1 : Int :: i1 >= 0 && i1 + 1 < i ==> res[i1] <= res[i1 + 1]
+    {
+        var n : Int := numbers[i];
+        if (running_max == null || running_max.val < n) 
+        {
+            inhale acc(running_max.val);
+            running_max.val := n;
+        }   
+        res := res ++ Seq(running_max.val);
+        i := i + 1;
+    }
+}
