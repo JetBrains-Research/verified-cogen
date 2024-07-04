@@ -3,7 +3,7 @@ import textwrap
 from modes import Modes
 
 
-def insert_invariants_regex(prg, inv):
+def insert_invariants_regex(prg: str, inv: str):
     while_loc = prg.find("while")
     assert while_loc > 0
     while_indent = 0
@@ -24,7 +24,7 @@ def insert_invariants_llm(llm, prg, inv):
     return llm.add_invariants(prg, inv)
 
 
-def insert_invariants(dafny, llm, prg, inv, *, mode):
+def insert_invariants(llm, prg, inv, *, mode):
     if mode == Modes.REGEX:
         return insert_invariants_regex(prg, inv)
     elif mode == Modes.LLM:

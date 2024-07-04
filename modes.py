@@ -5,7 +5,6 @@ class Modes(Enum):
     REGEX = 'regex', False
     LLM = 'llm', False
     LLM_SINGLE_STEP = 'llm-single-step', True
-    DAFNYBENCH = 'dafnybench', True
 
     def __new__(cls, id, is_singlestep):
         obj = object.__new__(cls)

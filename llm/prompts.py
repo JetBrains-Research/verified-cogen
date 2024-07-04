@@ -1,48 +1,32 @@
-
-
 SYS_PROMPT = """
-    You are an expert in Dafny. 
-    You will be given tasks dealing with Dafny programs including precise docstrings and specifications. 
-    Do not provide explanations. Do not repeat given programs, answer with new content only.
-    Respond only in dafny code.
+    You are an expert in a Rust verification framework Verus.
+    You will be given tasks dealing with Rust programs and specifications.
+    Do not provide explanations. Respond only in Rust code. Don't include markdown backticks.
 """
 
 PRODUCE_INVARIANTS = """
-    Given the following dafny program, output invariants that should go into the `while` loop:
+    Given the following Rust program, output Verus invariants that should go into the `while` loop.
+    Ensure that the invariants are as comprehensive as they can be.
+    Even if you think some invariant is not totally necessary, better add it than not.
+    Even if you think some invariant can be infered from the preconditions, but still might be needed for the other invariants, add it.
+    The program:
     {program}
 """
 
 REWRITE_WITH_INVARIANTS = """
-    Rewrite the following dafny program, adding correct invariants into `while` loops. Do not change the code, only add invariants.
+    Rewrite the following Rust program, adding correct Verus invariants into `while` loops. Do not change the code, only add invariants.
+    Ensure that the invariants are as comprehensive as they can be.
+    Even if you think some invariant is not totally necessary, better add it than not.
+    Even if you think some invariant can be infered from the preconditions, but still might be needed for the other invariants, add it.
     The program:
     {program}
 """
 
 ADD_INVARIANTS = """
-    Given the following danfy program, and a set of invariants, output the program with invariants inserted into the correct place.
+    Given the following Rust program, and a set of Verus invariants, output the program with invariants inserted into the correct place.
     The program:
     {program}
     –
     The invariants:
     {invariants}
 """
-
-SYS_DAFNYBENCH_GPT = "You are an expert in Dafny. \
-You will be given tasks dealing with Dafny programs including precise annotations.\n"
-
-REWRITE_WITH_INVARIANTS_DAFNYBENCH_GPT = "Given a Dafny program with function signature, preconditions, postconditions, and code, but with annotations missing. \
-Please return a complete Dafny program with the strongest possible annotations (loop invariants, assert statements, etc.) filled back in. \
-Do not explain. \
-Please use exactly the same function signature, preconditions, and postconditions. Do not ever modify the given lines. \
-Below is the program:\n"
-
-SYS_DAFNYBENCH_OTHER = "You are an expert in Dafny. \
-You will be given tasks dealing with Dafny programs including precise annotations. \
-You should only return code body in all circumstances. No text is allowed.\n"
-
-REWRITE_WITH_INVARIANTS_DAFNYBENCH_OTHER = "Given a Dafny program with function signature, preconditions, postconditions, and code, but with annotations missing. \
-Please return a complete Dafny program with the strongest possible annotation (loop invariants, assert statements, etc.) filled back in. \
-Do not explain or output any text. If you have to explain, put all explanations in comments form. \
-There should only be code body in your output. \
-Please use exactly the same function signature, preconditions, and postconditions. Do not ever modify the given lines. \
-Below is the program:\n```dafny\n"
