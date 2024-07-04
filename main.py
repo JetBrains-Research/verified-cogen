@@ -15,6 +15,7 @@ def main():
     parser.add_argument("--verus-path", help="verus path", default=os.getenv("VERUS_PATH"))
     parser.add_argument("--grazie-token", help="Grazie JWT token", default=os.getenv("GRAZIE_JWT_TOKEN"))
     parser.add_argument("--llm-profile", help="llm profile", default="gpt-4-1106-preview")
+    parser.add_argument("--tries", help="number of tries", default=1, type=int)
     args = parser.parse_args()
     mode = Modes(args.insert_invariants_mode)
     if args.input is None:
@@ -36,18 +37,26 @@ def main():
         inv = llm.produce_invariants(prg)
         inv_prg = insert_invariants(llm, prg, inv, mode=mode)
     print("---------------")
-    if not os.path.exists("llm-generated"):
-        os.mkdir("llm-generated")
-    output = f"llm-generated/{args.input[args.input.rfind('/'):]}"
-    with open(output, "w") as f:
-        f.write(inv_prg)
-    verified_inv, out_inv, err_inv = verus.verify(output)
-    if verified_inv:
-        print("Verified with modification")
-    else:
-        print("Verification failed:")
-        print(out_inv)
-        print(err_inv)
+    tries = args.tries
+    while tries > 0:
+        if not os.path.exists("llm-generated"):
+            os.mkdir("llm-generated")
+        output = f"llm-generated/{args.input[args.input.rfind('/'):]}"
+        with open(output, "w") as f:
+            f.write(inv_prg)
+        verified_inv, out_inv, err_inv = verus.verify(output)
+        if verified_inv:
+            print("Verified with modification on try", args.tries - tries + 1)
+            return
+        else:
+            print("Verification failed:")
+            print(out_inv)
+            print(err_inv)
+            print("Retrying...")
+            tries -= 1
+            if tries > 0:
+                inv_prg = llm.ask_for_fixed(err_inv)
+    print("Failed to verify after", args.tries, "tries")
 
 
 if __name__ == '__main__':

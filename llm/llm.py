@@ -17,23 +17,39 @@ class LLM:
         )
         self.profile = Profile.get_by_name(profile)
         self.is_gpt = "gpt" in self.profile.name
+        self.user_prompts = []
+        self.responses = []
 
-    def _request(self, prompt, temperature=0.3):
-        if type(prompt) is str:
-            prompt = ChatPrompt().add_system(prompts.SYS_PROMPT).add_user(prompt)
+    def _request(self, temperature=0.3):
+        prompt = ChatPrompt().add_system(prompts.SYS_PROMPT)
+        current_prompt_user = 0
+        current_response = 0
+        while current_prompt_user < len(self.user_prompts) or current_response < len(self.responses):
+            if current_prompt_user < len(self.user_prompts):
+                prompt = prompt.add_user(self.user_prompts[current_prompt_user])
+                current_prompt_user += 1
+            if current_response < len(self.responses):
+                prompt = prompt.add_assistant(self.responses[current_response])
+                current_response += 1
+
         return self.grazie.chat(
             chat=prompt,
             profile=self.profile,
             parameters={LLMParameters.Temperature: Parameters.FloatValue(temperature)},
         )
 
+    def _make_request(self):
+        response = self._request().content
+        self.responses.append(response)
+        return response
+
     def produce_invariants(self, prg):
-        return self._request(prompts.PRODUCE_INVARIANTS.format(program=prg)).content
+        self.user_prompts.append(prompts.PRODUCE_INVARIANTS.format(program=prg))
+        return self._make_request()
 
     def rewrite_with_invariants_llm_singlestep(self, prg):
-        return self._request(
-            prompts.REWRITE_WITH_INVARIANTS.format(program=prg)
-        ).content
+        self.user_prompts.append(prompts.REWRITE_WITH_INVARIANTS.format(program=prg))
+        return self._make_request()
 
     def rewrite_with_invariants(self, prg, *, mode):
         if mode == Modes.LLM_SINGLE_STEP:
@@ -41,7 +57,10 @@ class LLM:
         else:
             assert False, f"Unexpected mode for program rewriting: {mode}"
 
+    def ask_for_fixed(self, err):
+        self.user_prompts.append(prompts.ASK_FOR_FIXED.format(error=err))
+        return self._make_request()
+
     def add_invariants(self, prg, inv):
-        return self._request(
-            prompts.ADD_INVARIANTS.format(program=prg, invariants=inv)
-        ).content
+        self.user_prompts.append(prompts.ADD_INVARIANTS.format(program=prg, invariants=inv))
+        return self._make_request()
