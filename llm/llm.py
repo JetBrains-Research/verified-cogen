@@ -9,7 +9,7 @@ from modes import Mode
 
 
 class LLM:
-    def __init__(self, grazie_token, profile):
+    def __init__(self, grazie_token, profile, temperature):
         self.grazie = GrazieApiGatewayClient(
             url=GrazieApiGatewayUrls.STAGING,
             grazie_jwt_token=grazie_token,
@@ -20,8 +20,11 @@ class LLM:
         self.user_prompts = []
         self.responses = []
         self.had_errors = False
+        self.temperature = temperature
 
-    def _request(self, temperature=0.3):
+    def _request(self, temperature=None):
+        if temperature is None:
+            temperature = self.temperature
         prompt = ChatPrompt().add_system(prompts.SYS_PROMPT)
         current_prompt_user = 0
         current_response = 0

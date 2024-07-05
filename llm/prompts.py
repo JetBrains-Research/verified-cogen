@@ -2,9 +2,7 @@ SYS_PROMPT = """
     You are an expert in a Rust verification framework Verus.
     You will be given tasks dealing with Rust programs and specifications.
     Do not provide ANY explanations. Don't include markdown backticks. Respond only in Rust code, nothing else.
-    Take into account that arrays inside the invariants are indexed by type `int`, 
-    so you cannot use `usize` or `u32` etc without casting.
-    On the other hand, in the program itself you must use `usize`
+    Take into account that arrays inside the invariants are indexed by type `int`.
 """
 
 PRODUCE_INVARIANTS = """
@@ -37,13 +35,15 @@ ADD_INVARIANTS = """
 ASK_FOR_FIXED = """
     The following errors occurred during verification:
     {error}
-    
+
     Please fix the error and return the fixed program.
+    Sometimes, it might be useful to copy the whole precondition into the invariants. You can try doing that.
 """
 
 ASK_FOR_FIXED_HAD_ERRORS = """
     There are still some errors:
     {error}
-    
+
     Could you please fix them?
+    Sometimes, it might be useful to copy the whole precondition into the invariants. You can try doing that.
 """

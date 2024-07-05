@@ -15,6 +15,7 @@ def get_args():
         help=f"insert invariants using: {', '.join(VALID_MODES)}",
         default="llm",
     )
+    parser.add_argument("--temperature", help="model temperature", default=0, type=int)
     parser.add_argument("--shell", help="shell", default=os.getenv("SHELL"))
     parser.add_argument(
         "--verus-path", help="verus path", default=os.getenv("VERUS_PATH")
@@ -85,7 +86,7 @@ def main():
         prg = input_file.read()
     precheck(prg, mode)
 
-    llm = LLM(args.grazie_token, args.llm_profile)
+    llm = LLM(args.grazie_token, args.llm_profile, args.temperature)
     inv_prg = invoke_llm(llm, mode, prg)
 
     if (
