@@ -5,7 +5,7 @@ from grazie.api.client.endpoints import GrazieApiGatewayUrls
 from grazie.api.client.profiles import Profile
 from grazie.api.client.llm_parameters import LLMParameters
 from grazie.api.client.parameters import Parameters
-from modes import Modes
+from modes import Mode
 
 
 class LLM:
@@ -19,12 +19,15 @@ class LLM:
         self.is_gpt = "gpt" in self.profile.name
         self.user_prompts = []
         self.responses = []
+        self.had_errors = False
 
     def _request(self, temperature=0.3):
         prompt = ChatPrompt().add_system(prompts.SYS_PROMPT)
         current_prompt_user = 0
         current_response = 0
-        while current_prompt_user < len(self.user_prompts) or current_response < len(self.responses):
+        while current_prompt_user < len(self.user_prompts) or current_response < len(
+            self.responses
+        ):
             if current_prompt_user < len(self.user_prompts):
                 prompt = prompt.add_user(self.user_prompts[current_prompt_user])
                 current_prompt_user += 1
@@ -52,15 +55,22 @@ class LLM:
         return self._make_request()
 
     def rewrite_with_invariants(self, prg, *, mode):
-        if mode == Modes.LLM_SINGLE_STEP:
+        if mode == Mode.LLM_SINGLE_STEP:
             return self.rewrite_with_invariants_llm_singlestep(prg)
         else:
             assert False, f"Unexpected mode for program rewriting: {mode}"
 
     def ask_for_fixed(self, err):
-        self.user_prompts.append(prompts.ASK_FOR_FIXED.format(error=err))
+        prompt = (
+            prompts.ASK_FOR_FIXED_HAD_ERRORS
+            if self.had_errors
+            else prompts.ASK_FOR_FIXED
+        )
+        self.user_prompts.append(prompt.format(error=err))
         return self._make_request()
 
     def add_invariants(self, prg, inv):
-        self.user_prompts.append(prompts.ADD_INVARIANTS.format(program=prg, invariants=inv))
+        self.user_prompts.append(
+            prompts.ADD_INVARIANTS.format(program=prg, invariants=inv)
+        )
         return self._make_request()

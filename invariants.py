@@ -1,6 +1,6 @@
 import re
 import textwrap
-from modes import Modes
+from modes import Mode
 
 
 def insert_invariants_regex(prg: str, inv: str):
@@ -8,15 +8,15 @@ def insert_invariants_regex(prg: str, inv: str):
     assert while_loc > 0
     while_indent = 0
     while (indent := prg[while_loc - while_indent - 1]).isspace():
-        if indent == '\t':
+        if indent == "\t":
             while_indent += 4
-        elif indent == ' ':
+        elif indent == " ":
             while_indent += 1
-        elif indent == '\n':
+        elif indent == "\n":
             break
         else:
             raise ValueError(f"Unexpected indent before while: {ord(indent)}")
-    indented_inv = textwrap.indent(inv, ' ' * (while_indent + 4))
+    indented_inv = textwrap.indent(inv, " " * (while_indent + 4))
     return re.sub("while(\\s*\\(.+\\)\\s*)\n", f"while\\1\n{indented_inv}", prg)
 
 
@@ -25,9 +25,9 @@ def insert_invariants_llm(llm, prg, inv):
 
 
 def insert_invariants(llm, prg, inv, *, mode):
-    if mode == Modes.REGEX:
+    if mode == Mode.REGEX:
         return insert_invariants_regex(prg, inv)
-    elif mode == Modes.LLM:
+    elif mode == Mode.LLM:
         return insert_invariants_llm(llm, prg, inv)
     elif mode.is_singlestep:
         raise ValueError("Single-step mode does not require insertion")

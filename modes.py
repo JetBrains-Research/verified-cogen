@@ -1,10 +1,11 @@
 from enum import Enum
 
 
-class Modes(Enum):
-    REGEX = 'regex', False
-    LLM = 'llm', False
-    LLM_SINGLE_STEP = 'llm-single-step', True
+class Mode(Enum):
+    REGEX = "regex", False
+    LLM = "llm", False
+    LLM_SINGLE_STEP = "llm-single-step", True
+    is_singlestep: bool
 
     def __new__(cls, id, is_singlestep):
         obj = object.__new__(cls)
@@ -16,7 +17,7 @@ class Modes(Enum):
         return self.value
 
 
-VALID_MODES = [m.name for m in Modes]
+VALID_MODES = [m.name for m in Mode]
 
 
 def precheck(prg, mode):
@@ -24,6 +25,6 @@ def precheck(prg, mode):
     while_count = prg.count("while")
     if while_count == 0:
         raise ValueError("No loops in program")
-    if mode == Modes.REGEX:
+    if mode == Mode.REGEX:
         if while_count > 1:
             raise ValueError("Multiple loops in program, not supported in regex mode")
