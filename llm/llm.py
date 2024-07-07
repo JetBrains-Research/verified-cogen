@@ -32,10 +32,12 @@ class LLM:
         )
 
     def produce_invariants(self, prg):
-        return self._request(prompts.PRODUCE_INVARIANTS.format(program=prg)).content
+        result = self._request(prompts.PRODUCE_INVARIANTS.format(program=prg)).content
+        return dafnybench_extract_code_from_llm_output(result)
 
     def rewrite_with_invariants_llm_singlestep(self, prg):
-        return self._request(prompts.REWRITE_WITH_INVARIANTS.format(program=prg)).content
+        result = self._request(prompts.REWRITE_WITH_INVARIANTS.format(program=prg)).content
+        return dafnybench_extract_code_from_llm_output(result)
 
     def rewrite_with_invariants_dafnybench(self, prg):
         result = self._request(
@@ -58,5 +60,6 @@ class LLM:
             assert False, f"Unexpected mode for program rewriting: {mode}"
 
     def add_invariants(self, prg, inv):
-        return self._request(prompts.ADD_INVARIANTS.format(program=prg, invariants=inv)).content
+        result = self._request(prompts.ADD_INVARIANTS.format(program=prg, invariants=inv)).content
+        return dafnybench_extract_code_from_llm_output(result)
 
