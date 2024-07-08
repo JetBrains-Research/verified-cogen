@@ -4,12 +4,21 @@ from llm import LLM
 from invariants import insert_invariants
 from modes import Mode, VALID_MODES, precheck
 import argparse
-import pathlib, os
+import pathlib
+import os
+import logging
+
+logging.basicConfig(
+    level=os.environ.get('PYLOG_LEVEL', 'INFO').upper()
+)
+logger = logging.getLogger(__name__)
 
 
 def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("-i", "--input", help="input file", required=False)
+    parser.add_argument("-d", "--dir", help="directory to run on", required=False)
+
     parser.add_argument(
         "--insert-invariants-mode",
         help=f"insert invariants using: {', '.join(VALID_MODES)}",
@@ -35,7 +44,7 @@ def basename(path: str):
 
 
 def run_llm(
-    verus: Verus, llm: LLM, total_tries: int, inv_prg: str, name: str
+        verus: Verus, llm: LLM, total_tries: int, inv_prg: str, name: str
 ) -> Optional[int]:
     tries = total_tries
     while tries > 0:
@@ -48,10 +57,10 @@ def run_llm(
         if verified_inv:
             return total_tries - tries + 1
         else:
-            print("Verification failed:")
-            print(out_inv)
-            print(err_inv)
-            print("Retrying...")
+            logger.info("Verification failed:")
+            logger.info(out_inv)
+            logger.info(err_inv)
+            logger.info("Retrying...")
             tries -= 1
             if tries > 0:
                 inv_prg = llm.ask_for_fixed(err_inv)
@@ -59,42 +68,71 @@ def run_llm(
 
 
 def invoke_llm(llm: LLM, mode: Mode, prg: str) -> str:
-    print("---------------")
-    print("Invoking LLM")
+    logger.info("Invoking LLM")
     if mode.is_singlestep:
         inv_prg = llm.rewrite_with_invariants(prg, mode=mode)
     else:
         inv = llm.produce_invariants(prg)
         inv_prg = insert_invariants(llm, prg, inv, mode=mode)
-    print("---------------")
+    logger.info("Invocation done")
     return inv_prg
+
+
+def run_on_file(
+        verus: Verus,
+        mode: Mode,
+        llm: LLM,
+        total_tries: int,
+        file: str,
+) -> Optional[int]:
+    logger.info(f"Running on {file}")
+
+    verified, out, err = verus.verify(file)
+    if verified:
+        logger.info("Verified without modification")
+        return 0
+
+    with open(file, "r") as input_file:
+        prg = input_file.read()
+    precheck(prg, mode)
+
+    inv_prg = invoke_llm(llm, mode, prg)
+
+    tries = run_llm(verus, llm, total_tries, inv_prg, basename(file))
+    if tries is not None:
+        logger.info(f"Verified with modification on try {tries}")
+    else:
+        logger.error(f"Failed to verify {file} after {total_tries} tries")
+    return tries
+
+
+def rename_file(file: pathlib.Path) -> str:
+    return " ".join(file.stem.split("_")).title()
 
 
 def main():
     args = get_args()
     mode = Mode(args.insert_invariants_mode)
-    if args.input is None:
+    if args.input is None and args.dir is None:
         args.input = input("Input file: ").strip()
 
     verus = Verus(args.shell, args.verus_path)
-    verified, out, err = verus.verify(args.input)
-    if verified:
-        print("Verified without modification")
-        return
-
-    with open(args.input, "r") as input_file:
-        prg = input_file.read()
-    precheck(prg, mode)
-
-    llm = LLM(args.grazie_token, args.llm_profile, args.temperature)
-    inv_prg = invoke_llm(llm, mode, prg)
-
-    if (
-        tries := run_llm(verus, llm, args.tries, inv_prg, basename(args.input))
-    ) is not None:
-        print("Verified with modification on try", tries)
+    if args.dir is not None:
+        success = []
+        failed = []
+        for file in pathlib.Path(args.dir).glob("**/*.rs"):
+            llm = LLM(args.grazie_token, args.llm_profile, args.temperature)
+            if run_on_file(verus, mode, llm, args.tries, str(file)) is not None:
+                success.append(rename_file(file))
+            else:
+                failed.append(rename_file(file))
+        success_tabbed = "\n\t - " + "\n\t - ".join(success)
+        failed_tabbed = "\n\t - " + "\n\t - ".join(failed)
+        print(f"Success: {success_tabbed}")
+        print(f"Failed: {failed_tabbed}")
     else:
-        print("Failed to verify after", args.tries, "tries")
+        llm = LLM(args.grazie_token, args.llm_profile, args.temperature)
+        run_on_file(verus, mode, llm, args.tries, args.input)
 
 
 if __name__ == "__main__":
