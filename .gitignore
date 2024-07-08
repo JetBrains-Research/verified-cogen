@@ -5,4 +5,4 @@ llm-generated
 .envrc
 **/.DS_Store
 pyrightconfig.json
-DafnyBench
+/DafnyBench/
