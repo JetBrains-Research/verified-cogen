@@ -37,6 +37,7 @@ def get_args():
         "--llm-profile", help="llm profile", default="gpt-4-1106-preview"
     )
     parser.add_argument("--tries", help="number of tries", default=1, type=int)
+    parser.add_argument("-s", "--output-style", choices=["stats", "full"], default="full")
     return parser.parse_args()
 
 
@@ -119,18 +120,46 @@ def main():
 
     verus = Verus(args.shell, args.verus_path)
     if args.dir is not None:
-        success = []
-        failed = []
-        for file in tqdm(pathlib.Path(args.dir).glob("**/*.rs")):
+        success, success_zero_tries, failed = [], [], []
+
+        files = list(pathlib.Path(args.dir).glob("**/*.rs"))
+        for file in tqdm(files):
             llm = LLM(args.grazie_token, args.llm_profile, args.temperature)
-            if run_on_file(verus, mode, llm, args.tries, str(file)) is not None:
+            tries = run_on_file(verus, mode, llm, args.tries, str(file))
+            if tries == 0:
+                success_zero_tries.append(rename_file(file))
+            elif tries is not None:
                 success.append(rename_file(file))
             else:
                 failed.append(rename_file(file))
-        success_tabbed = "\n\t - " + "\n\t - ".join(success)
-        failed_tabbed = "\n\t - " + "\n\t - ".join(failed)
-        print(f"Success: {success_tabbed}")
-        print(f"Failed: {failed_tabbed}")
+        if args.output_style == "full":
+            success_zero_tries_tabbed = "\n\t - " + "\n\t - ".join(success_zero_tries)
+            success_tabbed = "\n\t - " + "\n\t - ".join(success)
+            failed_tabbed = "\n\t - " + "\n\t - ".join(failed)
+            if len(success_zero_tries) > 0:
+                print(f"Without modification: {success_zero_tries_tabbed}")
+            if len(success) > 0:
+                print(f"With modification: {success_tabbed}")
+            if len(failed) > 0:
+                print(f"Failed: {failed_tabbed}")
+        print(
+            "Verified without modification: {} ({:.2f}%)".format(
+                len(success_zero_tries),
+                len(success_zero_tries) / len(files) * 100,
+            )
+        )
+        print(
+            "Verified with modification: {} ({:.2f}%)".format(
+                len(success),
+                len(success) / len(files) * 100,
+            )
+        )
+        print(
+            "Failed: {} ({:.2f}%)".format(
+                len(failed),
+                len(failed) / len(files) * 100,
+            )
+        )
     else:
         llm = LLM(args.grazie_token, args.llm_profile, args.temperature)
         run_on_file(verus, mode, llm, args.tries, args.input)
