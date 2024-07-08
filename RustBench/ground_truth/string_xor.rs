@@ -2,6 +2,7 @@ use vstd::prelude::*;
 
 verus! {
 
+#[verifier::loop_isolation(false)]
 fn string_xor(a: &[char], b: &[char]) -> (result: Vec<char>)
     requires
         a.len() == b.len(),
@@ -17,7 +18,6 @@ fn string_xor(a: &[char], b: &[char]) -> (result: Vec<char>)
     while i < a.len()
         invariant
             0 <= i && i <= a.len(),
-            a.len() == b.len(),
             result.len() == i,
             forall|j: int| 0 <= j && j < i ==> result[j] == (if a[j] == b[j] { '0' } else { '1' })
     {

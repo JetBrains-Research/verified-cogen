@@ -2,6 +2,7 @@ use vstd::prelude::*;
 
 verus! {
 
+#[verifier::loop_isolation(false)]
 fn binary_search(arr: &[i32], target: i32) -> (result: Option<usize>)
     requires
         forall|i: int, j: int| 0 <= i && i < j && j < arr.len() ==> arr[i] <= arr[j],

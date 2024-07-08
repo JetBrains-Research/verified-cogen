@@ -2,6 +2,7 @@ use vstd::prelude::*;
 
 verus! {
 
+#[verifier::loop_isolation(false)]
 fn string_xor(a: &[char], b: &[char]) -> (result: Vec<char>)
     requires
         a.len() == b.len(),

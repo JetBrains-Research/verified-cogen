@@ -16,6 +16,7 @@ fn abs(i: i32) -> (res: i32)
     if i < 0 { -i } else { i }
 }
 
+#[verifier::loop_isolation(false)]
 fn has_close_elements(numbers: &[i32], threshold: i32) -> (flag: bool)
     requires
         threshold > 0,
@@ -29,7 +30,6 @@ fn has_close_elements(numbers: &[i32], threshold: i32) -> (flag: bool)
         invariant
             0 <= i && i <= numbers.len(),
             flag == exists|i1: int, j1: int| 0 <= i1 && 0 <= j1 && i1 < i && j1 < numbers.len() && i1 != j1 && abs_spec(numbers[i1] - numbers[j1]) < threshold,
-            forall|i: int, j: int| 0 <= i && i < numbers.len() && 0 <= j && j < numbers.len() ==> numbers[i] - numbers[j] < i32::MAX && -(numbers[i] - numbers[j]) < i32::MAX
     {
         let mut j = 0;
         while j < numbers.len()
@@ -37,7 +37,6 @@ fn has_close_elements(numbers: &[i32], threshold: i32) -> (flag: bool)
                 0 <= i && i < numbers.len(),
                 0 <= j && j <= numbers.len(),
                 flag == exists|i1: int, j1: int| 0 <= i1 && 0 <= j1 && ((i1 < i && j1 < numbers.len()) || (i1 == i && j1 < j)) && i1 != j1 && abs_spec(numbers[i1] - numbers[j1]) < threshold,
-                forall|i: int, j: int| 0 <= i && i < numbers.len() && 0 <= j && j < numbers.len() ==> numbers[i] - numbers[j] < i32::MAX && -(numbers[i] - numbers[j]) < i32::MAX
         {
             if i != j {
                 let distance = abs(numbers[i] - numbers[j]);
