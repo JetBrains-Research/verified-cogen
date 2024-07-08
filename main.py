@@ -1,3 +1,4 @@
+from tqdm import tqdm
 from typing_extensions import Optional
 from verus import Verus
 from llm import LLM
@@ -120,7 +121,7 @@ def main():
     if args.dir is not None:
         success = []
         failed = []
-        for file in pathlib.Path(args.dir).glob("**/*.rs"):
+        for file in tqdm(pathlib.Path(args.dir).glob("**/*.rs")):
             llm = LLM(args.grazie_token, args.llm_profile, args.temperature)
             if run_on_file(verus, mode, llm, args.tries, str(file)) is not None:
                 success.append(rename_file(file))
