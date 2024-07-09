@@ -11,7 +11,7 @@ fn add(a: i32, b: i32) -> (result: i32)
 }
 
 #[verifier::loop_isolation(false)]
-fn cubes(len: usize) -> (result: Vec<i32>)
+fn cubes(len: usize) -> (result: Vec<i32>) by (nonlinear_arith)
     ensures
         result.len() == len,
         forall|i: int| 0 <= i && i < len ==> result[i] == i * i * i
@@ -33,14 +33,6 @@ fn cubes(len: usize) -> (result: Vec<i32>)
             m == 6 * n + 6,
     {
         result.push(c);
-
-        assert(
-            3 * (n + 1) * (n + 1) + 3 * (n + 1) + 1 - (3 * n * n + 3 * n + 1) == 6 * n + 6
-        ) by (nonlinear_arith) {};
-
-        assert(
-            (n + 1) * (n + 1) * (n + 1) - n * n * n == 3 * n * n + 3 * n + 1
-        ) by (nonlinear_arith) {};
 
         c = add(c, k);
         k = add(k, m);
