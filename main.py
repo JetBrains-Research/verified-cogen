@@ -1,13 +1,15 @@
+import argparse
+import logging
+import os
+import pathlib
+
 from tqdm import tqdm
 from typing_extensions import Optional
-from verus import Verus
-from llm import LLM
+
 from invariants import insert_invariants
+from llm import LLM
 from modes import Mode, VALID_MODES, precheck
-import argparse
-import pathlib
-import os
-import logging
+from verus import Verus
 
 logging.basicConfig(
     level=os.environ.get('PYLOG_LEVEL', 'INFO').upper()
@@ -37,6 +39,7 @@ def get_args():
         "--llm-profile", help="llm profile", default="gpt-4-1106-preview"
     )
     parser.add_argument("--tries", help="number of tries", default=1, type=int)
+    parser.add_argument("--retries", help="number of retries", default=0, type=int)
     parser.add_argument("-s", "--output-style", choices=["stats", "full"], default="full")
     return parser.parse_args()
 
@@ -125,7 +128,13 @@ def main():
         files = list(pathlib.Path(args.dir).glob("**/*.rs"))
         for file in tqdm(files):
             llm = LLM(args.grazie_token, args.llm_profile, args.temperature)
-            tries = run_on_file(verus, mode, llm, args.tries, str(file))
+
+            retries = args.retries + 1
+            tries = None
+            while retries > 0 and tries is None:
+                tries = run_on_file(verus, mode, llm, args.tries, str(file))
+                retries -= 1
+
             if tries == 0:
                 success_zero_tries.append(rename_file(file))
             elif tries is not None:
@@ -137,9 +146,9 @@ def main():
             success_tabbed = "\n\t - " + "\n\t - ".join(success)
             failed_tabbed = "\n\t - " + "\n\t - ".join(failed)
             if len(success_zero_tries) > 0:
-                print(f"Without modification: {success_zero_tries_tabbed}")
+                print(f"Verified without modification: {success_zero_tries_tabbed}")
             if len(success) > 0:
-                print(f"With modification: {success_tabbed}")
+                print(f"Verified with modification: {success_tabbed}")
             if len(failed) > 0:
                 print(f"Failed: {failed_tabbed}")
         print(
