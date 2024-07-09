@@ -9,16 +9,15 @@ PRODUCE_INVARIANTS = """
     Given the following Rust program, output Verus invariants that should go into the `while` loop.
     Ensure that the invariants are as comprehensive as they can be.
     Even if you think some invariant is not totally necessary, better add it than not.
-    Even if you think some invariant can be inferred from the preconditions, but still might be needed for the other invariants, add it.
     The program:
     {program}
 """
 
 REWRITE_WITH_INVARIANTS = """
-    Rewrite the following Rust program, adding correct Verus invariants into `while` loops. Do not change the code, only add invariants.
+    Rewrite the following Rust program, adding correct Verus invariants into `while` loops. 
+    Do not change the code, only add the invariants.
     Ensure that the invariants are as comprehensive as they can be.
     Even if you think some invariant is not totally necessary, better add it than not.
-    Even if you think some invariant can be infered from the preconditions, but still might be needed for the other invariants, add it.
     The program:
     {program}
 """
@@ -36,8 +35,7 @@ ASK_FOR_FIXED = """
     The following errors occurred during verification:
     {error}
 
-    Please fix the error and return the fixed program.
-    Sometimes, it might be useful to copy the whole precondition into the invariants. You can try doing that.
+    Please fix the error by adding, removing or modifying the invariants and return the fixed program.
 """
 
 ASK_FOR_FIXED_HAD_ERRORS = """
@@ -45,5 +43,4 @@ ASK_FOR_FIXED_HAD_ERRORS = """
     {error}
 
     Could you please fix them?
-    Sometimes, it might be useful to copy the whole precondition into the invariants. You can try doing that.
 """
