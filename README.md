@@ -24,6 +24,7 @@ Profiles are from grazie, useful ones:
 Verified with modification:
 - Cubes
 - Reverse
+- Replace Chars
 - Max Array
 - String Xor
 - Binary Search
@@ -33,6 +34,7 @@ Verified with modification:
 - Intersperse
 - Unique With Hint
 - Unique No Hints
+
 Failed:
 - Smallest Missing Number
 - Has Close Elements
