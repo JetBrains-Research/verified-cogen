@@ -18,3 +18,21 @@ Profiles are from grazie, useful ones:
 - gpt-4-1106-preview - GPT4-Turbo
 - gpt-4o - GPT-4o
 - anthropic-claude-3-opus - Claude 3 Opus
+
+## Current status
+
+Verified with modification:
+- Cubes
+- Reverse
+- Max Array
+- String Xor
+- Binary Search
+- Two Sum
+- Is Sorted
+- Integer Square Root
+- Intersperse
+- Unique With Hint
+- Unique No Hints
+Failed:
+- Smallest Missing Number
+- Has Close Elements
