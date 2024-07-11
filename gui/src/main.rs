@@ -129,6 +129,10 @@ impl App {
 
         _ = std::thread::spawn(move || {
             running.store(true, std::sync::atomic::Ordering::SeqCst);
+            if let Ok(mut output) = output.write() {
+                *output = None;
+            }
+            File::create("log/llm.log").expect("Failed to clean log file");
             match file_mode {
                 FileMode::SingleFile => {
                     if let Some(path) = path {
