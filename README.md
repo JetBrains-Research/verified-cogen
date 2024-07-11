@@ -7,6 +7,12 @@ export GRAZIE_JWT_TOKEN=insert grazie token
 python main.py --insert-invariants-mode=llm --llm-profile=gpt-4-1106-preview -i RustBench/ground_truth/binary_search.rs
 ```
 
+To run the gui, run it directly from the verified-cogen directory:
+
+```
+VERUS_PATH=<path to verus> cargo run --manifest-path=gui/Cargo.toml
+```
+
 Available invariants insertion mode:
 
 - regex - insert invariants manually after the loop, only works if the program has exactly one `while` loop, doesn't work for now
@@ -22,6 +28,7 @@ Profiles are from grazie, useful ones:
 ## Current status
 
 Verified with modification:
+
 - Cubes
 - Reverse
 - Replace Chars
@@ -36,5 +43,6 @@ Verified with modification:
 - Unique No Hints
 
 Failed:
+
 - Smallest Missing Number
 - Has Close Elements
