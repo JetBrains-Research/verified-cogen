@@ -8,3 +8,5 @@ pyrightconfig.json
 /DafnyBench/
 break_assert.rs
 .venv
+**/target
+log

@@ -13,7 +13,11 @@ from runners.invariants import InvariantRunner
 from runners.preconditions import PreconditionRunner
 from verus import Verus
 
-logging.basicConfig(level=os.environ.get("PYLOG_LEVEL", "INFO").upper())
+if not os.path.exists("log"):
+    os.mkdir("log")
+logging.basicConfig(
+    level=os.environ.get("PYLOG_LEVEL", "INFO").upper(), filename="log/llm.log"
+)
 logger = logging.getLogger(__name__)
 
 
