@@ -6,3 +6,5 @@ llm-generated
 **/.DS_Store
 pyrightconfig.json
 /DafnyBench/
+break_assert.rs
+.venv

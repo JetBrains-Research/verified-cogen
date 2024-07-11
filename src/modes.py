@@ -18,13 +18,3 @@ class Mode(Enum):
 
 
 VALID_MODES = [m.name for m in Mode]
-
-
-def precheck(prg, mode):
-    """Precheck that the program can be processed in the given mode before any LLM invocations"""
-    while_count = prg.count("while")
-    if while_count == 0:
-        raise ValueError("No loops in program")
-    if mode == Mode.REGEX:
-        if while_count > 1:
-            raise ValueError("Multiple loops in program, not supported in regex mode")

@@ -53,21 +53,32 @@ class LLM:
         self.user_prompts.append(prompts.PRODUCE_INVARIANTS.format(program=prg))
         return self._make_request()
 
-    def rewrite_with_invariants_llm_singlestep(self, prg):
+    def produce_preconditions(self, prg):
+        self.user_prompts.append(prompts.PRODUCE_PRECONDITIONS.format(program=prg))
+        return self._make_request()
+
+    def rewrite_with_invariants(self, prg):
         self.user_prompts.append(prompts.REWRITE_WITH_INVARIANTS.format(program=prg))
         return self._make_request()
 
-    def rewrite_with_invariants(self, prg, *, mode):
-        if mode == Mode.LLM_SINGLE_STEP:
-            return self.rewrite_with_invariants_llm_singlestep(prg)
-        else:
-            assert False, f"Unexpected mode for program rewriting: {mode}"
+    def rewrite_with_preconditions(self, prg):
+        self.user_prompts.append(prompts.REWRITE_WITH_PRECONDITIONS.format(program=prg))
+        return self._make_request()
 
-    def ask_for_fixed(self, err):
+    def ask_for_fixed_invariants(self, err):
         prompt = (
             prompts.ASK_FOR_FIXED_HAD_ERRORS
             if self.had_errors
-            else prompts.ASK_FOR_FIXED
+            else prompts.ASK_FOR_FIXED_INVARIANTS
+        )
+        self.user_prompts.append(prompt.format(error=err))
+        return self._make_request()
+
+    def ask_for_fixed_preconditions(self, err):
+        prompt = (
+            prompts.ASK_FOR_FIXED_HAD_ERRORS
+            if self.had_errors
+            else prompts.ASK_FOR_FIXED_PRECONDITIONS
         )
         self.user_prompts.append(prompt.format(error=err))
         return self._make_request()
@@ -75,5 +86,11 @@ class LLM:
     def add_invariants(self, prg, inv):
         self.user_prompts.append(
             prompts.ADD_INVARIANTS.format(program=prg, invariants=inv)
+        )
+        return self._make_request()
+
+    def add_preconditions(self, prg, pre):
+        self.user_prompts.append(
+            prompts.ADD_PRECONDITIONS.format(program=prg, preconditions=pre)
         )
         return self._make_request()

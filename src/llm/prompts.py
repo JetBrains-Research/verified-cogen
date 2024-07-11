@@ -13,11 +13,26 @@ PRODUCE_INVARIANTS = """
     {program}
 """
 
+PRODUCE_PRECONDITIONS = """
+    Given the following Rust program, output Verus preconditions that should go into the function.
+    Ensure that the preconditions are as comprehensive as they can be.
+    The program:
+    {program}
+"""
+
 REWRITE_WITH_INVARIANTS = """
-    Rewrite the following Rust program, adding correct Verus invariants into `while` loops. 
+    Rewrite the following Rust program, adding correct Verus invariants into `while` loops.
     Do not change the code, only add the invariants.
     Ensure that the invariants are as comprehensive as they can be.
     Even if you think some invariant is not totally necessary, better add it than not.
+    The program:
+    {program}
+"""
+
+REWRITE_WITH_PRECONDITIONS = """
+    Rewrite the following Rust program, adding correct Verus preconditions into the function.
+    Do not change the code, only add the preconditions.
+    Ensure that the preconditions are as comprehensive as they can be.
     The program:
     {program}
 """
@@ -31,11 +46,27 @@ ADD_INVARIANTS = """
     {invariants}
 """
 
-ASK_FOR_FIXED = """
+ADD_PRECONDITIONS = """
+    Given the following Rust program, and a set of Verus preconditions, output the program with preconditions inserted into the correct place.
+    The program:
+    {program}
+    –
+    The preconditions:
+    {preconditions}
+"""
+
+ASK_FOR_FIXED_INVARIANTS = """
     The following errors occurred during verification:
     {error}
 
     Please fix the error by adding, removing or modifying the invariants and return the fixed program.
+"""
+
+ASK_FOR_FIXED_PRECONDITIONS = """
+    The following errors occurred during verification:
+    {error}
+
+    Please fix the error by adding, removing or modifying the preconditions and return the fixed program.
 """
 
 ASK_FOR_FIXED_HAD_ERRORS = """
