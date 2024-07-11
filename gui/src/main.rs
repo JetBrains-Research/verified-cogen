@@ -396,7 +396,7 @@ impl App {
                         ui.heading("Log:");
                         ui.push_id("log", |ui| {
                             egui::ScrollArea::vertical().show(ui, |ui| {
-                                ui.code(log);
+                                ui.monospace(log);
                             });
                         });
                     }
