@@ -13,6 +13,8 @@ To run the gui, run it directly from the verified-cogen directory:
 cargo run --manifest-path=gui/Cargo.toml
 ```
 
+![Screenshot of GUI](screenshots/gui.png)
+
 Available invariants insertion mode:
 
 - regex - insert invariants manually after the loop, only works if the program has exactly one `while` loop, doesn't work for now
