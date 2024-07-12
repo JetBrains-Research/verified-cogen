@@ -1,0 +1,3 @@
+[submodule "Dafny"]
+	path = Dafny
+	url = https://github.com/alex28sh/Nagini-Convertion
