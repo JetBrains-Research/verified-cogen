@@ -19,6 +19,9 @@ fn main() -> eframe::Result {
         ..Default::default()
     };
 
+    if !std::path::Path::new("log").exists() {
+        std::fs::create_dir("log").expect("Failed to create log directory");
+    }
     _ = File::create("log/llm.log").expect("Failed to create log file");
 
     eframe::run_native(
