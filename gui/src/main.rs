@@ -354,6 +354,11 @@ impl App {
     }
 
     fn output_ui(&mut self, ui: &mut Ui, panel_height: f32) {
+        let output_width = ui.available_width();
+        let part = match self.file_mode {
+            FileMode::SingleFile => 4.0,
+            FileMode::Directory => 2.0,
+        };
         ui.horizontal(|ui| {
             ui.set_height(panel_height);
             ui.add(Separator::default().vertical().grow(panel_height));
@@ -364,8 +369,9 @@ impl App {
                         let (stdout, stderr) = &output;
                         ui.heading("Stdout:");
                         ui.push_id("stdout", |ui| {
-                            ui.set_max_height(panel_height / 4.0);
+                            ui.set_max_height(panel_height / part);
                             egui::ScrollArea::vertical().show(ui, |ui| {
+                                ui.set_min_width(output_width);
                                 ui.monospace(stdout);
                             });
                         });
@@ -374,8 +380,9 @@ impl App {
 
                         ui.heading("Stderr:");
                         ui.push_id("stderr", |ui| {
-                            ui.set_max_height(panel_height / 4.0);
+                            ui.set_max_height(panel_height / part);
                             egui::ScrollArea::vertical().show(ui, |ui| {
+                                ui.set_min_width(output_width);
                                 ui.monospace(stderr);
                             });
                         });
@@ -386,8 +393,8 @@ impl App {
                                 ui.heading("Last verified code:");
                                 ui.push_id("llm-code", |ui| {
                                     egui::ScrollArea::vertical().show(ui, |ui| {
+                                        ui.set_min_width(output_width);
                                         paint_code(ui, code);
-                                        ui.set_height(ui.available_height());
                                     });
                                 });
                             }

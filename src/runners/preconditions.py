@@ -14,11 +14,11 @@ logger = logging.getLogger(__name__)
 class PreconditionRunner(Runner):
     @classmethod
     def rewrite(cls, llm: LLM, prg: str) -> str:
-        return llm.rewrite_with_invariants(prg)
+        return llm.rewrite_with_preconditions(prg)
 
     @classmethod
     def produce(cls, llm: LLM, prg: str) -> str:
-        return llm.produce_invariants(prg)
+        return llm.produce_preconditions(prg)
 
     @classmethod
     def insert(cls, llm: LLM, prg: str, checks: str, mode: Mode) -> str:
