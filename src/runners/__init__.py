@@ -39,7 +39,7 @@ class Runner(ABC):
         return inv_prg
 
     @classmethod
-    def __try_fixing(
+    def __try_fixing_inner(
         cls,
         logger: Logger,
         verifier: Verifier,
@@ -47,6 +47,7 @@ class Runner(ABC):
         total_tries: int,
         inv_prg: str,
         name: str,
+        type: str,
     ) -> Optional[int]:
         tries = total_tries
         while tries > 0:
@@ -65,8 +66,19 @@ class Runner(ABC):
                 logger.info("Retrying...")
                 tries -= 1
                 if tries > 0:
-                    inv_prg = llm.ask_for_fixed_invariants(err_inv)
+                    inv_prg = llm.ask_for_fixed(err_inv, type)
         return None
+
+    @classmethod
+    def __try_fixing(
+        cls,
+        logger: Logger,
+        verifier: Verifier,
+        llm: LLM,
+        total_tries: int,
+        inv_prg: str,
+        name: str,
+    ): ...
 
     @classmethod
     def run_on_file(

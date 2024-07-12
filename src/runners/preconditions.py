@@ -7,6 +7,7 @@ import logging
 import os
 import textwrap
 import re
+from logging import Logger
 
 logger = logging.getLogger(__name__)
 
@@ -31,3 +32,17 @@ class PreconditionRunner(Runner):
         fn_count = prg.count("fn")
         if fn_count == 0:
             raise ValueError("No functions in program")
+
+    @classmethod
+    def __try_fixing(
+        cls,
+        logger: Logger,
+        verifier: Verifier,
+        llm: LLM,
+        total_tries: int,
+        inv_prg: str,
+        name: str,
+    ):
+        return cls.__try_fixing_inner(
+            logger, verifier, llm, total_tries, inv_prg, name, "preconditions"
+        )

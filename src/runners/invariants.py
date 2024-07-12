@@ -7,6 +7,7 @@ import logging
 import os
 import textwrap
 import re
+from logging import Logger
 
 logger = logging.getLogger(__name__)
 
@@ -66,3 +67,17 @@ class InvariantRunner(Runner):
                 raise ValueError(
                     "Multiple loops in program, not supported in regex mode"
                 )
+
+    @classmethod
+    def __try_fixing(
+        cls,
+        logger: Logger,
+        verifier: Verifier,
+        llm: LLM,
+        total_tries: int,
+        inv_prg: str,
+        name: str,
+    ):
+        return cls.__try_fixing_inner(
+            logger, verifier, llm, total_tries, inv_prg, name, "invariants"
+        )
