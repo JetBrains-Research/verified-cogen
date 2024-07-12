@@ -33,6 +33,8 @@ fn make_retries(retries: &str) -> String {
 fn add_common_arguments(cmd: &mut Command, token: &str, settings: &Settings) {
     cmd.envs(get_python_venv(Path::new(".")))
         .arg("src/main.py")
+        .args(["--verifier-command", &settings.verifier_command])
+        .args(["--prompts-directory", &settings.prompts_directory])
         .args(["--insert-invariants-mode", "llm-single-step"])
         .args(["--llm-profile", "gpt-4o"])
         .args(["--grazie-token", token])
@@ -47,11 +49,11 @@ fn parse_output(output: Output) -> (String, String) {
     (stdout, stderr)
 }
 
-pub fn run_on_file(file: &str, token: &str, settings: &Settings) -> (String, String) {
+pub fn run_on_file(file: &str, settings: &Settings) -> (String, String) {
     log::info!("Running on file: {}", file);
 
     let mut command = Command::new("python");
-    add_common_arguments(&mut command, token, settings);
+    add_common_arguments(&mut command, &settings.grazie_token, settings);
 
     let output = command
         .args(["-i", file])
@@ -61,11 +63,11 @@ pub fn run_on_file(file: &str, token: &str, settings: &Settings) -> (String, Str
     parse_output(output)
 }
 
-pub fn run_on_directory(directory: &str, token: &str, settings: &Settings) -> (String, String) {
+pub fn run_on_directory(directory: &str, settings: &Settings) -> (String, String) {
     log::info!("Running on directory: {}", directory);
 
     let mut command = Command::new("python");
-    add_common_arguments(&mut command, token, settings);
+    add_common_arguments(&mut command, &settings.grazie_token, settings);
 
     let output = command
         .args(["-d", directory])

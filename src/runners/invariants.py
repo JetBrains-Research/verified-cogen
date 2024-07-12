@@ -1,5 +1,5 @@
 from runners import Runner
-from verus import Verus
+from verifier import Verifier
 from llm import LLM
 from modes import Mode
 from typing import Optional
@@ -29,7 +29,7 @@ def insert_invariants_regex(prg: str, inv: str):
 
 
 def insert_invariants_llm(llm: LLM, prg, inv):
-    return llm.add_invariants(prg, inv)
+    return llm.add(prg, inv, "invariants")
 
 
 def insert_invariants(llm: LLM, prg: str, inv: str, mode: Mode):
@@ -46,11 +46,11 @@ def insert_invariants(llm: LLM, prg: str, inv: str, mode: Mode):
 class InvariantRunner(Runner):
     @classmethod
     def rewrite(cls, llm: LLM, prg: str) -> str:
-        return llm.rewrite_with_invariants(prg)
+        return llm.rewrite(prg, "invariants")
 
     @classmethod
     def produce(cls, llm: LLM, prg: str) -> str:
-        return llm.produce_invariants(prg)
+        return llm.produce(prg, "invariants")
 
     @classmethod
     def insert(cls, llm: LLM, prg: str, checks: str, mode: Mode) -> str:

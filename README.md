@@ -10,7 +10,7 @@ python main.py --insert-invariants-mode=llm --llm-profile=gpt-4-1106-preview -i 
 To run the gui, run it directly from the verified-cogen directory:
 
 ```
-VERUS_PATH=<path to verus> cargo run --manifest-path=gui/Cargo.toml
+cargo run --manifest-path=gui/Cargo.toml
 ```
 
 Available invariants insertion mode:

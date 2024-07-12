@@ -58,8 +58,6 @@ struct App {
     path: Option<PathBuf>,
     code: Option<String>,
     files: Option<Vec<String>>,
-    grazie_token: String,
-    token_loaded: bool,
     token_hovered: bool,
     running: Arc<AtomicBool>,
     last_verified_code: Arc<RwLock<Option<String>>>,
@@ -69,6 +67,9 @@ struct App {
 
 #[derive(Debug, Clone)]
 struct Settings {
+    grazie_token: String,
+    verifier_command: String,
+    prompts_directory: String,
     tries: String,
     retries: String,
     bench_type: BenchMode,
@@ -77,6 +78,9 @@ struct Settings {
 impl Default for Settings {
     fn default() -> Self {
         Self {
+            grazie_token: std::env::var("GRAZIE_JWT_TOKEN").unwrap_or_default(),
+            verifier_command: std::env::var("VERIFIER_COMMAND").unwrap_or_default(),
+            prompts_directory: "llm/prompts".to_string(),
             tries: "1".to_string(),
             retries: "0".to_string(),
             bench_type: BenchMode::Invariants,
@@ -86,9 +90,6 @@ impl Default for Settings {
 
 impl eframe::App for App {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
-        if !self.token_loaded {
-            self.grazie_token = std::env::var("GRAZIE_JWT_TOKEN").unwrap_or_default();
-        }
         egui::CentralPanel::default().show(ctx, |ui| {
             let panel_height = ui.max_rect().height();
 
@@ -124,7 +125,6 @@ impl App {
         let settings = self.settings.clone();
         let file_mode = self.file_mode.clone();
         let path = self.path.clone();
-        let token = self.grazie_token.clone();
         let log = Arc::clone(&self.log);
 
         _ = std::thread::spawn(move || {
@@ -137,7 +137,7 @@ impl App {
                 FileMode::SingleFile => {
                     if let Some(path) = path {
                         if let Some(path) = path.to_str() {
-                            let py_output = run_on_file(path, &token, &settings);
+                            let py_output = run_on_file(path, &settings);
                             if let Ok(mut output) = output.write() {
                                 *output = Some(py_output);
                             }
@@ -156,7 +156,7 @@ impl App {
                 FileMode::Directory => {
                     if let Some(directory) = path {
                         if let Some(directory) = directory.to_str() {
-                            let py_output = run_on_directory(directory, &token, &settings);
+                            let py_output = run_on_directory(directory, &settings);
                             if let Ok(mut output) = output.write() {
                                 *output = Some(py_output);
                             }
@@ -241,17 +241,38 @@ impl App {
     }
 
     fn token_input(&mut self, ui: &mut Ui) {
-        let label = ui.heading("Grazie token: ");
+        let label = ui.heading("Grazie and verifier: ");
 
+        ui.label("Grazie token: ");
         ui.horizontal(|ui| {
             let token = ui
                 .add(
-                    TextEdit::singleline(&mut self.grazie_token)
+                    TextEdit::singleline(&mut self.settings.grazie_token)
                         .hint_text("Enter your Grazie token")
                         .password(!self.token_hovered),
                 )
                 .labelled_by(label.id);
             self.token_hovered = token.hovered();
+        });
+
+        ui.columns(2, |cols| {
+            let [left_ui, right_ui] = cols else { return };
+
+            left_ui.vertical(|ui| {
+                ui.label("Prompts directory: ");
+                ui.add(
+                    TextEdit::singleline(&mut self.settings.prompts_directory)
+                        .hint_text("Enter the prompts directory")
+                );
+            });
+
+            right_ui.vertical(|ui| {
+                ui.label("Verifier command: ");
+                ui.add(
+                    TextEdit::singleline(&mut self.settings.verifier_command)
+                        .hint_text("Enter the verifier command")
+                );
+            });
         });
     }
 

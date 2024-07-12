@@ -1,0 +1,5 @@
+Rewrite the following Rust program, adding correct Verus preconditions into the function.
+    Do not change the code, only add the preconditions.
+    Ensure that the preconditions are as comprehensive as they can be.
+    The program:
+    {program}

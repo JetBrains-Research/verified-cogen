@@ -3,7 +3,7 @@ from logging import Logger
 from helpers import basename
 from llm import LLM
 from modes import Mode
-from verus import Verus
+from verifier import Verifier
 import os
 from typing import Optional
 
@@ -42,7 +42,7 @@ class Runner(ABC):
     def __try_fixing(
         cls,
         logger: Logger,
-        verus: Verus,
+        verifier: Verifier,
         llm: LLM,
         total_tries: int,
         inv_prg: str,
@@ -55,7 +55,7 @@ class Runner(ABC):
             output = f"llm-generated/{name}"
             with open(output, "w") as f:
                 f.write(inv_prg)
-            verified_inv, out_inv, err_inv = verus.verify(output)
+            verified_inv, out_inv, err_inv = verifier.verify(output)
             if verified_inv:
                 return total_tries - tries + 1
             else:
@@ -72,7 +72,7 @@ class Runner(ABC):
     def run_on_file(
         cls,
         logger: Logger,
-        verus: Verus,
+        verifier: Verifier,
         mode: Mode,
         llm: LLM,
         total_tries: int,
@@ -80,7 +80,7 @@ class Runner(ABC):
     ) -> Optional[int]:
         logger.info(f"Running on {file}")
 
-        verified, out, err = verus.verify(file)
+        verified, out, err = verifier.verify(file)
         if verified:
             return 0
 
@@ -89,5 +89,5 @@ class Runner(ABC):
         cls.precheck(prg, mode)
         inv_prg = cls.__invoke(logger, llm, prg, mode)
         return cls.__try_fixing(
-            logger, verus, llm, total_tries, inv_prg, basename(file)
+            logger, verifier, llm, total_tries, inv_prg, basename(file)
         )

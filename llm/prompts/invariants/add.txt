@@ -1,0 +1,6 @@
+Given the following Rust program, and a set of Verus invariants, output the program with invariants inserted into the correct place.
+The program:
+{program}
+–
+The invariants:
+{checks}

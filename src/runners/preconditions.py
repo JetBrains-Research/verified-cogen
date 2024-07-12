@@ -1,5 +1,5 @@
 from runners import Runner
-from verus import Verus
+from verifier import Verifier
 from llm import LLM
 from modes import Mode
 from typing import Optional
@@ -14,15 +14,17 @@ logger = logging.getLogger(__name__)
 class PreconditionRunner(Runner):
     @classmethod
     def rewrite(cls, llm: LLM, prg: str) -> str:
-        return llm.rewrite_with_preconditions(prg)
+        return llm.rewrite(prg, "preconditions")
 
     @classmethod
     def produce(cls, llm: LLM, prg: str) -> str:
-        return llm.produce_preconditions(prg)
+        return llm.produce(prg, "preconditions")
 
     @classmethod
     def insert(cls, llm: LLM, prg: str, checks: str, mode: Mode) -> str:
-        return llm.add_preconditions(prg, checks)
+        if mode == Mode.REGEX:
+            raise ValueError("Regex mode not supported for preconditions")
+        return llm.add(prg, checks, "preconditions")
 
     @classmethod
     def precheck(cls, prg: str, mode: Mode):

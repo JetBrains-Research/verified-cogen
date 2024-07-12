@@ -1,0 +1,6 @@
+Rewrite the following Rust program, adding correct Verus invariants into `while` loops.
+Do not change the code, only add the invariants.
+Ensure that the invariants are as comprehensive as they can be.
+Even if you think some invariant is not totally necessary, better add it than not.
+The program:
+{program}

@@ -1,0 +1,6 @@
+Given the following Rust program, and a set of Verus preconditions, output the program with preconditions inserted into the correct place.
+The program:
+{program}
+–
+The preconditions:
+{checks}

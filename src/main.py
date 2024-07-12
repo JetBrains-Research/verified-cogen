@@ -11,7 +11,7 @@ from llm import LLM
 from modes import Mode, VALID_MODES
 from runners.invariants import InvariantRunner
 from runners.preconditions import PreconditionRunner
-from verus import Verus
+from verifier import Verifier
 
 if not os.path.exists("log"):
     os.mkdir("log")
@@ -39,7 +39,14 @@ def get_args():
     parser.add_argument("--temperature", help="model temperature", default=0, type=int)
     parser.add_argument("--shell", help="shell", default=os.getenv("SHELL"))
     parser.add_argument(
-        "--verus-path", help="verus path", default=os.getenv("VERUS_PATH")
+        "--verifier-command",
+        help="command to run (cmd [file_path]) to verify a file",
+        default=os.getenv("VERIFIER_COMMAND"),
+    )
+    parser.add_argument(
+        "--prompts-directory",
+        help="directory containing prompts",
+        default=os.getenv("llm/prompts"),
     )
     parser.add_argument(
         "--grazie-token", help="Grazie JWT token", default=os.getenv("GRAZIE_JWT_TOKEN")
@@ -63,19 +70,19 @@ def main():
 
     runner = InvariantRunner if args.bench_type == "invariants" else PreconditionRunner
 
-    verus = Verus(args.shell, args.verus_path)
+    verifier = Verifier(args.shell, args.verifier_command)
     if args.dir is not None:
         success, success_zero_tries, failed = [], [], []
 
         files = list(pathlib.Path(args.dir).glob("**/*.rs"))
         for file in tqdm(files):
-            llm = LLM(args.grazie_token, args.llm_profile, args.temperature)
+            llm = LLM(args.grazie_token, args.llm_profile, args.prompts_directory, args.temperature)
 
             retries = args.retries + 1
             tries = None
             while retries > 0 and tries is None:
                 tries = runner.run_on_file(
-                    logger, verus, mode, llm, args.tries, str(file)
+                    logger, verifier, mode, llm, args.tries, str(file)
                 )
                 retries -= 1
 
@@ -108,8 +115,8 @@ def main():
         pprint_stat("Failed", len(failed), len(files))
 
     else:
-        llm = LLM(args.grazie_token, args.llm_profile, args.temperature)
-        tries = runner.run_on_file(logger, verus, mode, llm, args.tries, args.input)
+        llm = LLM(args.grazie_token, args.llm_profile, args.prompts_directory, args.temperature)
+        tries = runner.run_on_file(logger, verifier, mode, llm, args.tries, args.input)
         if tries == 0:
             print("Verified without modification")
         elif tries is not None:
