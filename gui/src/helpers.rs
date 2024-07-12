@@ -14,6 +14,13 @@ pub fn basename(file: &str) -> &str {
         .expect("invalid file name")
 }
 
+pub fn extension(file: &Path) -> &str {
+    file.extension()
+        .expect("file should have an extension")
+        .to_str()
+        .expect("extension should be a valid string")
+}
+
 fn make_tries(tries: &str) -> String {
     if tries.is_empty() {
         String::from("1")

@@ -10,7 +10,7 @@ use std::{
     sync::{atomic::AtomicBool, Arc, RwLock},
 };
 
-use helpers::{basename, run_on_directory, run_on_file};
+use helpers::{basename, extension, run_on_directory, run_on_file};
 
 fn main() -> eframe::Result {
     env_logger::init();
@@ -262,7 +262,7 @@ impl App {
                 ui.label("Prompts directory: ");
                 ui.add(
                     TextEdit::singleline(&mut self.settings.prompts_directory)
-                        .hint_text("Enter the prompts directory")
+                        .hint_text("Enter the prompts directory"),
                 );
             });
 
@@ -270,7 +270,7 @@ impl App {
                 ui.label("Verifier command: ");
                 ui.add(
                     TextEdit::singleline(&mut self.settings.verifier_command)
-                        .hint_text("Enter the verifier command")
+                        .hint_text("Enter the verifier command"),
                 );
             });
         });
@@ -337,8 +337,13 @@ impl App {
     fn display(&mut self, ui: &mut Ui) {
         if self.file_mode == FileMode::SingleFile {
             if let Some(code) = self.code.as_ref() {
+                let path = self.path.as_ref().expect("Code and path should be in sync");
                 egui::ScrollArea::vertical().show(ui, |ui| {
-                    paint_code(ui, code);
+                    paint_code(
+                        ui,
+                        code,
+                        extension(path)
+                    );
                 });
             } else {
                 ui.label("No file selected");
@@ -410,12 +415,13 @@ impl App {
 
                         if let Ok(code) = self.last_verified_code.read() {
                             if let Some(code) = code.as_ref() {
+                                let path = self.path.as_ref().expect("Code and path should be in sync");
                                 ui.separator();
                                 ui.heading("Last verified code:");
                                 ui.push_id("llm-code", |ui| {
                                     egui::ScrollArea::vertical().show(ui, |ui| {
                                         ui.set_min_width(output_width);
-                                        paint_code(ui, code);
+                                        paint_code(ui, code, extension(path));
                                     });
                                 });
                             }
@@ -438,8 +444,8 @@ impl App {
     }
 }
 
-fn paint_code(ui: &mut Ui, code: &str) {
+fn paint_code(ui: &mut Ui, code: &str, lang: &str) {
     let theme = egui_extras::syntax_highlighting::CodeTheme::from_memory(ui.ctx());
 
-    egui_extras::syntax_highlighting::code_view_ui(ui, &theme, code, "rs");
+    egui_extras::syntax_highlighting::code_view_ui(ui, &theme, code, lang);
 }
