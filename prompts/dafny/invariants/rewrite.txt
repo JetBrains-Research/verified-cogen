@@ -1,0 +1,4 @@
+Rewrite the following dafny program, adding correct invariants into `while` loops.
+Do not change the code, only add invariants.
+The program:
+{program}

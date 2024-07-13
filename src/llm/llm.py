@@ -1,3 +1,4 @@
+from helpers import extract_code_from_llm_output
 import llm.prompts as prompts
 from grazie.api.client.gateway import AuthType, GrazieApiGatewayClient, GrazieHeaders
 from grazie.api.client.chat.prompt import ChatPrompt
@@ -48,24 +49,24 @@ class LLM:
     def _make_request(self):
         response = self._request().content
         self.responses.append(response)
-        return response
+        return extract_code_from_llm_output(response)
 
     def produce(self, prg, type: str):
-        self.user_prompts.append(prompts.produce_prompt(
-            self.prompt_dir, type
-        ).format(program=prg))
+        self.user_prompts.append(
+            prompts.produce_prompt(self.prompt_dir, type).format(program=prg)
+        )
         return self._make_request()
 
     def add(self, prg, checks: str, type: str):
-        self.user_prompts.append(prompts.add_prompt(
-            self.prompt_dir, type
-        ).format(program=prg, checks=checks))
+        self.user_prompts.append(
+            prompts.add_prompt(self.prompt_dir, type).format(program=prg, checks=checks)
+        )
         return self._make_request()
 
     def rewrite(self, prg, type: str):
-        self.user_prompts.append(prompts.rewrite_prompt(
-            self.prompt_dir, type
-        ).format(program=prg))
+        self.user_prompts.append(
+            prompts.rewrite_prompt(self.prompt_dir, type).format(program=prg)
+        )
         return self._make_request()
 
     def ask_for_fixed(self, err, type: str):

@@ -1,0 +1,6 @@
+Given the following danfy program, and a set of invariants, output the program with invariants inserted into the correct place.
+The program:
+{program}
+–
+The invariants:
+{invariants}

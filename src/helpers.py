@@ -1,8 +1,6 @@
 import re
 import textwrap
-from modes import Mode
 import pathlib
-from llm import LLM
 
 
 def basename(path: str):
@@ -19,3 +17,20 @@ def pprint_stat(name: str, stat: int, total: int):
 
 def tabulate_list(lst: list):
     return "\n\t - " + "\n\t - ".join(lst)
+
+
+def extract_code_from_llm_output(reply: str) -> str:
+    """For fighing LLMs sometimes outputting code in markdown blocks"""
+    i = reply.find("<answer>")
+    if i != -1:
+        reply = reply[i + 8 :]
+        i = reply.find("</answer>")
+        reply = reply[:i]
+        return reply
+    i = re.search(r"```\w*", reply)
+    if i is not None:
+        reply = reply[i.end() :]
+        i = reply.find("```")
+        reply = reply[:i]
+        return reply.strip()
+    return reply

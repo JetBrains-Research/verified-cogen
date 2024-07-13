@@ -83,7 +83,7 @@ impl Default for Settings {
         Self {
             grazie_token: std::env::var("GRAZIE_JWT_TOKEN").unwrap_or_default(),
             verifier_command: std::env::var("VERIFIER_COMMAND").unwrap_or_default(),
-            prompts_directory: "llm/prompts".to_string(),
+            prompts_directory: std::env::var("PROMPTS_DIRECTORY").unwrap_or_default(),
             tries: "1".to_string(),
             retries: "0".to_string(),
             bench_type: BenchMode::Invariants,
@@ -342,11 +342,7 @@ impl App {
             if let Some(code) = self.code.as_ref() {
                 let path = self.path.as_ref().expect("Code and path should be in sync");
                 egui::ScrollArea::vertical().show(ui, |ui| {
-                    paint_code(
-                        ui,
-                        code,
-                        extension(path)
-                    );
+                    paint_code(ui, code, extension(path));
                 });
             } else {
                 ui.label("No file selected");
@@ -418,7 +414,8 @@ impl App {
 
                         if let Ok(code) = self.last_verified_code.read() {
                             if let Some(code) = code.as_ref() {
-                                let path = self.path.as_ref().expect("Code and path should be in sync");
+                                let path =
+                                    self.path.as_ref().expect("Code and path should be in sync");
                                 ui.separator();
                                 ui.heading("Last verified code:");
                                 ui.push_id("llm-code", |ui| {
