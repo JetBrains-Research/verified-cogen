@@ -8,7 +8,14 @@ class Verifier:
 
     def verify(self, file_path: str) -> tuple[bool, str, str]:
         res = subprocess.run(
-            '{} -i -l -c "{} {}"; exit'.format(self.shell, self.verifier_cmd, file_path),
-            capture_output=True, shell=True
+            '{} -i -l -c "{} {}"; exit'.format(
+                self.shell, self.verifier_cmd, file_path
+            ),
+            capture_output=True,
+            shell=True,
         )
-        return res.returncode == 0, res.stdout.decode("utf-8"), res.stderr.decode("utf-8")
+        return (
+            res.returncode == 0,
+            res.stdout.decode("utf-8"),
+            res.stderr.decode("utf-8"),
+        )

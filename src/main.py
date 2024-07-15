@@ -76,7 +76,12 @@ def main():
 
         files = list(pathlib.Path(args.dir).glob("**/*.rs"))
         for file in tqdm(files):
-            llm = LLM(args.grazie_token, args.llm_profile, args.prompts_directory, args.temperature)
+            llm = LLM(
+                args.grazie_token,
+                args.llm_profile,
+                args.prompts_directory,
+                args.temperature,
+            )
 
             retries = args.retries + 1
             tries = None
@@ -115,7 +120,12 @@ def main():
         pprint_stat("Failed", len(failed), len(files))
 
     else:
-        llm = LLM(args.grazie_token, args.llm_profile, args.prompts_directory, args.temperature)
+        llm = LLM(
+            args.grazie_token,
+            args.llm_profile,
+            args.prompts_directory,
+            args.temperature,
+        )
         tries = runner.run_on_file(logger, verifier, mode, llm, args.tries, args.input)
         if tries == 0:
             print("Verified without modification")

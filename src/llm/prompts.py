@@ -4,10 +4,12 @@ from typing import Optional
 
 class Singleton(object):
     _instance = None
+
     def __new__(cls, *args, **kwargs):
         if not isinstance(cls._instance, cls):
             cls._instance = super().__new__(cls, *args, **kwargs)
         return cls._instance
+
 
 class PromptCache(Singleton):
     cache: dict = {}
@@ -21,7 +23,9 @@ class PromptCache(Singleton):
     def set(self, key: str, value: str):
         self.cache[key] = value
 
+
 prompt_cache = PromptCache()
+
 
 def sys_prompt(prompt_dir: str) -> str:
     if (cached := prompt_cache.get(prompt_dir + "_sys")) is not None:
@@ -31,6 +35,7 @@ def sys_prompt(prompt_dir: str) -> str:
         prompt = f.read()
         prompt_cache.set(prompt_dir + "_sys", prompt)
         return prompt
+
 
 def read_prompt(name: str) -> str:
     if (cached := prompt_cache.get(name)) is not None:
@@ -45,14 +50,18 @@ def read_prompt(name: str) -> str:
 def produce_prompt(prompt_dir: str, type: str) -> str:
     return read_prompt(f"{prompt_dir}/{type}/produce.txt")
 
+
 def add_prompt(prompt_dir: str, type: str) -> str:
     return read_prompt(f"{prompt_dir}/{type}/add.txt")
+
 
 def rewrite_prompt(prompt_dir: str, type: str) -> str:
     return read_prompt(f"{prompt_dir}/{type}/rewrite.txt")
 
+
 def ask_for_fixed_prompt(prompt_dir: str, type: str) -> str:
     return read_prompt(f"{prompt_dir}/{type}/ask_for_fixed.txt")
+
 
 def ask_for_fixed_had_errors_prompt(prompt_dir: str) -> str:
     return read_prompt(f"{prompt_dir}/ask_for_fixed_had_errors.txt")
