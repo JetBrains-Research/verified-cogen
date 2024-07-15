@@ -262,7 +262,19 @@ impl App {
             let [left_ui, right_ui] = cols else { return };
 
             left_ui.vertical(|ui| {
-                ui.label("Prompts directory: ");
+                ui.horizontal(|ui| {
+                    ui.label("Prompts directory: ");
+                    if ui.button("Select").clicked() {
+                        if let Some(dir) = rfd::FileDialog::new().pick_folder() {
+                            let relative_dir = dir
+                                .strip_prefix(std::env::current_dir().unwrap())
+                                .expect("Failed to strip prefix")
+                                .to_str()
+                                .expect("Failed to convert to str");
+                            self.settings.prompts_directory = relative_dir.to_string();
+                        }
+                    }
+                });
                 ui.add(
                     TextEdit::singleline(&mut self.settings.prompts_directory)
                         .hint_text("Enter the prompts directory"),
