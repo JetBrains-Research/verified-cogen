@@ -27,8 +27,8 @@ def get_args():
     parser.add_argument("-d", "--dir", help="directory to run on", required=False)
 
     parser.add_argument(
-        "--insert-invariants-mode",
-        help=f"insert invariants using: {', '.join(VALID_MODES)}",
+        "--insert-conditions-mode",
+        help=f"insert conditions using: {', '.join(VALID_MODES)}",
         default="llm",
     )
     parser.add_argument(
@@ -65,6 +65,13 @@ def get_args():
 def main():
     args = get_args()
     mode = Mode(args.insert_invariants_mode)
+    if mode == Mode.REGEX:
+        if "dafny" not in args.verifier_command:
+            raise ValueError("Regex mode only works with Dafny verifier")
+
+        if args.bench_type == "preconditions":
+            raise ValueError("Regex mode only works with invariants")
+
     if args.input is None and args.dir is None:
         args.input = input("Input file: ").strip()
 
