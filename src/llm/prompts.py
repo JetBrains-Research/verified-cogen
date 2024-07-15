@@ -27,16 +27,6 @@ class PromptCache(Singleton):
 prompt_cache = PromptCache()
 
 
-def sys_prompt(prompt_dir: str) -> str:
-    if (cached := prompt_cache.get(prompt_dir + "_sys")) is not None:
-        return cached
-
-    with open(pathlib.Path(prompt_dir) / "sys.txt") as f:
-        prompt = f.read()
-        prompt_cache.set(prompt_dir + "_sys", prompt)
-        return prompt
-
-
 def read_prompt(name: str) -> str:
     if (cached := prompt_cache.get(name)) is not None:
         return cached
@@ -45,6 +35,10 @@ def read_prompt(name: str) -> str:
         prompt = f.read()
         prompt_cache.set(name, prompt)
         return prompt
+
+
+def sys_prompt(prompt_dir: str) -> str:
+    return read_prompt(f"{prompt_dir}/sys.txt")
 
 
 def produce_prompt(prompt_dir: str, type: str) -> str:
