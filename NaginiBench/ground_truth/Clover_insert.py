@@ -9,20 +9,27 @@ def insert(line : List[int], l : int, nl : List[int], p : int, at : int) -> None
     Requires(((0) <= (at)) and ((at) <= (l)))
     Ensures(Acc(list_pred(nl)))
     Ensures(Acc(list_pred(line)))
-    Ensures(Forall(range(0, p), lambda d_0_i_:
-        not (((0) <= (d_0_i_)) and ((d_0_i_) < (p))) or (((line)[(at) + (d_0_i_)]) == ((nl)[d_0_i_]))))
-    Ensures(Forall(range(0, at), lambda d_1_i_:
-        not (((0) <= (d_1_i_)) and ((d_1_i_) < (at))) or (((line)[d_1_i_]) == (Old((line)[d_1_i_])))))
-    Ensures(Forall(range(at, l), lambda d_2_i_:
-        not (((at) <= (d_2_i_)) and ((d_2_i_) < (l))) or (((line)[(d_2_i_) + (p)]) == (Old((line)[d_2_i_])))))
+    Ensures(p <= len(nl))
+    Ensures(at <= l)
+    Ensures(l + p <= len(line))
+    Ensures(Forall(int, lambda d_0_i_:
+        Implies(((0) <= (d_0_i_)) and ((d_0_i_) < (p)), ((line)[(at) + (d_0_i_)]) == ((nl)[d_0_i_]))))
+    Ensures(Forall(int, lambda d_1_i_:
+        Implies(((0) <= (d_1_i_)) and ((d_1_i_) < (at)), ((line)[d_1_i_]) == (Old((line)[d_1_i_])))))
+    Ensures(Forall(int, lambda d_2_i_:
+        Implies(((at) <= (d_2_i_)) and ((d_2_i_) < (l)), ((line)[(d_2_i_) + (p)]) == (Old((line)[d_2_i_])))))
     d_4_initialLine_ = list(line) # type : List[int]
     Assert(Acc(list_pred(d_4_initialLine_)))
+    Assert(len(d_4_initialLine_) == len(line))
+    Assert(Forall(int, lambda i: Implies(i >= 0 and i < len(line), d_4_initialLine_[i] == line[i])))
     d_3_i_ = int(0) # type : int
     d_3_i_ = l
     while (d_3_i_) > (at):
         Invariant(Acc(list_pred(nl)))
         Invariant(Acc(list_pred(line)))
-        Invariant(Acc(list_pred(d_4_initialLine_)))
+        Invariant(Acc(list_pred(d_4_initialLine_), 1/2))
+        Invariant(len(d_4_initialLine_) == len(Old(d_4_initialLine_)))
+        Invariant(Forall(int, lambda i: Implies(i >= 0 and i < len(d_4_initialLine_), d_4_initialLine_[i] == Old(d_4_initialLine_)[i])))
         Invariant(d_3_i_ <= len(line))
         Invariant(d_3_i_ <= len(d_4_initialLine_))
         Invariant(l + p <= len(line))
@@ -39,7 +46,9 @@ def insert(line : List[int], l : int, nl : List[int], p : int, at : int) -> None
     while (d_3_i_) < (p):
         Invariant(Acc(list_pred(nl)))
         Invariant(Acc(list_pred(line)))
-        Invariant(Acc(list_pred(d_4_initialLine_)))
+        Invariant(Acc(list_pred(d_4_initialLine_), 1/2))
+        Invariant(len(d_4_initialLine_) == len(Old(d_4_initialLine_)))
+        Invariant(Forall(int, lambda i: Implies(i >= 0 and i < len(d_4_initialLine_), d_4_initialLine_[i] == Old(d_4_initialLine_)[i])))
         Invariant(((0) <= (d_3_i_)) and ((d_3_i_) <= (p)))
         Invariant(at <= len(line))
         Invariant(at <= len(d_4_initialLine_))
