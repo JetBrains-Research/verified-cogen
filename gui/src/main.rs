@@ -68,9 +68,49 @@ struct App {
     log: Arc<RwLock<Option<String>>>,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq)]
+enum LLMProfile {
+    GPT4o,
+    GPT4Turbo,
+    Claude3Opus,
+    Claude35Sonnet,
+}
+
+impl LLMProfile {
+    fn as_grazie(&self) -> &str {
+        match self {
+            LLMProfile::GPT4o => "gpt4o",
+            LLMProfile::GPT4Turbo => "gpt-4-1106-preview",
+            LLMProfile::Claude3Opus => "anthropic-claude-3-opus",
+            LLMProfile::Claude35Sonnet => "anthropic-claude-3.5-sonnet",
+        }
+    }
+
+    fn all() -> Vec<LLMProfile> {
+        vec![
+            LLMProfile::GPT4o,
+            LLMProfile::GPT4Turbo,
+            LLMProfile::Claude3Opus,
+            LLMProfile::Claude35Sonnet,
+        ]
+    }
+}
+
+impl Display for LLMProfile {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            LLMProfile::GPT4o => write!(f, "GPT-4o"),
+            LLMProfile::GPT4Turbo => write!(f, "GPT-4 Turbo"),
+            LLMProfile::Claude3Opus => write!(f, "Claude 3 Opus"),
+            LLMProfile::Claude35Sonnet => write!(f, "Claude 3.5 Sonnet"),
+        }
+    }
+}
+
 #[derive(Debug, Clone)]
 struct Settings {
     grazie_token: String,
+    llm_profile: LLMProfile,
     verifier_command: String,
     prompts_directory: String,
     tries: String,
@@ -82,6 +122,7 @@ impl Default for Settings {
     fn default() -> Self {
         Self {
             grazie_token: std::env::var("GRAZIE_JWT_TOKEN").unwrap_or_default(),
+            llm_profile: LLMProfile::GPT4o,
             verifier_command: std::env::var("VERIFIER_COMMAND").unwrap_or_default(),
             prompts_directory: std::env::var("PROMPTS_DIRECTORY").unwrap_or_default(),
             tries: "1".to_string(),
@@ -324,6 +365,19 @@ impl App {
 
         ui.vertical(|ui| {
             ui.heading("Settings:");
+
+            egui::ComboBox::from_label("LLM Profile")
+                .selected_text(format!("{}", self.settings.llm_profile))
+                .show_ui(ui, |ui| {
+                    for profile in LLMProfile::all() {
+                        ui.selectable_value(
+                            &mut self.settings.llm_profile,
+                            profile,
+                            format!("{}", profile),
+                        );
+                    }
+                });
+
             ui.horizontal(|ui| {
                 ui.label("Bench mode: ");
                 ui.radio_value(

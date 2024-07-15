@@ -43,7 +43,7 @@ fn add_common_arguments(cmd: &mut Command, token: &str, settings: &Settings) {
         .args(["--verifier-command", &settings.verifier_command])
         .args(["--prompts-directory", &settings.prompts_directory])
         .args(["--insert-conditions-mode", "llm-single-step"])
-        .args(["--llm-profile", "gpt-4o"])
+        .args(["--llm-profile", settings.llm_profile.as_grazie()])
         .args(["--grazie-token", token])
         .args(["--bench-type", &settings.bench_type.to_string()])
         .args(["--tries", &make_tries(&settings.tries)])
