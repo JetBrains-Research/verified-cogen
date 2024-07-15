@@ -29,7 +29,7 @@ def insert_invariants_regex(prg: str, inv: str):
     return re.sub("while(\\s*\\(.+\\)\\s*)\n", f"while\\1\n{indented_inv}", prg)
 
 
-def insert_invariants_llm(llm: LLM, prg, inv):
+def insert_invariants_llm(llm: LLM, prg: str, inv: str):
     return llm.add(prg, inv)
 
 

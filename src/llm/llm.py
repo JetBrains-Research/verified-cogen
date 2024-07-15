@@ -1,3 +1,4 @@
+from typing import Optional
 from helpers import extract_code_from_llm_output
 import llm.prompts as prompts
 from grazie.api.client.gateway import AuthType, GrazieApiGatewayClient, GrazieHeaders
@@ -10,7 +11,9 @@ from modes import Mode
 
 
 class LLM:
-    def __init__(self, grazie_token, profile, prompt_dir, temperature):
+    def __init__(
+        self, grazie_token: str, profile: str, prompt_dir: str, temperature: float
+    ):
         self.grazie = GrazieApiGatewayClient(
             url=GrazieApiGatewayUrls.STAGING,
             grazie_jwt_token=grazie_token,
@@ -24,7 +27,7 @@ class LLM:
         self.had_errors = False
         self.temperature = temperature
 
-    def _request(self, temperature=None):
+    def _request(self, temperature: Optional[float] = None):
         if temperature is None:
             temperature = self.temperature
         prompt = ChatPrompt().add_system(prompts.sys_prompt(self.prompt_dir))
@@ -51,13 +54,13 @@ class LLM:
         self.responses.append(response)
         return extract_code_from_llm_output(response)
 
-    def produce(self, prg):
+    def produce(self, prg: str):
         self.user_prompts.append(
             prompts.produce_prompt(self.prompt_dir).format(program=prg)
         )
         return self._make_request()
 
-    def add(self, prg, checks: str):
+    def add(self, prg: str, checks: str):
         self.user_prompts.append(
             prompts.add_prompt(self.prompt_dir).format(program=prg, checks=checks)
         )
