@@ -42,7 +42,7 @@ fn add_common_arguments(cmd: &mut Command, token: &str, settings: &Settings) {
         .arg("src/main.py")
         .args(["--verifier-command", &settings.verifier_command])
         .args(["--prompts-directory", &settings.prompts_directory])
-        .args(["--insert-invariants-mode", "llm-single-step"])
+        .args(["--insert-conditions-mode", "llm-single-step"])
         .args(["--llm-profile", "gpt-4o"])
         .args(["--grazie-token", token])
         .args(["--bench-type", &settings.bench_type.to_string()])

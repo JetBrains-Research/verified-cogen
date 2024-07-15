@@ -64,7 +64,7 @@ def get_args():
 
 def main():
     args = get_args()
-    mode = Mode(args.insert_invariants_mode)
+    mode = Mode(args.insert_conditions_mode)
     if mode == Mode.REGEX:
         if "dafny" not in args.verifier_command:
             raise ValueError("Regex mode only works with Dafny verifier")
