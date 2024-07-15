@@ -30,7 +30,7 @@ def insert_invariants_regex(prg: str, inv: str):
 
 
 def insert_invariants_llm(llm: LLM, prg, inv):
-    return llm.add(prg, inv, "invariants")
+    return llm.add(prg, inv)
 
 
 def insert_invariants(llm: LLM, prg: str, inv: str, mode: Mode):
@@ -47,11 +47,11 @@ def insert_invariants(llm: LLM, prg: str, inv: str, mode: Mode):
 class InvariantRunner(Runner):
     @classmethod
     def rewrite(cls, llm: LLM, prg: str) -> str:
-        return llm.rewrite(prg, "invariants")
+        return llm.rewrite(prg)
 
     @classmethod
     def produce(cls, llm: LLM, prg: str) -> str:
-        return llm.produce(prg, "invariants")
+        return llm.produce(prg)
 
     @classmethod
     def insert(cls, llm: LLM, prg: str, checks: str, mode: Mode) -> str:
@@ -67,17 +67,3 @@ class InvariantRunner(Runner):
                 raise ValueError(
                     "Multiple loops in program, not supported in regex mode"
                 )
-
-    @classmethod
-    def __try_fixing(
-        cls,
-        logger: Logger,
-        verifier: Verifier,
-        llm: LLM,
-        total_tries: int,
-        inv_prg: str,
-        name: str,
-    ):
-        return cls.__try_fixing_inner(
-            logger, verifier, llm, total_tries, inv_prg, name, "invariants"
-        )

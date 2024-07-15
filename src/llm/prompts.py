@@ -41,20 +41,20 @@ def sys_prompt(prompt_dir: str) -> str:
     return read_prompt(f"{prompt_dir}/sys.txt")
 
 
-def produce_prompt(prompt_dir: str, type: str) -> str:
-    return read_prompt(f"{prompt_dir}/{type}/produce.txt")
+def produce_prompt(prompt_dir: str) -> str:
+    return read_prompt(f"{prompt_dir}/produce.txt")
 
 
-def add_prompt(prompt_dir: str, type: str) -> str:
-    return read_prompt(f"{prompt_dir}/{type}/add.txt")
+def add_prompt(prompt_dir: str) -> str:
+    return read_prompt(f"{prompt_dir}/add.txt")
 
 
-def rewrite_prompt(prompt_dir: str, type: str) -> str:
-    return read_prompt(f"{prompt_dir}/{type}/rewrite.txt")
+def rewrite_prompt(prompt_dir: str) -> str:
+    return read_prompt(f"{prompt_dir}/rewrite.txt")
 
 
-def ask_for_fixed_prompt(prompt_dir: str, type: str) -> str:
-    return read_prompt(f"{prompt_dir}/{type}/ask_for_fixed.txt")
+def ask_for_fixed_prompt(prompt_dir: str) -> str:
+    return read_prompt(f"{prompt_dir}/ask_for_fixed.txt")
 
 
 def ask_for_fixed_had_errors_prompt(prompt_dir: str) -> str:

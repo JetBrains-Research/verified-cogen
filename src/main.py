@@ -10,7 +10,7 @@ from helpers import pprint_stat, rename_file, tabulate_list
 from llm import LLM
 from modes import Mode, VALID_MODES
 from runners.invariants import InvariantRunner
-from runners.preconditions import PreconditionRunner
+from runners.generic import GenericRunner
 from verifier import Verifier
 
 if not os.path.exists("log"):
@@ -33,7 +33,7 @@ def get_args():
     )
     parser.add_argument(
         "--bench-type",
-        help="benchmark type, available: {invariants, preconditions}",
+        help="benchmark type, available: {invariants, generic}",
         default="invariants",
     )
     parser.add_argument("--temperature", help="model temperature", default=0, type=int)
@@ -69,13 +69,13 @@ def main():
         if "dafny" not in args.verifier_command:
             raise ValueError("Regex mode only works with Dafny verifier")
 
-        if args.bench_type == "preconditions":
+        if args.bench_type == "generic":
             raise ValueError("Regex mode only works with invariants")
 
     if args.input is None and args.dir is None:
         args.input = input("Input file: ").strip()
 
-    runner = InvariantRunner if args.bench_type == "invariants" else PreconditionRunner
+    runner = InvariantRunner if args.bench_type == "invariants" else GenericRunner
 
     verifier = Verifier(args.shell, args.verifier_command)
     if args.dir is not None:

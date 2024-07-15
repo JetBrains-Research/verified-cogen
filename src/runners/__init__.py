@@ -25,7 +25,8 @@ class Runner(ABC):
         ...
 
     @classmethod
-    def precheck(cls, prg: str, mode: Mode): ...
+    def precheck(cls, prg: str, mode: Mode):
+        pass
 
     @classmethod
     def __invoke(cls, logger: Logger, llm: LLM, prg: str, mode: Mode) -> str:
@@ -39,7 +40,7 @@ class Runner(ABC):
         return inv_prg
 
     @classmethod
-    def __try_fixing_inner(
+    def __try_fixing(
         cls,
         logger: Logger,
         verifier: Verifier,
@@ -47,7 +48,6 @@ class Runner(ABC):
         total_tries: int,
         inv_prg: str,
         name: str,
-        type: str,
     ) -> Optional[int]:
         tries = total_tries
         while tries > 0:
@@ -66,19 +66,8 @@ class Runner(ABC):
                 logger.info("Retrying...")
                 tries -= 1
                 if tries > 0:
-                    inv_prg = llm.ask_for_fixed(err_inv, type)
+                    inv_prg = llm.ask_for_fixed(err_inv)
         return None
-
-    @classmethod
-    def __try_fixing(
-        cls,
-        logger: Logger,
-        verifier: Verifier,
-        llm: LLM,
-        total_tries: int,
-        inv_prg: str,
-        name: str,
-    ): ...
 
     @classmethod
     def run_on_file(

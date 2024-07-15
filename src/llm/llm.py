@@ -51,29 +51,29 @@ class LLM:
         self.responses.append(response)
         return extract_code_from_llm_output(response)
 
-    def produce(self, prg, type: str):
+    def produce(self, prg):
         self.user_prompts.append(
-            prompts.produce_prompt(self.prompt_dir, type).format(program=prg)
+            prompts.produce_prompt(self.prompt_dir).format(program=prg)
         )
         return self._make_request()
 
-    def add(self, prg, checks: str, type: str):
+    def add(self, prg, checks: str):
         self.user_prompts.append(
-            prompts.add_prompt(self.prompt_dir, type).format(program=prg, checks=checks)
+            prompts.add_prompt(self.prompt_dir).format(program=prg, checks=checks)
         )
         return self._make_request()
 
-    def rewrite(self, prg, type: str):
+    def rewrite(self, prg: str):
         self.user_prompts.append(
-            prompts.rewrite_prompt(self.prompt_dir, type).format(program=prg)
+            prompts.rewrite_prompt(self.prompt_dir).format(program=prg)
         )
         return self._make_request()
 
-    def ask_for_fixed(self, err, type: str):
+    def ask_for_fixed(self, err: str):
         prompt = (
             prompts.ask_for_fixed_had_errors_prompt(self.prompt_dir)
             if self.had_errors
-            else prompts.ask_for_fixed_prompt(self.prompt_dir, type)
+            else prompts.ask_for_fixed_prompt(self.prompt_dir)
         )
         self.user_prompts.append(prompt.format(error=err))
         return self._make_request()

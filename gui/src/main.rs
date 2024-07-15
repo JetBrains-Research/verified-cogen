@@ -42,14 +42,14 @@ enum FileMode {
 enum BenchMode {
     #[default]
     Invariants,
-    Preconditions,
+    Generic,
 }
 
 impl Display for BenchMode {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             BenchMode::Invariants => write!(f, "invariants"),
-            BenchMode::Preconditions => write!(f, "preconditions"),
+            BenchMode::Generic => write!(f, "generic"),
         }
     }
 }
@@ -319,11 +319,7 @@ impl App {
                     BenchMode::Invariants,
                     "Invariants",
                 );
-                ui.radio_value(
-                    &mut self.settings.bench_type,
-                    BenchMode::Preconditions,
-                    "Preconditions",
-                );
+                ui.radio_value(&mut self.settings.bench_type, BenchMode::Generic, "Generic");
             });
             ui.horizontal(|ui| {
                 let max_rect = ui.max_rect();
