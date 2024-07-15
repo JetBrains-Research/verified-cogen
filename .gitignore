@@ -10,3 +10,4 @@ break_assert.rs
 .venv
 **/target
 log
+.ruff_cache
