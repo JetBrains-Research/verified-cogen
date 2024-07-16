@@ -1,3 +1,5 @@
+#![crate_name="barrier"]
+
 use vstd::prelude::*;
 
 verus! {

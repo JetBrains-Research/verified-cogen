@@ -1,3 +1,5 @@
+#![crate_name="binary_search_recursive"]
+
 /// warning: decreases checks in exec functions do not guarantee termination of functions with loops or of their callers
 ///  --> RustBench/ground_truth/binary_search_recursive.rs:5:1
 ///  |

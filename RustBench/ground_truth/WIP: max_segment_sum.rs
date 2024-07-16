@@ -1,3 +1,5 @@
+#![crate_name="max_segment_sum"]
+
 use vstd::prelude::*;
 
 verus! {
