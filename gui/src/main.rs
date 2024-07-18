@@ -79,7 +79,7 @@ enum LLMProfile {
 impl LLMProfile {
     fn as_grazie(&self) -> &str {
         match self {
-            LLMProfile::GPT4o => "gpt4o",
+            LLMProfile::GPT4o => "gpt-4o",
             LLMProfile::GPT4Turbo => "gpt-4-1106-preview",
             LLMProfile::Claude3Opus => "anthropic-claude-3-opus",
             LLMProfile::Claude35Sonnet => "anthropic-claude-3.5-sonnet",
