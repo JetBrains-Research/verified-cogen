@@ -1,9 +1,8 @@
-g#![crate_name = "two_way_sort"]
-
 use vstd::prelude::*;
 
 verus! {
 
+#[verifier::external_body]
 fn swap(a: &mut Vec<bool>, i: usize, j: usize)
     requires
         0 <= i < j < old(a).len(),
@@ -31,12 +30,6 @@ fn two_way_sort(a: &mut Vec<bool>)
     let mut i = 0isize;
     let mut j = a.len() as isize - 1;
     while i <= j
-        invariant
-            0 <= i <= j + 1 <= a.len(),
-            forall|k: int| 0 <= k < i ==> !a[k],
-            forall|k: int| j < k < a.len() ==> a[k],
-            a.len() == old(a).len(),
-            a@.to_multiset() == old(a)@.to_multiset(),
     {
         if !a[i as usize] {
             i = i + 1;
