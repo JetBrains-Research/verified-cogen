@@ -39,6 +39,12 @@ fn mcontained(v: &[i32], w: &[i32], n: usize, m: usize) -> (b: bool)
         }
         j = j + 1;
     }
+    assert(
+        forall|k: int| #![trigger v[k]] 
+            0 <= k < i ==> 
+                exists|l: int| #![trigger w[l]] 
+                    0 <= l < j && v[k] == w[l]
+    );
     i == n
 }
 

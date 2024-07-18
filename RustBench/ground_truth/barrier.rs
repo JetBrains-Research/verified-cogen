@@ -1,5 +1,3 @@
-#![crate_name="barrier"]
-
 use vstd::prelude::*;
 
 verus! {
@@ -10,7 +8,7 @@ fn barrier(arr: &[i32], p: usize) -> (result: bool)
         arr.len() > 0,
         0 <= p < arr.len(),
     ensures
-        result ==> forall|k: int, l: int| 0 <= k <= p && p < l < arr.len() ==> arr[k] < arr[l],
+        result == forall|k: int, l: int| 0 <= k <= p && p < l < arr.len() ==> arr[k] < arr[l],
 {
     let mut i = 1;
     let mut max: usize = 0;
@@ -26,17 +24,14 @@ fn barrier(arr: &[i32], p: usize) -> (result: bool)
         i = i + 1;
     }
 
-    assert(forall|k: int| 0 <= k <= p ==> arr[max as int] >= arr[k]);
-    assert(i == p + 1);
-
     let mut result = true;
     while i < arr.len()
         invariant
-            0 <= i <= arr.len(),
+            p < i <= arr.len(),
             forall|k: int| 0 <= k <= p ==> arr[max as int] >= arr[k],
-            result ==> forall|k: int, l: int| 0 <= k <= p && p < l < i ==> arr[k] < arr[l],
+            result == forall|k: int, l: int| 0 <= k <= p && p < l < i ==> arr[k] < arr[l],
     {
-        if arr[i] <= arr[max] {
+        if arr[max] >= arr[i] {
             result = false;
         }
         i = i + 1;
