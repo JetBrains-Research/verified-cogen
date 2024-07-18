@@ -1,11 +1,3 @@
-#![crate_name="binary_search_recursive"]
-
-/// warning: decreases checks in exec functions do not guarantee termination of functions with loops or of their callers
-///  --> RustBench/ground_truth/binary_search_recursive.rs:5:1
-///  |
-///  | fn binary_search_recursive(v: &[i32], elem: i32, c: isize, f: isize) -> (p: isize)
-///  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
 use vstd::prelude::*;
 
 verus! {
@@ -21,7 +13,7 @@ fn binary_search_recursive(v: &[i32], elem: i32, c: isize, f: isize) -> (p: isiz
         -1 <= p < v.len(),
         forall|u: int| 0 <= u <= p ==> v[u] <= elem,
         forall|w: int| p < w < v.len() ==> v[w] > elem,
-    decreases f - c
+    decreases f - c + 1
 {
     if c == f + 1 {
         return c as isize - 1;
