@@ -1,0 +1,35 @@
+from typing import cast, List, Dict, Set, Optional, Union
+from nagini_contracts.contracts import *
+
+def intersperse(numbers: List[int], delimiter: int) -> List[int]:
+    """
+    This function takes a list of integers and a delimiter integer,
+    then returns a new list where the delimiter is interspersed between each pair of integers.
+    """
+    Requires(Acc(list_pred(numbers)))
+    Ensures(Acc(list_pred(numbers)))
+    Ensures(Acc(list_pred(Result())))
+    Ensures(Implies(len(numbers) != 0, len(Result()) == len(numbers) * 2 - 1))
+    Ensures(Implies(len(numbers) == 0, len(Result()) == 0))
+    Ensures(Forall(range(len(Result())), lambda i: i % 2 == 1 or Result()[i] == numbers[i // 2]))
+    Ensures(Forall(range(len(Result())), lambda i: i % 2 == 0 or Result()[i] == delimiter))
+
+    res = []  # type: List[int]
+    if len(numbers) != 0:
+        i = 0
+        while i + 1 < len(numbers):
+            Invariant(Acc(list_pred(numbers)))
+            Invariant(Acc(list_pred(res)))
+            Invariant(0 <= i and i < len(numbers))
+            Invariant(len(res) == 2 * i)
+            Invariant(Forall(range(len(res)), lambda i: i % 2 == 1 or res[i] == numbers[i // 2]))
+            Invariant(Forall(range(len(res)), lambda i: i % 2 == 0 or res[i] == delimiter))
+            
+            res.append(numbers[i])
+            res.append(delimiter)
+            i += 1
+        
+        # Append the last element only
+        res.append(numbers[i])
+
+    return res

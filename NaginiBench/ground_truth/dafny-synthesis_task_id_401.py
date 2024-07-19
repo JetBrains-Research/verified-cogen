@@ -21,8 +21,6 @@ def IndexWiseAddition(a : List[List[int]], b : List[List[int]]) -> List[List[int
     Ensures(Forall(int, lambda d_0_i_:
         Implies(((0) <= (d_0_i_)) and ((d_0_i_) < (len(a))), (len((a)[d_0_i_])) == (len((b)[d_0_i_])))))
     Ensures(Forall(int, lambda a0:  Implies(a0 >= 0 and a0 < len(Result()), Acc(list_pred(Result()[a0])))))
-    # Ensures(Forall(List[int], lambda r0: Implies(r0 in Result(), Acc(list_pred(r0)))))
-    # Ensures((lambda lst : List[List[int]] : Forall(lst, lambda i: Acc(list_pred(i))))(Result()))
     Ensures(Forall(int, lambda d_1_i_:
         Implies(((0) <= (d_1_i_)) and ((d_1_i_) < (len(Result()))), (len((Result())[d_1_i_])) == (len((a)[d_1_i_])))))
     Ensures(Forall(int, lambda d_2_i_:
@@ -64,6 +62,11 @@ def IndexWiseAddition(a : List[List[int]], b : List[List[int]]) -> List[List[int
             Invariant((len(a)) == (len(b)))
             Invariant(Forall(int, lambda d_0_i_:
                 Implies(((0) <= (d_0_i_)) and ((d_0_i_) < (len(a))), (len((a)[d_0_i_])) == (len((b)[d_0_i_])))))
+            Invariant(Forall(int, lambda d_1_i_:
+                Implies(((0) <= (d_1_i_)) and ((d_1_i_) < (len(result))), (len((result)[d_1_i_])) == (len((a)[d_1_i_])))))
+            Invariant(Forall(int, lambda d_9_k_:
+                Implies(((0) <= (d_9_k_)) and ((d_9_k_) < (d_4_i_)), Forall(int, lambda d_10_j_:
+                    Implies(((0) <= (d_10_j_)) and ((d_10_j_) < (len((result)[d_9_k_]))), (((result)[d_9_k_])[d_10_j_]) == ((((a)[d_9_k_])[d_10_j_]) + (((b)[d_9_k_])[d_10_j_])))))))
             Invariant(Forall(int, lambda d_7_k_:
                 Implies(((0) <= (d_7_k_)) and ((d_7_k_) < (d_6_j_)), ((d_5_subResult_)[d_7_k_]) == ((((a)[d_4_i_])[d_7_k_]) + (((b)[d_4_i_])[d_7_k_])))))
             d_5_subResult_ = (d_5_subResult_) + [a[d_4_i_][d_6_j_] + b[d_4_i_][d_6_j_]]
