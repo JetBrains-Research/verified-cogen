@@ -21,7 +21,6 @@ def replace(v : List[int], x : int, y : int) -> None:
             Implies(((d_2_i_) <= (d_4_k_)) and ((d_4_k_) < (len((v)))), ((v)[d_4_k_]) == (Old((v)[d_4_k_])))))
         Invariant(Forall(int, lambda d_5_k_:
             Implies((((0) <= (d_5_k_)) and ((d_5_k_) < (d_2_i_))) and ((Old((v)[d_5_k_])) != (x)), ((v)[d_5_k_]) == (Old((v)[d_5_k_])))))
-        #decreases v.Length - i
         if ((v)[d_2_i_]) == (x):
             (v)[(d_2_i_)] = y
         d_2_i_ = (d_2_i_) + (1)

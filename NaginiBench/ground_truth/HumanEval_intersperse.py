@@ -2,10 +2,6 @@ from typing import cast, List, Dict, Set, Optional, Union
 from nagini_contracts.contracts import *
 
 def intersperse(numbers: List[int], delimiter: int) -> List[int]:
-    """
-    This function takes a list of integers and a delimiter integer,
-    then returns a new list where the delimiter is interspersed between each pair of integers.
-    """
     Requires(Acc(list_pred(numbers)))
     Ensures(Acc(list_pred(numbers)))
     Ensures(Acc(list_pred(Result())))

@@ -33,8 +33,6 @@ def mcontained(v : List[int], w : List[int], n : int, m : int) -> bool:
         Invariant(Forall(int, lambda d_5_k_:
             Implies(((0) <= (d_5_k_)) and ((d_5_k_) < (d_3_i_)), ((v)[d_5_k_]) in (list((w)[:d_4_j_:])))))
         Invariant(not ((d_3_i_) < (n)) or (not(((v)[d_3_i_]) in w)))
-        #decreases w.Length - j
-        #decreases v.Length - i
         if ((v)[d_3_i_]) == ((w)[d_4_j_]):
             d_3_i_ = (d_3_i_) + (1)
         d_4_j_ = (d_4_j_) + (1)

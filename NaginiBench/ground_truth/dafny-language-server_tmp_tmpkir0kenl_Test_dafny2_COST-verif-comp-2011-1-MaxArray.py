@@ -21,7 +21,6 @@ def max(a : List[int]) -> int:
             Implies(((0) <= (d_3_i_)) and ((d_3_i_) < (x)), ((a)[d_3_i_]) <= ((a)[d_2_m_]))))
         Invariant(Forall(int, lambda d_4_i_:
             Implies(((d_1_y_) < (d_4_i_)) and ((d_4_i_) < (len((a)))), ((a)[d_4_i_]) <= ((a)[d_2_m_]))))
-        #decreases if x <= y then y - x else x - y
         if ((a)[x]) <= ((a)[d_1_y_]):
             x = (x) + (1)
             d_2_m_ = d_1_y_

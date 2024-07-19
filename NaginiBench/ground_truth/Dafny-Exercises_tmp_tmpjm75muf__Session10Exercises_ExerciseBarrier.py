@@ -22,7 +22,6 @@ def barrier(v : List[int], p : int) -> bool:
         Invariant(((0) <= (d_3_max_)) and ((d_3_max_) < (d_2_i_)))
         Invariant(Forall(int, lambda d_4_k_:
             Implies(((0) <= (d_4_k_)) and ((d_4_k_) < (d_2_i_)), ((v)[d_3_max_]) >= ((v)[d_4_k_]))))
-        #decreases p - i
         if ((v)[d_2_i_]) > ((v)[d_3_max_]):
             d_3_max_ = d_2_i_
         d_2_i_ = (d_2_i_) + (1)
@@ -35,7 +34,6 @@ def barrier(v : List[int], p : int) -> bool:
             Implies(((0) <= (d_5_k_)) and ((d_5_k_) <= (p)), ((v)[d_5_k_]) <= ((v)[d_3_max_]))))
         Invariant(Forall(int, lambda d_6_k_:
             Implies(((p) < (d_6_k_)) and ((d_6_k_) < (d_2_i_)), ((v)[d_6_k_]) > ((v)[d_3_max_]))))
-        #decreases v.Length - i
         d_2_i_ = (d_2_i_) + (1)
     b = (d_2_i_) == (len((v)))
     return b
