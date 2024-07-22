@@ -1,0 +1,4 @@
+Given the following Rust program, output Verus preconditions that should go into the function.
+Ensure that the preconditions are as comprehensive as they can be.
+The program:
+{program}

@@ -1,0 +1,2 @@
+Given the following dafny program, output invariants that should go into the `while` loop:
+{program}

@@ -1,0 +1,6 @@
+Given the following Python program, output Nagini invariants that should go into the `while` loop.
+Ensure that the invariants are as comprehensive as they can be.
+Even if you think some invariant is not totally necessary, better add it than not.
+Don't add any additional text comments, your response must contain only program with invariants.
+The program:
+{program}
