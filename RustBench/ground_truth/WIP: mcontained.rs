@@ -1,4 +1,4 @@
-#![crate_name="mcontained"]
+#![crate_name = "mcontained"]
 
 use vstd::prelude::*;
 
@@ -10,13 +10,13 @@ spec fn strict_sorted(arr: &[i32]) -> bool {
 
 #[verifier::loop_isolation(false)]
 fn mcontained(v: &[i32], w: &[i32], n: usize, m: usize) -> (b: bool)
-    requires 
+    requires
         n <= m && n>= 0,
         strict_sorted(v),
         strict_sorted(w),
         v.len() >= n && w.len() >= m
-    ensures 
-        b ==> (forall|k: int| #![trigger v[k]] 
+    ensures
+        b ==> (forall|k: int| #![trigger v[k]]
             0 <= k < n ==> (
                 exists|j: int| #![trigger w[j]]
                 0 <= j < m && v[k] == w[j]
@@ -28,9 +28,9 @@ fn mcontained(v: &[i32], w: &[i32], n: usize, m: usize) -> (b: bool)
         invariant
             0 <= i <= n,
             0 <= j <= m,
-            forall|k: int| #![trigger v[k]] 
-                0 <= k < i ==> 
-                    exists|l: int| #![trigger w[l]] 
+            forall|k: int| #![trigger v[k]]
+                0 <= k < i ==>
+                    exists|l: int| #![trigger w[l]]
                         0 <= l < j && v[k] == w[l],
             i < n ==> forall|k: int| 0 <= k < j ==> v[i as int] != w[k],
     {
@@ -39,7 +39,7 @@ fn mcontained(v: &[i32], w: &[i32], n: usize, m: usize) -> (b: bool)
         }
         j = j + 1;
     }
-    assert forall|k: int| #![trigger v[k]] 0 <= k < i 
+    assert forall|k: int| #![trigger v[k]] 0 <= k < i
         implies exists|l: int| #![trigger w[l]] 0 <= l < j && v[k] == w[l] by {
         let my_l = choose|l| 0 <= l < j && v[k] == w[l];
     };
