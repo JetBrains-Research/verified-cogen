@@ -2,3 +2,14 @@
 __pycache__
 data
 llm-generated
+.envrc
+**/.DS_Store
+pyrightconfig.json
+/DafnyBench/
+break_assert.rs
+.venv
+**/target
+log
+.ruff_cache
+.vscode
+run.sh
