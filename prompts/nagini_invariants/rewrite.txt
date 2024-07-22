@@ -1,0 +1,7 @@
+Rewrite the following Python program, adding correct Nagini invariants into `while` loops.
+Do not change the code, only add the invariants.
+Ensure that the invariants are as comprehensive as they can be.
+Even if you think some invariant is not totally necessary, better add it than not.
+Don't add any additional text comments, your response must contain only program with invariants.
+The program:
+{program}
