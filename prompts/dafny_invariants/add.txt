@@ -3,4 +3,4 @@ The program:
 {program}
 –
 The invariants:
-{invariants}
+{checks}

@@ -11,3 +11,5 @@ break_assert.rs
 **/target
 log
 .ruff_cache
+.vscode
+run.sh
