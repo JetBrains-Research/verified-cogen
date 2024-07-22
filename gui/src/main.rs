@@ -10,6 +10,8 @@ use std::{
     sync::{atomic::AtomicBool, Arc, RwLock},
 };
 
+use serde::{Deserialize, Serialize};
+
 use helpers::{basename, extension, run_on_directory, run_on_file};
 
 fn main() -> eframe::Result {
@@ -27,18 +29,27 @@ fn main() -> eframe::Result {
     eframe::run_native(
         "Verified codegen",
         options,
-        Box::new(|_cc| Ok(Box::<App>::default())),
+        Box::new(|cc| {
+            let state: AppState = cc
+                .storage
+                .and_then(|storage| {
+                    let state = storage.get_string("app_state_json")?;
+                    serde_json::from_str(&state).ok()
+                })
+                .unwrap_or_default();
+            Ok(Box::new(state))
+        }),
     )
 }
 
-#[derive(Debug, Clone, PartialEq, Default)]
+#[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize)]
 enum FileMode {
     #[default]
     SingleFile,
     Directory,
 }
 
-#[derive(Debug, Clone, PartialEq, Default)]
+#[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize)]
 enum BenchMode {
     #[default]
     Invariants,
@@ -54,8 +65,8 @@ impl Display for BenchMode {
     }
 }
 
-#[derive(Default)]
-struct App {
+#[derive(Default, Serialize, Deserialize)]
+struct AppState {
     settings: Settings,
     file_mode: FileMode,
     path: Option<PathBuf>,
@@ -68,7 +79,7 @@ struct App {
     log: Arc<RwLock<Option<String>>>,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 enum LLMProfile {
     GPT4o,
     GPT4Turbo,
@@ -107,7 +118,7 @@ impl Display for LLMProfile {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 struct Settings {
     grazie_token: String,
     llm_profile: LLMProfile,
@@ -132,7 +143,7 @@ impl Default for Settings {
     }
 }
 
-impl eframe::App for App {
+impl eframe::App for AppState {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         egui::CentralPanel::default().show(ctx, |ui| {
             let panel_height = ui.max_rect().height();
@@ -158,9 +169,14 @@ impl eframe::App for App {
             });
         });
     }
+
+    fn save(&mut self, storage: &mut dyn eframe::Storage) {
+        let state = serde_json::to_string(self).expect("Failed to serialize state");
+        storage.set_string("app_state_json", state);
+    }
 }
 
-impl App {
+impl AppState {
     fn run(&mut self) {
         let running = Arc::clone(&self.running);
         let output = Arc::clone(&self.output);
