@@ -75,6 +75,7 @@ struct AppState {
     token_hovered: bool,
     running: Arc<AtomicBool>,
     last_verified_code: Arc<RwLock<Option<String>>>,
+    last_verified_extension: Arc<RwLock<Option<String>>>,
     output: Arc<RwLock<Option<(String, String)>>>,
     log: Arc<RwLock<Option<String>>>,
 }
@@ -181,6 +182,7 @@ impl AppState {
         let running = Arc::clone(&self.running);
         let output = Arc::clone(&self.output);
         let last_verified_code = Arc::clone(&self.last_verified_code);
+        let last_verified_ext = Arc::clone(&self.last_verified_extension);
 
         let settings = self.settings.clone();
         let file_mode = self.file_mode.clone();
@@ -196,6 +198,7 @@ impl AppState {
             match file_mode {
                 FileMode::SingleFile => {
                     if let Some(path) = path {
+                        let extension = extension(&path);
                         if let Some(path) = path.to_str() {
                             let py_output = run_on_file(path, &settings);
                             if let Ok(mut output) = output.write() {
@@ -210,6 +213,10 @@ impl AppState {
                             if let Ok(mut last_verified_code) = last_verified_code.write() {
                                 *last_verified_code = llm_code;
                             }
+
+                            if let Ok(mut last_verified_extension) = last_verified_ext.write() {
+                                *last_verified_extension = Some(String::from(extension));
+                            }
                         }
                     }
                 }
@@ -223,6 +230,10 @@ impl AppState {
 
                             if let Ok(mut last_verified_code) = last_verified_code.write() {
                                 *last_verified_code = None;
+                            }
+
+                            if let Ok(mut last_verified_extension) = last_verified_ext.write() {
+                                *last_verified_extension = None;
                             }
                         }
                     }
@@ -491,17 +502,19 @@ impl AppState {
                         });
 
                         if let Ok(code) = self.last_verified_code.read() {
-                            if let Some(code) = code.as_ref() {
-                                let path =
-                                    self.path.as_ref().expect("Code and path should be in sync");
-                                ui.separator();
-                                ui.heading("Last verified code:");
-                                ui.push_id("llm-code", |ui| {
-                                    egui::ScrollArea::vertical().show(ui, |ui| {
-                                        ui.set_min_width(output_width);
-                                        paint_code(ui, code, extension(path));
-                                    });
-                                });
+                            if let Ok(ext) = self.last_verified_extension.read() {
+                                if let Some(code) = code.as_ref() {
+                                    if let Some(ext) = ext.as_ref() {
+                                        ui.separator();
+                                        ui.heading("Last verified code:");
+                                        ui.push_id("llm-code", |ui| {
+                                            egui::ScrollArea::vertical().show(ui, |ui| {
+                                                ui.set_min_width(output_width);
+                                                paint_code(ui, code, ext);
+                                            });
+                                        });
+                                    }
+                                }
                             }
                         }
                     }
