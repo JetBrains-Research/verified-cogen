@@ -2,12 +2,11 @@ from typing import Optional
 
 from grazie.api.client.chat.prompt import ChatPrompt
 from grazie.api.client.endpoints import GrazieApiGatewayUrls
-from grazie.api.client.gateway import AuthType, GrazieApiGatewayClient, GrazieHeaders
+from grazie.api.client.gateway import AuthType, GrazieApiGatewayClient
 from grazie.api.client.llm_parameters import LLMParameters
 from grazie.api.client.parameters import Parameters
 from grazie.api.client.profiles import Profile
 from verified_cogen.tools import extract_code_from_llm_output
-from verified_cogen.tools.modes import Mode
 import verified_cogen.llm.prompts as prompts
 
 

@@ -1,6 +1,5 @@
 import pathlib
 import re
-import textwrap
 import appdirs
 
 

@@ -1,11 +1,8 @@
 import logging
 import re
 import textwrap
-from logging import Logger
-from typing import Optional
 
 from verified_cogen.tools.modes import Mode
-from verified_cogen.tools.verifier import Verifier
 
 from verified_cogen.llm import LLM
 from verified_cogen.runners import Runner

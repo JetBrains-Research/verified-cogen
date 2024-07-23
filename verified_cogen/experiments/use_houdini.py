@@ -3,12 +3,10 @@ import json
 import logging
 import os
 
-from verified_cogen.tools.modes import Mode
 from typing import Optional
 from verified_cogen.tools.verifier import Verifier
 
 from verified_cogen.llm import LLM
-from verified_cogen.runners.invariants import InvariantRunner
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger(__name__)
@@ -103,11 +101,11 @@ def houdini(
     while len(invariants) > 0:
         reset_llm(llm)
         prg_with_invariants = llm.add(prg, "\n".join(invariants))
-        with open(f"llm-generated/collected.rs", "w") as f:
+        with open("llm-generated/collected.rs", "w") as f:
             f.write(prg_with_invariants)
 
         log.info(f"Trying to verify with {json.dumps(invariants, indent=2)}")
-        (verified, out, err) = verifier.verify(f"llm-generated/collected.rs")
+        (verified, out, err) = verifier.verify("llm-generated/collected.rs")
         if verified:
             return invariants
         else:
