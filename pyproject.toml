@@ -1,0 +1,36 @@
+[tool.poetry]
+name = "verified-cogen"
+version = "0.1.0"
+description = "Verify code using LLMs"
+authors = ["JetBrains Research"]
+readme = "README.md"
+
+[tool.poetry.scripts]
+verified-cogen = "verified_cogen.main:main"
+
+[tool.isort]
+profile = "black"
+src_paths = ["verified_cogen"]
+
+[[tool.poetry.source]]
+name = "PyPI"
+priority = "primary"
+
+[[tool.poetry.source]]
+name = "grazie"
+url = "https://packages.jetbrains.team/pypi/p/grazi/jetbrains-ai-platform-public/simple"
+priority = "supplemental"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+tqdm = "^4.66.4"
+grazie-api-gateway-client = "^0.1.3"
+
+[tool.poetry.group.dev.dependencies]
+isort = "^5.10.1"
+ruff = "^0.5.4"
+pytest = "^8.3.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

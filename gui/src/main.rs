@@ -123,6 +123,8 @@ struct Settings {
     grazie_token: String,
     llm_profile: LLMProfile,
     verifier_command: String,
+    generate_command: String,
+    use_poetry: bool,
     prompts_directory: String,
     tries: String,
     retries: String,
@@ -135,9 +137,11 @@ impl Default for Settings {
             grazie_token: std::env::var("GRAZIE_JWT_TOKEN").unwrap_or_default(),
             llm_profile: LLMProfile::GPT4o,
             verifier_command: std::env::var("VERIFIER_COMMAND").unwrap_or_default(),
+            generate_command: String::from("verified-cogen"),
+            use_poetry: std::env::var("USE_POETRY").unwrap_or_default() == "1",
             prompts_directory: std::env::var("PROMPTS_DIRECTORY").unwrap_or_default(),
-            tries: "1".to_string(),
-            retries: "0".to_string(),
+            tries: String::from("1"),
+            retries: String::from("0"),
             bench_type: BenchMode::Invariants,
         }
     }
@@ -345,6 +349,18 @@ impl AppState {
                         .hint_text("Enter the verifier command"),
                 );
             });
+        });
+
+        ui.label("Generate code: ");
+        ui.columns(2, |cols| {
+            let [left_ui, right_ui] = cols else { return };
+
+            left_ui.add(
+                TextEdit::singleline(&mut self.settings.generate_command)
+                    .hint_text("Enter the command to generate code"),
+            );
+
+            right_ui.checkbox(&mut self.settings.use_poetry, "Use poetry");
         });
     }
 
