@@ -25,6 +25,7 @@ priority = "supplemental"
 python = "^3.9"
 tqdm = "^4.66.4"
 grazie-api-gateway-client = "^0.1.3"
+appdirs = "^1.4.4"
 
 [tool.poetry.group.dev.dependencies]
 isort = "^5.10.1"

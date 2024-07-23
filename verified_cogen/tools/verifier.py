@@ -1,3 +1,4 @@
+from pathlib import Path
 import subprocess
 
 
@@ -6,7 +7,7 @@ class Verifier:
         self.shell = shell
         self.verifier_cmd = verifier_cmd
 
-    def verify(self, file_path: str) -> tuple[bool, str, str]:
+    def verify(self, file_path: Path) -> tuple[bool, str, str]:
         res = subprocess.run(
             '{} -i -l -c "{} {}"; exit'.format(
                 self.shell, self.verifier_cmd, file_path

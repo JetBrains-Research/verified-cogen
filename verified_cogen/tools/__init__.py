@@ -1,6 +1,11 @@
 import pathlib
 import re
 import textwrap
+import appdirs
+
+
+def get_cache_dir():
+    return appdirs.user_cache_dir("verified-cogen", "jetbrains.research")
 
 
 def basename(path: str):

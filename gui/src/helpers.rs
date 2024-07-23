@@ -59,8 +59,6 @@ pub fn run_on_file(file: &str, settings: &Settings) -> (String, String) {
     let mut command = compose_command(settings);
     add_common_arguments(&mut command, &settings.grazie_token, settings);
 
-    dbg!(&command);
-
     let output = command
         .args(["-i", file])
         .output()

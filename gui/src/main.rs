@@ -10,9 +10,14 @@ use std::{
     sync::{atomic::AtomicBool, Arc, RwLock},
 };
 
+use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
 
 use helpers::{basename, extension, run_on_directory, run_on_file};
+
+static APP_DIRS: Lazy<directories::ProjectDirs> = Lazy::new(|| {
+    directories::ProjectDirs::from("", "", "verified-cogen").expect("Failed to get app directories")
+});
 
 fn main() -> eframe::Result {
     env_logger::init();
@@ -21,10 +26,13 @@ fn main() -> eframe::Result {
         ..Default::default()
     };
 
-    if !std::path::Path::new("log").exists() {
-        std::fs::create_dir("log").expect("Failed to create log directory");
+    let log_dir = APP_DIRS.cache_dir().join("log");
+    eprintln!("{log_dir:?}");
+
+    if !log_dir.exists() {
+        std::fs::create_dir_all(&log_dir).expect("Failed to create log directory");
     }
-    _ = File::create("log/llm.log").expect("Failed to create log file");
+    _ = File::create(log_dir.join("llm.log")).expect("Failed to create log file");
 
     eframe::run_native(
         "Verified codegen",
@@ -196,7 +204,8 @@ impl AppState {
             if let Ok(mut output) = output.write() {
                 *output = None;
             }
-            File::create("log/llm.log").expect("Failed to clean log file");
+            let log_dir = APP_DIRS.cache_dir().join("log");
+            File::create(log_dir.join("log.txt")).expect("Failed to clean log file");
             match file_mode {
                 FileMode::SingleFile => {
                     if let Some(path) = path {
@@ -206,11 +215,11 @@ impl AppState {
                                 *output = Some(py_output);
                             }
 
-                            let llm_code = std::fs::read_to_string(format!(
-                                "llm-generated/{}",
-                                basename(path),
-                            ))
-                            .ok();
+                            let llm_generated_path = APP_DIRS
+                                .cache_dir()
+                                .join("llm-generated")
+                                .join(basename(path));
+                            let llm_code = std::fs::read_to_string(llm_generated_path).ok();
                             if let Ok(mut last_verified_code) = last_verified_code.write() {
                                 *last_verified_code = llm_code;
                             }
@@ -248,8 +257,9 @@ impl AppState {
         let running = Arc::clone(&self.running);
         let log = Arc::clone(&self.log);
         _ = std::thread::spawn(move || {
+            let log_file = APP_DIRS.cache_dir().join("log").join("llm.log");
             while running.load(std::sync::atomic::Ordering::SeqCst) {
-                let log_output = std::fs::read_to_string("log/llm.log").unwrap_or_default();
+                let log_output = std::fs::read_to_string(&log_file).unwrap_or_default();
                 if let Ok(mut log) = log.write() {
                     *log = Some(log_output);
                 }

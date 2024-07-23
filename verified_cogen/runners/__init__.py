@@ -1,12 +1,14 @@
-import os
 from abc import ABC, abstractmethod
 from logging import Logger
 from typing import Optional
+import pathlib
 
-from verified_cogen.tools import basename
+from verified_cogen.tools import basename, get_cache_dir
 from verified_cogen.tools.modes import Mode
 from verified_cogen.tools.verifier import Verifier
 from verified_cogen.llm import LLM
+
+LLM_GENERATED_DIR = pathlib.Path(get_cache_dir()) / "llm-generated"
 
 
 class Runner(ABC):
@@ -52,9 +54,8 @@ class Runner(ABC):
     ) -> Optional[int]:
         tries = total_tries
         while tries > 0:
-            if not os.path.exists("llm-generated"):
-                os.mkdir("llm-generated")
-            output = f"llm-generated/{name}"
+            LLM_GENERATED_DIR.mkdir(parents=True, exist_ok=True)
+            output = LLM_GENERATED_DIR / name
             with open(output, "w") as f:
                 f.write(inv_prg)
             verified_inv, out_inv, err_inv = verifier.verify(output)
@@ -82,7 +83,7 @@ class Runner(ABC):
     ) -> Optional[int]:
         logger.info(f"Running on {file}")
 
-        verified, out, err = verifier.verify(file)
+        verified, out, err = verifier.verify(pathlib.Path(file))
         if verified:
             return 0
 
