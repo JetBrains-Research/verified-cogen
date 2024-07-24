@@ -42,15 +42,19 @@ fn main() -> eframe::Result {
         "Verified codegen",
         options,
         Box::new(|cc| {
-            let state: AppState = should_restore()
+            let settings = should_restore()
                 .then(|| {
                     cc.storage.and_then(|storage| {
-                        let state = storage.get_string("app_state_json")?;
-                        serde_json::from_str(&state).ok()
+                        let settings = storage.get_string("settings_json")?;
+                        serde_json::from_str(&settings).ok()
                     })
                 })
                 .flatten()
                 .unwrap_or_default();
+            let state = AppState {
+                settings,
+                ..Default::default()
+            };
             Ok(Box::new(state))
         }),
     )
@@ -79,7 +83,7 @@ impl Display for BenchMode {
     }
 }
 
-#[derive(Default, Serialize, Deserialize)]
+#[derive(Default)]
 struct AppState {
     settings: Settings,
     file_mode: FileMode,
@@ -190,8 +194,8 @@ impl eframe::App for AppState {
     }
 
     fn save(&mut self, storage: &mut dyn eframe::Storage) {
-        let state = serde_json::to_string(self).expect("Failed to serialize state");
-        storage.set_string("app_state_json", state);
+        let settings = serde_json::to_string(&self.settings).expect("Failed to serialize settings");
+        storage.set_string("settings_json", settings);
     }
 }
 
@@ -330,12 +334,15 @@ impl AppState {
                         self.files = Some(
                             std::fs::read_dir(&dir)
                                 .expect("Failed to read directory content")
-                                .map(|entry| {
-                                    entry
-                                        .expect("Failed to read directory entry")
-                                        .path()
-                                        .to_string_lossy()
-                                        .to_string()
+                                .filter_map(|entry| {
+                                    let path =
+                                        entry.expect("Failed to read directory entry").path();
+                                    let s = path.to_string_lossy().to_string();
+                                    let is_hidden = path
+                                        .file_name()
+                                        .map(|name| name.to_string_lossy().starts_with('.'))
+                                        .unwrap_or(true);
+                                    (!is_hidden).then_some(s)
                                 })
                                 .collect(),
                         );

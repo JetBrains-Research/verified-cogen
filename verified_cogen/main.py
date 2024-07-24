@@ -15,10 +15,65 @@ from verified_cogen.tools.verifier import Verifier
 logger = logging.getLogger(__name__)
 
 
+def run_once(args, runner, verifier, mode, is_once) -> tuple[int, int, int]:
+    success, success_zero_tries, failed = [], [], []
+
+    files = list(pathlib.Path(args.dir).glob("**/*"))
+    print(files)
+    for file in tqdm(files):
+        llm = LLM(
+            args.grazie_token,
+            args.llm_profile,
+            args.prompts_directory,
+            args.temperature,
+        )
+
+        retries = args.retries + 1
+        tries = None
+        while retries > 0 and tries is None:
+            tries = runner.run_on_file(
+                logger, verifier, mode, llm, args.tries, str(file)
+            )
+            retries -= 1
+
+        name = rename_file(file)
+        if tries == 0:
+            logger.info(f"{name} verified without modification")
+            success_zero_tries.append(name)
+        elif tries is not None:
+            logger.info(f"{name} verified with modification")
+            success.append(name)
+        else:
+            logger.error(f"{name} failed")
+            failed.append(name)
+
+    if is_once:
+        if args.output_style == "full":
+            success_zero_tries_tabbed = tabulate_list(success_zero_tries)
+            success_tabbed = tabulate_list(success)
+            failed_tabbed = tabulate_list(failed)
+            if len(success_zero_tries) > 0:
+                print(f"Verified without modification: {success_zero_tries_tabbed}")
+            if len(success) > 0:
+                print(f"Verified with modification: {success_tabbed}")
+            if len(failed) > 0:
+                print(f"Failed: {failed_tabbed}")
+
+        pprint_stat(
+            "Verified without modification", len(success_zero_tries), len(files)
+        )
+        pprint_stat("Verified with modification", len(success), len(files))
+        pprint_stat("Failed", len(failed), len(files))
+
+    return len(success_zero_tries), len(success), len(failed)
+
+
 def get_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("-i", "--input", help="input file", required=False)
     parser.add_argument("-d", "--dir", help="directory to run on", required=False)
+
+    parser.add_argument("-r", "--runs", help="number of runs", default=1, type=int)
 
     parser.add_argument(
         "--insert-conditions-mode",
@@ -73,53 +128,19 @@ def main():
 
     verifier = Verifier(args.shell, args.verifier_command)
     if args.dir is not None:
-        success, success_zero_tries, failed = [], [], []
+        if args.runs == 1:
+            run_once(args, runner, verifier, mode, is_once=True)
+        else:
+            success_zero_tries, success, failed = 0, 0, 0
+            for _ in range(args.runs):
+                s0, s, f = run_once(args, runner, verifier, mode, is_once=False)
+                success_zero_tries += s0
+                success += s
+                failed += f
 
-        files = list(pathlib.Path(args.dir).glob("**/*.rs"))
-        for file in tqdm(files):
-            llm = LLM(
-                args.grazie_token,
-                args.llm_profile,
-                args.prompts_directory,
-                args.temperature,
-            )
-
-            retries = args.retries + 1
-            tries = None
-            while retries > 0 and tries is None:
-                tries = runner.run_on_file(
-                    logger, verifier, mode, llm, args.tries, str(file)
-                )
-                retries -= 1
-
-            name = rename_file(file)
-            if tries == 0:
-                logger.info(f"{name} verified without modification")
-                success_zero_tries.append(name)
-            elif tries is not None:
-                logger.info(f"{name} verified with modification")
-                success.append(name)
-            else:
-                logger.error(f"{name} failed")
-                failed.append(name)
-
-        if args.output_style == "full":
-            success_zero_tries_tabbed = tabulate_list(success_zero_tries)
-            success_tabbed = tabulate_list(success)
-            failed_tabbed = tabulate_list(failed)
-            if len(success_zero_tries) > 0:
-                print(f"Verified without modification: {success_zero_tries_tabbed}")
-            if len(success) > 0:
-                print(f"Verified with modification: {success_tabbed}")
-            if len(failed) > 0:
-                print(f"Failed: {failed_tabbed}")
-
-        pprint_stat(
-            "Verified without modification", len(success_zero_tries), len(files)
-        )
-        pprint_stat("Verified with modification", len(success), len(files))
-        pprint_stat("Failed", len(failed), len(files))
-
+            pprint_stat("Verified without modification", success_zero_tries, args.runs)
+            pprint_stat("Verified with modification", success, args.runs)
+            pprint_stat("Failed", failed, args.runs)
     else:
         llm = LLM(
             args.grazie_token,
