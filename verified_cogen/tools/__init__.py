@@ -15,8 +15,8 @@ def rename_file(file: pathlib.Path) -> str:
     return " ".join(file.stem.split("_")).title()
 
 
-def pprint_stat(name: str, stat: int, total: int):
-    print(f"{name}: {stat} ({stat / total * 100:.2f}%)")
+def pprint_stat(name: str, stat: int, total: int, runs=1):
+    print(f"{name}: {stat / runs} ({stat / (total * runs) * 100:.2f}%)")
 
 
 def tabulate_list(lst: list):

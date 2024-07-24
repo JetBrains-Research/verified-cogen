@@ -148,6 +148,7 @@ struct Settings {
     tries: String,
     retries: String,
     bench_type: BenchMode,
+    runs: String,
 }
 
 impl Default for Settings {
@@ -162,6 +163,7 @@ impl Default for Settings {
             tries: String::from("1"),
             retries: String::from("0"),
             bench_type: BenchMode::Invariants,
+            runs: String::from("1"),
         }
     }
 }
@@ -259,10 +261,6 @@ impl AppState {
                                 if let Ok(mut output) = output.write() {
                                     *output = Some(py_output);
                                 }
-                            }
-
-                            if let Ok(mut last_verified_extension) = last_verified_ext.write() {
-                                *last_verified_extension = Some(String::from(extension));
                             }
                         }
                     }
@@ -470,12 +468,19 @@ impl AppState {
             });
             ui.horizontal(|ui| {
                 let max_rect = ui.max_rect();
-                let size = [max_rect.width() / 3.0, max_rect.height()];
+                let is_dir_mode = matches!(self.file_mode, FileMode::Directory);
+                let div = if is_dir_mode { 5.0 } else { 3.0 };
+                let size = [max_rect.width() / div, max_rect.height()];
                 ui.label("Tries: ");
                 integer_edit_field(ui, "Tries", &mut self.settings.tries, size);
 
                 ui.label("Retries: ");
                 integer_edit_field(ui, "Retries", &mut self.settings.retries, size);
+
+                if is_dir_mode {
+                    ui.label("Runs: ");
+                    integer_edit_field(ui, "Retries", &mut self.settings.runs, size);
+                }
             });
         });
     }

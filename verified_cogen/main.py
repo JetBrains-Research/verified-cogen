@@ -127,7 +127,6 @@ def main():
     verifier = Verifier(args.shell, args.verifier_command)
     if args.dir is not None:
         files = list(pathlib.Path(args.dir).glob("[!.]*"))
-        print(files)
 
         if args.runs == 1:
             run_once(files, args, runner, verifier, mode, is_once=True)
@@ -139,9 +138,14 @@ def main():
                 success += s
                 failed += f
 
-            pprint_stat("Verified without modification", success_zero_tries, args.runs)
-            pprint_stat("Verified with modification", success, args.runs)
-            pprint_stat("Failed", failed, args.runs)
+            pprint_stat(
+                "Verified without modification",
+                success_zero_tries,
+                len(files),
+                args.runs,
+            )
+            pprint_stat("Verified with modification", success, len(files), args.runs)
+            pprint_stat("Failed", failed, len(files), args.runs)
     else:
         llm = LLM(
             args.grazie_token,

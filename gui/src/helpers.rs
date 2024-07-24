@@ -75,6 +75,7 @@ pub fn run_on_directory(directory: &str, settings: &Settings) -> (String, String
 
     let output = command
         .args(["-d", directory])
+        .args(["--runs", &settings.runs])
         .output()
         .expect("Failed to run python to add information");
 
