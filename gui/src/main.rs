@@ -86,7 +86,6 @@ impl Display for BenchMode {
 #[derive(Default)]
 struct AppState {
     settings: Settings,
-    file_mode: FileMode,
     path: Option<PathBuf>,
     code: Option<String>,
     files: Option<Vec<String>>,
@@ -148,6 +147,7 @@ struct Settings {
     tries: String,
     retries: String,
     bench_type: BenchMode,
+    file_mode: FileMode,
     runs: String,
 }
 
@@ -163,6 +163,7 @@ impl Default for Settings {
             tries: String::from("1"),
             retries: String::from("0"),
             bench_type: BenchMode::Invariants,
+            file_mode: FileMode::SingleFile,
             runs: String::from("1"),
         }
     }
@@ -209,7 +210,7 @@ impl AppState {
         let last_verified_ext = Arc::clone(&self.last_verified_extension);
 
         let settings = self.settings.clone();
-        let file_mode = self.file_mode.clone();
+        let file_mode = self.settings.file_mode.clone();
         let path = self.path.clone();
         let log = Arc::clone(&self.log);
 
@@ -305,20 +306,28 @@ impl AppState {
     fn file_picker(&mut self, ui: &mut Ui) {
         ui.label("File mode: ");
         if ui
-            .radio_value(&mut self.file_mode, FileMode::SingleFile, "Single file")
+            .radio_value(
+                &mut self.settings.file_mode,
+                FileMode::SingleFile,
+                "Single file",
+            )
             .clicked()
         {
             self.files = None;
         }
         if ui
-            .radio_value(&mut self.file_mode, FileMode::Directory, "Directory")
+            .radio_value(
+                &mut self.settings.file_mode,
+                FileMode::Directory,
+                "Directory",
+            )
             .clicked()
         {
             self.code = None;
         }
 
         if ui.button("Open").clicked() {
-            match self.file_mode {
+            match self.settings.file_mode {
                 FileMode::SingleFile => {
                     if let Some(file) = rfd::FileDialog::new().pick_file() {
                         self.code = Some(
@@ -468,7 +477,7 @@ impl AppState {
             });
             ui.horizontal(|ui| {
                 let max_rect = ui.max_rect();
-                let is_dir_mode = matches!(self.file_mode, FileMode::Directory);
+                let is_dir_mode = matches!(self.settings.file_mode, FileMode::Directory);
                 let div = if is_dir_mode { 5.0 } else { 3.0 };
                 let size = [max_rect.width() / div, max_rect.height()];
                 ui.label("Tries: ");
@@ -486,7 +495,7 @@ impl AppState {
     }
 
     fn display(&mut self, ui: &mut Ui) {
-        if self.file_mode == FileMode::SingleFile {
+        if self.settings.file_mode == FileMode::SingleFile {
             if let Some(code) = self.code.as_ref() {
                 let path = self.path.as_ref().expect("Code and path should be in sync");
                 egui::ScrollArea::vertical().show(ui, |ui| {
@@ -511,7 +520,7 @@ impl AppState {
                                 std::fs::read_to_string(file).expect("Failed to read file content"),
                             );
                             self.path = Some(file.into());
-                            self.file_mode = FileMode::SingleFile;
+                            self.settings.file_mode = FileMode::SingleFile;
                             reset = true;
                         }
                     });
@@ -528,7 +537,7 @@ impl AppState {
 
     fn output_ui(&mut self, ui: &mut Ui, panel_height: f32) {
         let output_width = ui.available_width();
-        let part = match self.file_mode {
+        let part = match self.settings.file_mode {
             FileMode::SingleFile => 4.0,
             FileMode::Directory => 2.0,
         };
