@@ -1,5 +1,4 @@
 use std::{
-    collections::HashMap,
     path::Path,
     process::{Command, Output},
 };
@@ -38,9 +37,7 @@ fn make_retries(retries: &str) -> String {
 }
 
 fn add_common_arguments(cmd: &mut Command, token: &str, settings: &Settings) {
-    cmd.envs(get_python_venv(Path::new(".")))
-        .arg("src/main.py")
-        .args(["--verifier-command", &settings.verifier_command])
+    cmd.args(["--verifier-command", &settings.verifier_command])
         .args(["--prompts-directory", &settings.prompts_directory])
         .args(["--insert-conditions-mode", "llm-single-step"])
         .args(["--llm-profile", settings.llm_profile.as_grazie()])
@@ -59,7 +56,7 @@ fn parse_output(output: Output) -> (String, String) {
 pub fn run_on_file(file: &str, settings: &Settings) -> (String, String) {
     log::info!("Running on file: {}", file);
 
-    let mut command = Command::new("python");
+    let mut command = compose_command(settings);
     add_common_arguments(&mut command, &settings.grazie_token, settings);
 
     let output = command
@@ -73,7 +70,7 @@ pub fn run_on_file(file: &str, settings: &Settings) -> (String, String) {
 pub fn run_on_directory(directory: &str, settings: &Settings) -> (String, String) {
     log::info!("Running on directory: {}", directory);
 
-    let mut command = Command::new("python");
+    let mut command = compose_command(settings);
     add_common_arguments(&mut command, &settings.grazie_token, settings);
 
     let output = command
@@ -84,42 +81,12 @@ pub fn run_on_directory(directory: &str, settings: &Settings) -> (String, String
     parse_output(output)
 }
 
-fn get_python_venv(venv_base_directory: &Path) -> HashMap<String, String> {
-    let mut env = HashMap::new();
-    let activate_path = ["venv", ".venv"]
-        .into_iter()
-        .find_map(|virtual_environment_name| {
-            let path = venv_base_directory.join(virtual_environment_name);
-            path.exists().then_some(path)
-        });
-
-    if let Some(path) = activate_path {
-        env.insert(
-            "VIRTUAL_ENV".to_string(),
-            path.to_string_lossy().to_string(),
-        );
-
-        if let Err(err) = add_environment_path(&mut env, &path.join("bin")) {
-            log::error!(
-                "Failed to add virtual environment bin directory to PATH: {}",
-                err
-            );
-        }
+fn compose_command(settings: &Settings) -> Command {
+    if settings.use_poetry {
+        let mut tmp = Command::new("poetry");
+        tmp.args(["run", &settings.generate_command]);
+        tmp
+    } else {
+        Command::new(&settings.generate_command)
     }
-    env
-}
-
-fn add_environment_path(env: &mut HashMap<String, String>, new_path: &Path) -> anyhow::Result<()> {
-    use anyhow::Context as _;
-
-    let mut env_paths = vec![new_path.to_path_buf()];
-    if let Some(path) = env.get("PATH").or(std::env::var("PATH").ok().as_ref()) {
-        let mut paths = std::env::split_paths(&path).collect::<Vec<_>>();
-        env_paths.append(&mut paths);
-    }
-
-    let paths = std::env::join_paths(env_paths).context("failed to create PATH env variable")?;
-    env.insert("PATH".to_string(), paths.to_string_lossy().to_string());
-
-    Ok(())
 }

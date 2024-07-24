@@ -10,9 +10,18 @@ use std::{
     sync::{atomic::AtomicBool, Arc, RwLock},
 };
 
+use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
 
 use helpers::{basename, extension, run_on_directory, run_on_file};
+
+static APP_DIRS: Lazy<directories::ProjectDirs> = Lazy::new(|| {
+    directories::ProjectDirs::from("", "", "verified-cogen").expect("Failed to get app directories")
+});
+
+fn should_restore() -> bool {
+    std::env::var("NORESTORE").is_err()
+}
 
 fn main() -> eframe::Result {
     env_logger::init();
@@ -21,21 +30,26 @@ fn main() -> eframe::Result {
         ..Default::default()
     };
 
-    if !std::path::Path::new("log").exists() {
-        std::fs::create_dir("log").expect("Failed to create log directory");
+    let log_dir = APP_DIRS.cache_dir().join("log");
+    eprintln!("{log_dir:?}");
+
+    if !log_dir.exists() {
+        std::fs::create_dir_all(&log_dir).expect("Failed to create log directory");
     }
-    _ = File::create("log/llm.log").expect("Failed to create log file");
+    _ = File::create(log_dir.join("llm.log")).expect("Failed to create log file");
 
     eframe::run_native(
         "Verified codegen",
         options,
         Box::new(|cc| {
-            let state: AppState = cc
-                .storage
-                .and_then(|storage| {
-                    let state = storage.get_string("app_state_json")?;
-                    serde_json::from_str(&state).ok()
+            let state: AppState = should_restore()
+                .then(|| {
+                    cc.storage.and_then(|storage| {
+                        let state = storage.get_string("app_state_json")?;
+                        serde_json::from_str(&state).ok()
+                    })
                 })
+                .flatten()
                 .unwrap_or_default();
             Ok(Box::new(state))
         }),
@@ -124,6 +138,8 @@ struct Settings {
     grazie_token: String,
     llm_profile: LLMProfile,
     verifier_command: String,
+    generate_command: String,
+    use_poetry: bool,
     prompts_directory: String,
     tries: String,
     retries: String,
@@ -136,9 +152,11 @@ impl Default for Settings {
             grazie_token: std::env::var("GRAZIE_JWT_TOKEN").unwrap_or_default(),
             llm_profile: LLMProfile::GPT4o,
             verifier_command: std::env::var("VERIFIER_COMMAND").unwrap_or_default(),
+            generate_command: String::from("verified-cogen"),
+            use_poetry: std::env::var("USE_POETRY").unwrap_or_default() == "1",
             prompts_directory: std::env::var("PROMPTS_DIRECTORY").unwrap_or_default(),
-            tries: "1".to_string(),
-            retries: "0".to_string(),
+            tries: String::from("1"),
+            retries: String::from("0"),
             bench_type: BenchMode::Invariants,
         }
     }
@@ -190,28 +208,53 @@ impl AppState {
         let log = Arc::clone(&self.log);
 
         _ = std::thread::spawn(move || {
-            running.store(true, std::sync::atomic::Ordering::SeqCst);
-            if let Ok(mut output) = output.write() {
-                *output = None;
-            }
-            File::create("log/llm.log").expect("Failed to clean log file");
-            match file_mode {
-                FileMode::SingleFile => {
-                    if let Some(path) = path {
-                        let extension = extension(&path);
-                        if let Some(path) = path.to_str() {
-                            let py_output = run_on_file(path, &settings);
-                            if let Ok(mut output) = output.write() {
-                                *output = Some(py_output);
-                            }
+            let result = std::panic::catch_unwind(|| {
+                running.store(true, std::sync::atomic::Ordering::SeqCst);
+                if let Ok(mut output) = output.write() {
+                    *output = None;
+                }
+                let log_dir = APP_DIRS.cache_dir().join("log");
+                _ = File::create(log_dir.join("llm.log")).expect("Failed to clean log file");
+                match file_mode {
+                    FileMode::SingleFile => {
+                        if let Some(path) = path {
+                            let extension = extension(&path);
+                            if let Some(path) = path.to_str() {
+                                let py_output = run_on_file(path, &settings);
+                                if let Ok(mut output) = output.write() {
+                                    *output = Some(py_output);
+                                }
 
-                            let llm_code = std::fs::read_to_string(format!(
-                                "llm-generated/{}",
-                                basename(path),
-                            ))
-                            .ok();
-                            if let Ok(mut last_verified_code) = last_verified_code.write() {
-                                *last_verified_code = llm_code;
+                                let llm_generated_path = APP_DIRS
+                                    .cache_dir()
+                                    .join("llm-generated")
+                                    .join(basename(path));
+                                let llm_code = std::fs::read_to_string(llm_generated_path).ok();
+                                if let Ok(mut last_verified_code) = last_verified_code.write() {
+                                    *last_verified_code = llm_code;
+                                }
+
+                                if let Ok(mut last_verified_extension) = last_verified_ext.write() {
+                                    *last_verified_extension = Some(String::from(extension));
+                                }
+                            }
+                        }
+                    }
+                    FileMode::Directory => {
+                        if let Some(directory) = path {
+                            if let Some(directory) = directory.to_str() {
+                                let py_output = run_on_directory(directory, &settings);
+                                if let Ok(mut output) = output.write() {
+                                    *output = Some(py_output);
+                                }
+
+                                if let Ok(mut last_verified_code) = last_verified_code.write() {
+                                    *last_verified_code = None;
+                                }
+
+                                if let Ok(mut last_verified_extension) = last_verified_ext.write() {
+                                    *last_verified_extension = None;
+                                }
                             }
 
                             if let Ok(mut last_verified_extension) = last_verified_ext.write() {
@@ -220,16 +263,11 @@ impl AppState {
                         }
                     }
                 }
-                FileMode::Directory => {
-                    if let Some(directory) = path {
-                        if let Some(directory) = directory.to_str() {
-                            let py_output = run_on_directory(directory, &settings);
-                            if let Ok(mut output) = output.write() {
-                                *output = Some(py_output);
-                            }
-
-                            if let Ok(mut last_verified_code) = last_verified_code.write() {
-                                *last_verified_code = None;
+                if let Ok(mut log) = log.write() {
+                    if let Ok(mut output) = output.write() {
+                        if let Some((_, stderr)) = output.as_mut() {
+                            if let Some(log) = log.as_ref() {
+                                *stderr += &format!("\nLog:\n{}", log)
                             }
 
                             if let Ok(mut last_verified_extension) = last_verified_ext.write() {
@@ -237,26 +275,23 @@ impl AppState {
                             }
                         }
                     }
+                    *log = None;
+                }
+            });
+            if let Err(err) = result {
+                if let Ok(mut output) = output.write() {
+                    *output = Some((String::from("Error"), format!("{:?}", err)));
                 }
             }
             running.store(false, std::sync::atomic::Ordering::SeqCst);
-            if let Ok(mut log) = log.write() {
-                if let Ok(mut output) = output.write() {
-                    if let Some((_, stderr)) = output.as_mut() {
-                        if let Some(log) = log.as_ref() {
-                            *stderr += &format!("\nLog:\n{}", log)
-                        }
-                    }
-                }
-                *log = None;
-            }
         });
 
         let running = Arc::clone(&self.running);
         let log = Arc::clone(&self.log);
         _ = std::thread::spawn(move || {
+            let log_file = APP_DIRS.cache_dir().join("log").join("llm.log");
             while running.load(std::sync::atomic::Ordering::SeqCst) {
-                let log_output = std::fs::read_to_string("log/llm.log").unwrap_or_default();
+                let log_output = std::fs::read_to_string(&log_file).unwrap_or_default();
                 if let Ok(mut log) = log.write() {
                     *log = Some(log_output);
                 }
@@ -356,6 +391,18 @@ impl AppState {
                         .hint_text("Enter the verifier command"),
                 );
             });
+        });
+
+        ui.label("Generate code: ");
+        ui.columns(2, |cols| {
+            let [left_ui, right_ui] = cols else { return };
+
+            left_ui.add(
+                TextEdit::singleline(&mut self.settings.generate_command)
+                    .hint_text("Enter the command to generate code"),
+            );
+
+            right_ui.checkbox(&mut self.settings.use_poetry, "Use poetry");
         });
     }
 
