@@ -3,6 +3,7 @@ import json
 import logging
 import os
 
+from pathlib import Path
 from typing import Optional
 from verified_cogen.tools.verifier import Verifier
 
@@ -105,7 +106,7 @@ def houdini(
             f.write(prg_with_invariants)
 
         log.info(f"Trying to verify with {json.dumps(invariants, indent=2)}")
-        (verified, out, err) = verifier.verify("llm-generated/collected.rs")
+        (verified, out, err) = verifier.verify(Path("llm-generated/collected.rs"))
         if verified:
             return invariants
         else:
