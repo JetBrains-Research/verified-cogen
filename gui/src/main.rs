@@ -256,6 +256,10 @@ impl AppState {
                                     *last_verified_extension = None;
                                 }
                             }
+
+                            if let Ok(mut last_verified_extension) = last_verified_ext.write() {
+                                *last_verified_extension = Some(String::from(extension));
+                            }
                         }
                     }
                 }
@@ -264,6 +268,10 @@ impl AppState {
                         if let Some((_, stderr)) = output.as_mut() {
                             if let Some(log) = log.as_ref() {
                                 *stderr += &format!("\nLog:\n{}", log)
+                            }
+
+                            if let Ok(mut last_verified_extension) = last_verified_ext.write() {
+                                *last_verified_extension = None;
                             }
                         }
                     }
