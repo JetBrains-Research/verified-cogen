@@ -15,11 +15,9 @@ from verified_cogen.tools.verifier import Verifier
 logger = logging.getLogger(__name__)
 
 
-def run_once(args, runner, verifier, mode, is_once) -> tuple[int, int, int]:
+def run_once(files, args, runner, verifier, mode, is_once) -> tuple[int, int, int]:
     success, success_zero_tries, failed = [], [], []
 
-    files = list(pathlib.Path(args.dir).glob("**/*"))
-    print(files)
     for file in tqdm(files):
         llm = LLM(
             args.grazie_token,
@@ -128,12 +126,15 @@ def main():
 
     verifier = Verifier(args.shell, args.verifier_command)
     if args.dir is not None:
+        files = list(pathlib.Path(args.dir).glob("[!.]*"))
+        print(files)
+
         if args.runs == 1:
-            run_once(args, runner, verifier, mode, is_once=True)
+            run_once(files, args, runner, verifier, mode, is_once=True)
         else:
             success_zero_tries, success, failed = 0, 0, 0
             for _ in range(args.runs):
-                s0, s, f = run_once(args, runner, verifier, mode, is_once=False)
+                s0, s, f = run_once(files, args, runner, verifier, mode, is_once=False)
                 success_zero_tries += s0
                 success += s
                 failed += f

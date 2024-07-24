@@ -245,19 +245,19 @@ impl AppState {
                         }
                     }
                     FileMode::Directory => {
+                        if let Ok(mut last_verified_code) = last_verified_code.write() {
+                            *last_verified_code = None;
+                        }
+
+                        if let Ok(mut last_verified_extension) = last_verified_ext.write() {
+                            *last_verified_extension = None;
+                        }
+
                         if let Some(directory) = path {
                             if let Some(directory) = directory.to_str() {
                                 let py_output = run_on_directory(directory, &settings);
                                 if let Ok(mut output) = output.write() {
                                     *output = Some(py_output);
-                                }
-
-                                if let Ok(mut last_verified_code) = last_verified_code.write() {
-                                    *last_verified_code = None;
-                                }
-
-                                if let Ok(mut last_verified_extension) = last_verified_ext.write() {
-                                    *last_verified_extension = None;
                                 }
                             }
 
