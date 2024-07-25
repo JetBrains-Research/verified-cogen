@@ -1,0 +1,11 @@
+The following errors occurred during verification:
+
+{error}
+
+Please fix the error by adding, removing or modifying the invariants and return the fixed program. When fixing the errors, ignore the messages about automatically infered triggers.
+Sometimes it might be useful to split something like `result == expr` into two expressions: `result ==> expr` and `!result ==> !expr`,
+for example `result == forall|i: int| f(i)` can be split into `result ==> forall|i: int| f(i)` and `!result ==> exists|i: int| !f(i)`.
+Don't write `!exists`, as it's almost impossible to prove anything about it. Instead, use `forall` with negated condition.
+If you have something like `forall|x: int| cond(x) ==> exists |y: int| #[trigger] f(y)` and don't put any triggers on `x`,
+Verus would reject your code. Try adding some meaningless but correct function call with `x` in it, for example:
+`forall|x: int| cond(x) && a[x] != z ==> exists |y: int| #[trigger] f(y)`

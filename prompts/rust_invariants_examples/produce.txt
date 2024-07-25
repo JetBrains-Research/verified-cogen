@@ -1,0 +1,5 @@
+Given the following Rust program, output Verus invariants that should go into the `while` loop.
+Ensure that the invariants are as comprehensive as they can be.
+Even if you think some invariant is not totally necessary, better add it than not.
+The program:
+{program}

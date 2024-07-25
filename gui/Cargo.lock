@@ -1693,10 +1693,12 @@ name = "gui"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "directories",
  "eframe",
  "egui_extras",
  "env_logger",
  "log",
+ "once_cell",
  "rfd",
  "serde",
  "serde_json",
