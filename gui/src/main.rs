@@ -383,12 +383,7 @@ impl AppState {
                     ui.label("Prompts directory: ");
                     if ui.button("Select").clicked() {
                         if let Some(dir) = rfd::FileDialog::new().pick_folder() {
-                            let relative_dir = dir
-                                .strip_prefix(std::env::current_dir().unwrap())
-                                .expect("Failed to strip prefix")
-                                .to_str()
-                                .expect("Failed to convert to str");
-                            self.settings.prompts_directory = relative_dir.to_string();
+                            self.settings.prompts_directory = dir.to_string_lossy().to_string();
                         }
                     }
                 });
