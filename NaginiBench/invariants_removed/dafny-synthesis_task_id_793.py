@@ -11,11 +11,12 @@ def LastPosition(arr : List[int], elem : int) -> int:
     Ensures(len(arr) == len(Old(arr)))
     Ensures(((Result()) == (-1)) or (((((0) <= (Result())) and ((Result()) < (len((arr))))) and (((arr)[Result()]) == (elem))) and (((Result()) == ((len((arr))) - (1))) or (((arr)[(Result()) + (1)]) > (elem)))))
     Ensures(Forall(int, lambda d_2_i_:
-        Implies(((0) <= (d_2_i_)) and ((d_2_i_) < (len((arr)))), ((arr)[d_2_i_]) == (Old((arr)[d_2_i_])))))
+        Implies(((0) <= (d_2_i_)) and ((d_2_i_) < (len((arr)))), ((arr)[d_2_i_]) == (Old(arr)[d_2_i_]))))
     pos = int(0) # type : int
     pos = -1
-    hi0_ = len((arr)) # type : int
-    for d_3_i_ in range(0, hi0_):
+    d_3_i_ = 0 # type : int
+    while d_3_i_ < len(arr):
         if ((arr)[d_3_i_]) == (elem):
             pos = d_3_i_
+        d_3_i_ = d_3_i_ + 1
     return pos

@@ -29,8 +29,6 @@ def longestZero(a : List[int]) -> Tuple[int, int]:
             (d_4_b_)[index1_] = ((d_4_b_)[d_5_idx_]) + (1)
         elif True:
             (d_4_b_)[index1_] = 0
-        Assert((d_4_b_)[index1_] <= d_5_idx_ + 2)
-        Assert((d_4_b_)[index1_] <= index1_ + 1)
         d_5_idx_ = (d_5_idx_) + (1)
     d_5_idx_ = 1
     sz = (d_4_b_)[0]

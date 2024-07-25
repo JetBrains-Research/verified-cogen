@@ -3,7 +3,7 @@ from nagini_contracts.contracts import *
 
 @Pure
 def Sum(a : List[int], s : int, t : int) -> int :
-    if s == t: 
+    if s == t:
         return 0
     else:
         return a[t - 1] + Sum(a, s, t - 1)
@@ -38,7 +38,7 @@ def MaxSegSum(a : List[int]) -> Tuple[int, int]:
         Invariant(((((0) <= (k)) and ((k) <= (m))) and ((m) <= (d_4_n_))) and ((d_3_s_) == (Sum(a, k, m))))
         Invariant(Forall(int, lambda d_8_p_:
             Forall(int, lambda d_9_q_:
-                Implies((((0) <= (d_8_p_)) and ((d_8_p_) <= (d_9_q_))) and ((d_9_q_) <= (d_4_n_)), (Sum(a, d_8_p_, d_9_q_)) <= (Sum(a, k, m))))))
+                (Implies((((0) <= (d_8_p_)) and ((d_8_p_) <= (d_9_q_))) and ((d_9_q_) <= (d_4_n_)), (Sum(a, d_8_p_, d_9_q_)) <= (Sum(a, k, m))), [[Sum(a, d_8_p_, d_9_q_)]]))))
         rhs4_ = (d_6_t_) + ((a)[d_4_n_]) # type : int
         rhs5_ = (d_4_n_) + (1) # type : int
         d_6_t_ = rhs4_

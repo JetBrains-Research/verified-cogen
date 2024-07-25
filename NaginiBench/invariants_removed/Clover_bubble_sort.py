@@ -14,15 +14,9 @@ def BubbleSort(a : List[int]) -> None:
         d_7_j_ = 0
         while (d_7_j_) < (d_2_i_):
             if ((a)[d_7_j_]) > ((a)[(d_7_j_) + (1)]):
-                index0_ = (d_7_j_) + (1) # type : int
                 rhs0_ = (a)[(d_7_j_) + (1)] # type : int
-                rhs1_ = (a)[d_7_j_] # type : int
-                lhs0_ = a # type : List[int]
-                lhs1_ = d_7_j_ # type : int
-                lhs2_ = a # type : List[int]
-                lhs3_ = (d_7_j_) + (1) # type : int
-                lhs0_[lhs1_] = rhs0_
-                lhs2_[lhs3_] = rhs1_
+                (a)[(d_7_j_) + (1)] = (a)[d_7_j_]
+                (a)[d_7_j_] = rhs0_
             d_7_j_ = (d_7_j_) + (1)
         d_2_i_ = (d_2_i_) - (1)
 

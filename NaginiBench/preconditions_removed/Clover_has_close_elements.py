@@ -15,9 +15,11 @@ def has__close__elements(numbers : List[int], threshold : int) -> bool:
         Invariant(((0) <= (d_4_idx_)) and ((d_4_idx_) <= (len(numbers))))
         Invariant(not(res))
         Invariant(Forall(int, lambda d_5_i_:
-            Implies((((0) <= (d_5_i_)) and ((d_5_i_) < (d_4_idx_))), 
+            (Implies((((0) <= (d_5_i_)) and ((d_5_i_) < (d_4_idx_))),
             Forall(int, lambda d_6_j_:
-                Implies((((0) <= (d_6_j_)) and ((d_6_j_) < (d_5_i_))), ((((numbers)[d_6_j_]) - ((numbers)[d_5_i_]) if (((numbers)[d_5_i_]) - ((numbers)[d_6_j_])) < (0) else ((numbers)[d_5_i_]) - ((numbers)[d_6_j_]))) >= (threshold))))))
+                (Implies((((0) <= (d_6_j_)) and ((d_6_j_) < (d_5_i_))), ((((numbers)[d_6_j_]) - ((numbers)[d_5_i_]) if (((numbers)[d_5_i_]) - ((numbers)[d_6_j_])) < (0) else ((numbers)[d_5_i_]) - ((numbers)[d_6_j_]))) >= (threshold)),
+                    [[numbers[d_6_j_]]]))),
+                [[numbers[d_5_i_]]])))
         d_7_idx2_ = int(0) # type : int
         d_7_idx2_ = 0
         while ((d_7_idx2_) < (d_4_idx_)):
@@ -26,7 +28,15 @@ def has__close__elements(numbers : List[int], threshold : int) -> bool:
             Invariant(((0) <= (d_7_idx2_)) and ((d_7_idx2_) <= (d_4_idx_)))
             Invariant(not(res))
             Invariant(Forall(int, lambda d_8_j_:
-                Implies(0 <= d_8_j_ and d_8_j_ < d_7_idx2_, ((((numbers)[d_8_j_]) - ((numbers)[d_4_idx_]) if (((numbers)[d_4_idx_]) - ((numbers)[d_8_j_])) < (0) else ((numbers)[d_4_idx_]) - ((numbers)[d_8_j_]))) >= (threshold))))
+                (Implies(0 <= d_8_j_ and d_8_j_ < d_7_idx2_, ((((numbers)[d_8_j_]) - ((numbers)[d_4_idx_]) if (((numbers)[d_4_idx_]) - ((numbers)[d_8_j_])) < (0) else ((numbers)[d_4_idx_]) - ((numbers)[d_8_j_]))) >= (threshold)),
+                     [[(numbers)[d_8_j_]]])))
+            Invariant(Forall(int, lambda d_5_i_:
+                (Implies((((0) <= (d_5_i_)) and ((d_5_i_) < (d_4_idx_))),
+                    Forall(int, lambda d_6_j_:
+                    (Implies((((0) <= (d_6_j_)) and ((d_6_j_) < (d_5_i_))), ((
+                        ((numbers)[d_6_j_]) - ((numbers)[d_5_i_]) if (((numbers)[d_5_i_]) - ((numbers)[d_6_j_])) < (0) else ((numbers)[d_5_i_]) - ((numbers)[d_6_j_]))) >= (threshold)),
+                    [[numbers[d_6_j_]]]))),
+                [[numbers[d_5_i_]]])))
             d_9_distance_ = 0 # type : int
             d_9_distance_ = (((numbers)[d_4_idx_]) - ((numbers)[d_7_idx2_]) if (((numbers)[d_7_idx2_]) - ((numbers)[d_4_idx_])) < (0) else ((numbers)[d_7_idx2_]) - ((numbers)[d_4_idx_]))
             if (d_9_distance_) < (threshold):

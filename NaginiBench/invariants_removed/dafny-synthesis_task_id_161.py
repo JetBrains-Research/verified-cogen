@@ -5,13 +5,13 @@ from nagini_contracts.contracts import *
 def InArray(a : List[int], x : int) -> bool :
     Requires(Acc(list_pred(a)))
     return Exists(int, lambda d_0_i_:
-        (((0) <= (d_0_i_)) and ((d_0_i_) < (len((a))))) and (((a)[d_0_i_]) == (x)))
+        ((((0) <= (d_0_i_)) and ((d_0_i_) < (len((a))))) and (((a)[d_0_i_]) == (x)), [[a[d_0_i_]]]))
 
 @Pure
 def NotInArray(a : List[int], x : int) -> bool :
     Requires(Acc(list_pred(a)))
     return Forall(int, lambda d_0_i_:
-        Implies(((0) <= (d_0_i_)) and ((d_0_i_) < (len((a)))), ((a)[d_0_i_]) != (x)))
+        (Implies(((0) <= (d_0_i_)) and ((d_0_i_) < (len((a)))), ((a)[d_0_i_]) != (x)), [[a[d_0_i_]]]))
 
 def RemoveElements(a : List[int], b : List[int]) -> List[int]:
     Requires(Acc(list_pred(b)))
@@ -30,6 +30,7 @@ def RemoveElements(a : List[int], b : List[int]) -> List[int]:
     d_5_i_ = int(0) # type : int
     while d_5_i_ < len((a)):
         if (((NotInArray(b, (a)[d_5_i_])))) and (((NotInArray(d_4_res_, (a)[d_5_i_])))):
+            d_4_res_prev = list(d_4_res_)
             d_4_res_ = (d_4_res_) + [(a)[d_5_i_]]
         d_5_i_ = d_5_i_ + 1
     result = d_4_res_

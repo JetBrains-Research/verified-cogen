@@ -6,12 +6,19 @@ def getSize(i : int, j : int) -> int :
     return ((j) - (i)) + (1)
 
 def longestZero(a : List[int]) -> Tuple[int, int]:
+    Requires(Acc(list_pred(a)))
+    Requires((1) <= (len((a))))
     Ensures(Acc(list_pred(a)))
     Ensures(((0) <= (Result()[0])) and ((Result()[0]) <= (len((a)))))
     Ensures(((0) <= (Result()[1])) and ((Result()[1]) < (len((a)))))
     Ensures(((Result()[1]) + (Result()[0])) <= (len((a))))
     Ensures(Forall(int, lambda d_0_i_:
         Implies(((Result()[1] - 1) < (d_0_i_)) and ((d_0_i_) <= ((Result()[1]) + (Result()[0])) - 1), ((a)[d_0_i_]) == (0))))
+    # Ensures(Forall(int, lambda i:
+    #     Forall(int, lambda j:
+    #         Implies(i >= 0 and i < j and j < len(a) and j - i + 1 > Result()[0],
+    #             Exists(int, lambda k: k >= i and k <= j and a[k] != 0))
+    #     )))
     sz = int(0) # type : int
     pos = int(0) # type : int
     d_4_b_ = [int(0)] * len((a)) # type : List[int]
@@ -55,6 +62,8 @@ def longestZero(a : List[int]) -> Tuple[int, int]:
             (d_4_b_)[index1_] = ((d_4_b_)[d_5_idx_]) + (1)
         elif True:
             (d_4_b_)[index1_] = 0
+        Assert((d_4_b_)[index1_] <= d_5_idx_ + 2)
+        Assert((d_4_b_)[index1_] <= index1_ + 1)
         d_5_idx_ = (d_5_idx_) + (1)
     d_5_idx_ = 1
     sz = (d_4_b_)[0]
@@ -90,6 +99,28 @@ def longestZero(a : List[int]) -> Tuple[int, int]:
                 Implies((0) <= ((d_10_i_) - ((d_4_b_)[d_10_i_])),
                     (d_10_i_) - ((d_4_b_)[d_10_i_]) >= 0 and (d_10_i_) - ((d_4_b_)[d_10_i_]) < len(a) and ((a)[(d_10_i_) - ((d_4_b_)[d_10_i_])]) != (0))),
                 [[(d_4_b_)[d_10_i_]]])))
+        Invariant(Forall(int, lambda i:
+            Forall(int, lambda j:
+                (Implies(i >= 0 and i < j and j < d_5_idx_ and j - i + 1 > sz, j - i + 1 > d_4_b_[j] and d_4_b_[j] >= 0 and j - d_4_b_[j] >= 0), [[d_4_b_[j]]])
+            )))
+        Invariant(Forall(int, lambda i:
+            Forall(int, lambda j:
+                (Implies(i >= 0 and i < j and j < d_5_idx_ and j - i + 1 > sz, j - d_4_b_[j] <= j and j - d_4_b_[j] >= i and a[j - d_4_b_[j]] != 0), [[d_4_b_[j]]])
+            )))
+        Invariant(Forall(int, lambda i:
+                Forall(int, lambda j:
+                    (Implies(i >= 0 and i < j and j < d_5_idx_ and j - i + 1 > sz,
+                             Exists(int, lambda k: k >= i and k <= j and k == j - d_4_b_[j] and a[k] != 0)), [[d_4_b_[j]]]))
+                ))
+        Invariant(Forall(int, lambda i:
+                Forall(int, lambda j:
+                    (Implies(i >= 0 and i < j and j < d_5_idx_ and j - i + 1 > sz, d_4_b_[j] <= sz and j - d_4_b_[j] >= i and j - d_4_b_[j] <= j), [[d_4_b_[j]]]))
+                ))
+        Invariant(Forall(int, lambda i:
+                Forall(int, lambda j:
+                    (Implies(i >= 0 and i < j and j < d_5_idx_ and j - i + 1 > sz, d_4_b_[j] <= sz and j - d_4_b_[j] >= i and j - d_4_b_[j] <= j and
+                             Exists(int, lambda k: k >= i and k <= j and a[k] != 0)), [[d_4_b_[j]]]))
+                ))
         if ((d_4_b_)[d_5_idx_]) > (sz):
             sz = (d_4_b_)[d_5_idx_]
             pos = ((d_5_idx_) - ((d_4_b_)[d_5_idx_])) + (1)
