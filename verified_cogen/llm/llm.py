@@ -68,7 +68,7 @@ class LLM:
 
     def rewrite(self, prg: str):
         self.user_prompts.append(
-            prompts.rewrite_prompt(self.prompt_dir).format(program=prg)
+            prompts.rewrite_prompt(self.prompt_dir).replace("{program}", prg)
         )
         return self._make_request()
 
