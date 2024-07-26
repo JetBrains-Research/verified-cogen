@@ -83,6 +83,9 @@ def main():
     verifier = Verifier(args.shell, args.verifier_command, args.verifier_timeout)
     if args.dir is not None:
         files = list(pathlib.Path(args.dir).glob("[!.]*"))
+        for file in files:
+            with open(file) as f:
+                runner.precheck(f.read(), mode)
 
         if args.runs == 1:
             run_once(files, args, runner, verifier, mode, is_once=True)

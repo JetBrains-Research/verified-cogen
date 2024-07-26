@@ -16,7 +16,7 @@ class Verifier:
     def verify(self, file_path: Path) -> Optional[tuple[bool, str, str]]:
         try:
             res = subprocess.run(
-                '{} -i -l -c "{} {}"; exit'.format(
+                '{} -i -l -c "{} "{}""; exit'.format(
                     self.shell, self.verifier_cmd, file_path
                 ),
                 capture_output=True,
