@@ -3,6 +3,8 @@ use std::{
     process::{Command, Output},
 };
 
+use eframe::egui::{self, TextEdit};
+
 use crate::Settings;
 
 pub fn basename(file: &str) -> &str {
@@ -36,7 +38,27 @@ fn make_retries(retries: &str) -> String {
     }
 }
 
-fn add_common_arguments(cmd: &mut Command, token: &str, settings: &Settings) {
+fn make_timeout(timeout: &str) -> String {
+    if timeout.is_empty() {
+        String::from("60")
+    } else {
+        timeout.to_string()
+    }
+}
+
+fn make_runs(runs: &str) -> String {
+    if runs.is_empty() {
+        String::from("1")
+    } else {
+        runs.to_string()
+    }
+}
+
+fn add_common_arguments<'a>(
+    cmd: &'a mut Command,
+    token: &str,
+    settings: &Settings,
+) -> &'a mut Command {
     cmd.args(["--verifier-command", &settings.verifier_command])
         .args(["--prompts-directory", &settings.prompts_directory])
         .args(["--insert-conditions-mode", "llm-single-step"])
@@ -44,7 +66,8 @@ fn add_common_arguments(cmd: &mut Command, token: &str, settings: &Settings) {
         .args(["--grazie-token", token])
         .args(["--bench-type", &settings.bench_type.to_string()])
         .args(["--tries", &make_tries(&settings.tries)])
-        .args(["--retries", &make_retries(&settings.retries)]);
+        .args(["--retries", &make_retries(&settings.retries)])
+        .args(["--verifier-timeout", &make_timeout(&settings.timeout)])
 }
 
 fn parse_output(output: Output) -> (String, String) {
@@ -56,13 +79,14 @@ fn parse_output(output: Output) -> (String, String) {
 pub fn run_on_file(file: &str, settings: &Settings) -> (String, String) {
     log::info!("Running on file: {}", file);
 
-    let mut command = compose_command(settings);
-    add_common_arguments(&mut command, &settings.grazie_token, settings);
-
-    let output = command
-        .args(["-i", file])
-        .output()
-        .expect("Failed to run python to add information");
+    let output = add_common_arguments(
+        &mut compose_command(settings),
+        &settings.grazie_token,
+        settings,
+    )
+    .args(["-i", file])
+    .output()
+    .expect("Failed to run python to add information");
 
     parse_output(output)
 }
@@ -70,14 +94,15 @@ pub fn run_on_file(file: &str, settings: &Settings) -> (String, String) {
 pub fn run_on_directory(directory: &str, settings: &Settings) -> (String, String) {
     log::info!("Running on directory: {}", directory);
 
-    let mut command = compose_command(settings);
-    add_common_arguments(&mut command, &settings.grazie_token, settings);
-
-    let output = command
-        .args(["-d", directory])
-        .args(["--runs", &settings.runs])
-        .output()
-        .expect("Failed to run python to add information");
+    let output = add_common_arguments(
+        &mut compose_command(settings),
+        &settings.grazie_token,
+        settings,
+    )
+    .args(["-d", directory])
+    .args(["--runs", &make_runs(&settings.runs)])
+    .output()
+    .expect("Failed to run python to add information");
 
     parse_output(output)
 }
@@ -90,4 +115,18 @@ fn compose_command(settings: &Settings) -> Command {
     } else {
         Command::new(&settings.generate_command)
     }
+}
+
+pub fn integer_edit_field(
+    ui: &mut egui::Ui,
+    hint: &str,
+    value: &mut String,
+    size: [f32; 2],
+) -> egui::Response {
+    let mut tmp_value = value.clone();
+    let res = ui.add_sized(size, TextEdit::singleline(&mut tmp_value).hint_text(hint));
+    if tmp_value.parse::<u8>().is_ok() || tmp_value.is_empty() {
+        *value = tmp_value;
+    }
+    res
 }

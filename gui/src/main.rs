@@ -13,7 +13,7 @@ use std::{
 use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
 
-use helpers::{basename, extension, run_on_directory, run_on_file};
+use helpers::{basename, extension, integer_edit_field, run_on_directory, run_on_file};
 
 static APP_DIRS: Lazy<directories::ProjectDirs> = Lazy::new(|| {
     directories::ProjectDirs::from("", "", "verified-cogen").expect("Failed to get app directories")
@@ -149,6 +149,7 @@ struct Settings {
     bench_type: BenchMode,
     file_mode: FileMode,
     runs: String,
+    timeout: String,
 }
 
 impl Default for Settings {
@@ -165,6 +166,7 @@ impl Default for Settings {
             bench_type: BenchMode::Invariants,
             file_mode: FileMode::SingleFile,
             runs: String::from("1"),
+            timeout: String::from("60"),
         }
     }
 }
@@ -360,61 +362,6 @@ impl AppState {
         }
     }
 
-    fn token_input(&mut self, ui: &mut Ui) {
-        let label = ui.heading("Grazie and verifier: ");
-
-        ui.label("Grazie token: ");
-        ui.horizontal(|ui| {
-            let token = ui
-                .add(
-                    TextEdit::singleline(&mut self.settings.grazie_token)
-                        .hint_text("Enter your Grazie token")
-                        .password(!self.token_hovered),
-                )
-                .labelled_by(label.id);
-            self.token_hovered = token.hovered();
-        });
-
-        ui.columns(2, |cols| {
-            let [left_ui, right_ui] = cols else { return };
-
-            left_ui.vertical(|ui| {
-                ui.horizontal(|ui| {
-                    ui.label("Prompts directory: ");
-                    if ui.button("Select").clicked() {
-                        if let Some(dir) = rfd::FileDialog::new().pick_folder() {
-                            self.settings.prompts_directory = dir.to_string_lossy().to_string();
-                        }
-                    }
-                });
-                ui.add(
-                    TextEdit::singleline(&mut self.settings.prompts_directory)
-                        .hint_text("Enter the prompts directory"),
-                );
-            });
-
-            right_ui.vertical(|ui| {
-                ui.label("Verifier command: ");
-                ui.add(
-                    TextEdit::singleline(&mut self.settings.verifier_command)
-                        .hint_text("Enter the verifier command"),
-                );
-            });
-        });
-
-        ui.label("Generate code: ");
-        ui.columns(2, |cols| {
-            let [left_ui, right_ui] = cols else { return };
-
-            left_ui.add(
-                TextEdit::singleline(&mut self.settings.generate_command)
-                    .hint_text("Enter the command to generate code"),
-            );
-
-            right_ui.checkbox(&mut self.settings.use_poetry, "Use poetry");
-        });
-    }
-
     fn runner(&mut self, ui: &mut Ui) {
         ui.horizontal(|ui| {
             self.file_picker(ui);
@@ -431,22 +378,75 @@ impl AppState {
         });
     }
 
-    fn settings_ui(&mut self, ui: &mut Ui) {
-        fn integer_edit_field(
-            ui: &mut egui::Ui,
-            hint: &str,
-            value: &mut String,
-            size: [f32; 2],
-        ) -> egui::Response {
-            let mut tmp_value = value.clone();
-            let res = ui.add_sized(size, TextEdit::singleline(&mut tmp_value).hint_text(hint));
-            if tmp_value.parse::<u8>().is_ok() || tmp_value.is_empty() {
-                *value = tmp_value;
-            }
-            res
-        }
+    fn token_input(&mut self, ui: &mut Ui) {
+        let label = ui.heading("Grazie and verifier: ");
 
+        ui.label("Grazie token: ");
+        ui.horizontal(|ui| {
+            let token = ui
+                .add(
+                    TextEdit::singleline(&mut self.settings.grazie_token)
+                        .hint_text("Enter your Grazie token")
+                        .password(!self.token_hovered),
+                )
+                .labelled_by(label.id);
+            self.token_hovered = token.hovered();
+        });
+    }
+
+    fn verifier_details(&mut self, ui: &mut Ui) {
+        ui.label("Prompts directory: ");
+        ui.horizontal(|ui| {
+            ui.add(
+                TextEdit::singleline(&mut self.settings.prompts_directory)
+                    .hint_text("Enter the prompts directory"),
+            );
+            if ui.button("Select").clicked() {
+                if let Some(dir) = rfd::FileDialog::new().pick_folder() {
+                    self.settings.prompts_directory = dir.to_string_lossy().to_string();
+                }
+            }
+        });
+
+        ui.columns(2, |cols| {
+            let [left_ui, right_ui] = cols else { return };
+
+            left_ui.vertical(|ui| {
+                ui.label("Verifier command: ");
+                ui.add(
+                    TextEdit::singleline(&mut self.settings.verifier_command)
+                        .hint_text("Enter the verifier command"),
+                );
+            });
+
+            right_ui.vertical(|ui| {
+                ui.label("Timeout: ");
+                let mut tmp_value = self.settings.timeout.clone();
+                ui.add(TextEdit::singleline(&mut tmp_value).hint_text("Enter the timeout"));
+                if tmp_value.parse::<u8>().is_ok() || tmp_value.is_empty() {
+                    self.settings.timeout = tmp_value;
+                }
+            });
+        });
+
+        ui.label("Generate code: ");
+        ui.columns(2, |cols| {
+            let [left_ui, right_ui] = cols else { return };
+
+            left_ui.add(
+                TextEdit::singleline(&mut self.settings.generate_command)
+                    .hint_text("Enter the command to generate code"),
+            );
+
+            right_ui.checkbox(&mut self.settings.use_poetry, "Use poetry");
+        });
+    }
+
+    fn settings_ui(&mut self, ui: &mut Ui) {
         ui.vertical(|ui| {
+            self.verifier_details(ui);
+            ui.separator();
+
             ui.heading("Settings:");
 
             egui::ComboBox::from_label("LLM Profile")

@@ -58,3 +58,7 @@ def ask_for_fixed_prompt(prompt_dir: str) -> str:
 
 def ask_for_fixed_had_errors_prompt(prompt_dir: str) -> str:
     return read_prompt(f"{prompt_dir}/ask_for_fixed_had_errors.txt")
+
+
+def ask_for_timeout_prompt(prompt_dir: str) -> str:
+    return read_prompt(f"{prompt_dir}/timeout.txt")
