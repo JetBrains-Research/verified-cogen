@@ -274,10 +274,6 @@ impl AppState {
                             if let Some(log) = log.as_ref() {
                                 *stderr += &format!("\nLog:\n{}", log)
                             }
-
-                            if let Ok(mut last_verified_extension) = last_verified_ext.write() {
-                                *last_verified_extension = None;
-                            }
                         }
                     }
                     *log = None;
