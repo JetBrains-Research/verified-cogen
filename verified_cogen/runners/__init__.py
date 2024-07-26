@@ -58,17 +58,24 @@ class Runner(ABC):
             output = LLM_GENERATED_DIR / name
             with open(output, "w") as f:
                 f.write(inv_prg)
-            verified_inv, out_inv, err_inv = verifier.verify(output)
-            if verified_inv:
-                return total_tries - tries + 1
-            else:
-                logger.info("Verification failed:")
-                logger.info(out_inv)
-                logger.info(err_inv)
-                logger.info("Retrying...")
+            verification_result = verifier.verify(output)
+            if verification_result is None:
+                logger.info("Verification timed out")
                 tries -= 1
                 if tries > 0:
-                    inv_prg = llm.ask_for_fixed(err_inv)
+                    inv_prg = llm.ask_for_timeout()
+            else:
+                verified_inv, out_inv, err_inv = verification_result
+                if verified_inv:
+                    return total_tries - tries + 1
+                else:
+                    logger.info("Verification failed:")
+                    logger.info(out_inv)
+                    logger.info(err_inv)
+                    logger.info("Retrying...")
+                    tries -= 1
+                    if tries > 0:
+                        inv_prg = llm.ask_for_fixed(out_inv + err_inv)
         return None
 
     @classmethod
@@ -83,9 +90,11 @@ class Runner(ABC):
     ) -> Optional[int]:
         logger.info(f"Running on {file}")
 
-        verified, out, err = verifier.verify(pathlib.Path(file))
-        if verified:
+        verification_result = verifier.verify(pathlib.Path(file))
+        if verification_result is not None and verification_result[0]:
             return 0
+        elif verification_result is None:
+            logger.info("Verification timed out")
 
         with open(file, "r") as f:
             prg = f.read()

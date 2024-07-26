@@ -106,14 +106,19 @@ def houdini(
             f.write(prg_with_invariants)
 
         log.info(f"Trying to verify with {json.dumps(invariants, indent=2)}")
-        (verified, out, err) = verifier.verify(Path("llm-generated/collected.rs"))
+        ver_result = verifier.verify(Path("llm-generated/collected.rs"))
+        if ver_result is None:
+            log.info("Verifier timed out")
+            return None
+
+        (verified, out, err) = ver_result
         if verified:
             return invariants
         else:
             log.info("Failed to verify invariants")
             log.info("Error: {}".format(err))
 
-            new_invariants = remove_failed_invariants(llm, invariants, err)
+            new_invariants = remove_failed_invariants(llm, invariants, out + err)
             if new_invariants is None:
                 return None
             invariants = new_invariants
