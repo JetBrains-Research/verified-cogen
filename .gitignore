@@ -15,3 +15,5 @@ log
 run.sh
 /dist/
 **/.pytest_cache
+run_nagini.py
+/tmp

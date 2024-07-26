@@ -118,7 +118,7 @@ def houdini(
             log.info("Failed to verify invariants")
             log.info("Error: {}".format(err))
 
-            new_invariants = remove_failed_invariants(llm, invariants, err)
+            new_invariants = remove_failed_invariants(llm, invariants, out + err)
             if new_invariants is None:
                 return None
             invariants = new_invariants

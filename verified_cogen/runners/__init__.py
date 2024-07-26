@@ -75,7 +75,7 @@ class Runner(ABC):
                     logger.info("Retrying...")
                     tries -= 1
                     if tries > 0:
-                        inv_prg = llm.ask_for_fixed(err_inv)
+                        inv_prg = llm.ask_for_fixed(out_inv + err_inv)
         return None
 
     @classmethod
