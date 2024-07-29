@@ -12,7 +12,12 @@ import verified_cogen.llm.prompts as prompts
 
 class LLM:
     def __init__(
-        self, grazie_token: str, profile: str, prompt_dir: str, temperature: float
+        self,
+        grazie_token: str,
+        profile: str,
+        prompt_dir: str,
+        temperature: float,
+        system_prompt: Optional[str] = None,
     ):
         self.grazie = GrazieApiGatewayClient(
             url=GrazieApiGatewayUrls.STAGING,
@@ -26,11 +31,14 @@ class LLM:
         self.responses = []
         self.had_errors = False
         self.temperature = temperature
+        self.system_prompt = (
+            system_prompt if system_prompt else prompts.sys_prompt(self.prompt_dir)
+        )
 
     def _request(self, temperature: Optional[float] = None):
         if temperature is None:
             temperature = self.temperature
-        prompt = ChatPrompt().add_system(prompts.sys_prompt(self.prompt_dir))
+        prompt = ChatPrompt().add_system(self.system_prompt)
         current_prompt_user = 0
         current_response = 0
         while current_prompt_user < len(self.user_prompts) or current_response < len(

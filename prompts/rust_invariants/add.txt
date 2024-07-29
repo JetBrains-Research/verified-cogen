@@ -1,4 +1,14 @@
 Given the following Rust program, and a set of Verus invariants, output the program with invariants inserted into the correct place.
+Here's an example of correctly inserted invariants:
+```rust
+while i < nums.len()
+    invariant
+        0 < i <= nums.len(),
+        0 <= idx && idx < i,
+        forall|j: int| 0 <= j && j < i ==> nums[j] <= nums[idx as int],
+```
+Remember to put commas between invariants
+
 The program:
 {program}
 –

@@ -5,9 +5,9 @@ source .envrc
 
 export PYTHONPATH=PYTHONPATH:"$(pwd)/src"
 
-PYLOG_LEVEL=DEBUG NOFILE=1 python src/experiments/use_houdini.py \
+PYLOG_LEVEL=INFO NOFILE=1 poetry run python verified_cogen/experiments/use_houdini.py \
     --grazie-token=$GRAZIE_TOKEN \
-    --profile=gpt-4o \
+    --profile="anthropic-claude-3.5-sonnet" \
     --prompt-dir=prompts/rust_invariants \
     --verifier-command="verus --multiple-errors=100" \
     --program=$1
