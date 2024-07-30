@@ -68,10 +68,11 @@ class LLM:
         )
         return self._make_request()
 
-    def add(self, prg: str, checks: str):
-        self.user_prompts.append(
-            prompts.add_prompt(self.prompt_dir).format(program=prg, checks=checks)
-        )
+    def add(self, prg: str, checks: str, function: Optional[str] = None):
+        prompt = prompts.add_prompt(self.prompt_dir).format(program=prg, checks=checks)
+        if "{function}" in prompt and function is not None:
+            prompt = prompt.replace("{function}", function)
+        self.user_prompts.append(prompt)
         return self._make_request()
 
     def rewrite(self, prg: str):

@@ -3,7 +3,7 @@ use vstd::prelude::*;
 verus! {
 
 #[verifier::loop_isolation(false)]
-fn unique(a: &[i32]) -> (result: Vec<i32>)
+fn unique_better(a: &[i32]) -> (result: Vec<i32>)
     requires
         forall|i: int, j: int|
             #![trigger a[i], a[j]]

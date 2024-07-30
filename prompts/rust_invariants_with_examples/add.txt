@@ -11,7 +11,7 @@ while i < a.len()
             #![trigger result[k]]
             0 <= k && k < result.len() ==> exists|m: int| 0 <= m < i && result[k] == a[m],
 ```
-
+Do not touch any functions other that {function}
 The program:
 {program}
 –

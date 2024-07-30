@@ -12,6 +12,9 @@ fn in_array_exec(a: &Vec<i32>, x: i32) -> (result: bool)
 {
     let mut i = 0;
     while i < a.len()
+        invariant
+            0 <= i <= a.len(),
+            forall|k: int| 0 <= k < i ==> a[k] != x,
     {
         if a[i] == x {
             return true;

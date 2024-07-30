@@ -5,6 +5,7 @@ import os
 
 from typing import Optional
 from verified_cogen.runners import LLM_GENERATED_DIR
+from verified_cogen.tools import basename
 from verified_cogen.tools.verifier import Verifier
 
 from verified_cogen.llm import LLM
@@ -12,7 +13,8 @@ from verified_cogen.llm import LLM
 log = logging.getLogger(__name__)
 
 
-INVARIANTS_JSON_PROMPT = """Given the following Rust program, output Verus invariants that should go into the `while` loop.
+INVARIANTS_JSON_PROMPT = """Given the following Rust program, output Verus invariants that should go into the `while` loop
+in the function {function}.
 Ensure that the invariants are as comprehensive as they can be.
 Even if you think some invariant is not totally necessary, better add it than not.
 Don't be afraid of using disjunctions if you see that some invariant is not true, for example, at the beginning of the loop.
@@ -81,12 +83,14 @@ The program:
 HOUDINI_SYS_PROMPT = """
 You are an expert in a Rust verification framework Verus.
 Do not provide ANY explanations. Don't include markdown backticks. Respond only in Rust code when not asked otherwise.
+Do not touch any functions other that {function}
 You will be working with the following program:
 {program}
 """
 
 REMOVE_FAILED_INVARIANTS_PROMPT = """Some of the provided invariants either have syntax errors or failed to verify.
 Could you please remove the invariants that failed to verify and provide the rest again as a JSON array of strings?
+DO NOT MODIFY THE INVARIANTS OR ADD NEW ONES.
 
 Here's an error from the verifier:
 {error}
@@ -94,6 +98,7 @@ Here's an error from the verifier:
 
 
 def collect_invariants(args, prg: str):
+    func = basename(args.program)[:-3]
     result_invariants = []
     for temperature in [0.0, 0.1, 0.3, 0.4, 0.5, 0.7, 1.0]:
         llm = LLM(
@@ -103,7 +108,9 @@ def collect_invariants(args, prg: str):
             temperature=temperature,
         )
 
-        llm.user_prompts.append(INVARIANTS_JSON_PROMPT.replace("{program}", prg))
+        llm.user_prompts.append(
+            INVARIANTS_JSON_PROMPT.replace("{program}", prg).replace("{function}", func)
+        )
         response = llm._make_request()
         try:
             invariants = json.loads(response)
@@ -134,16 +141,20 @@ def remove_failed_invariants(
 def houdini(
     args, verifier: Verifier, prg: str, invariants: list[str]
 ) -> Optional[list[str]]:
+    func = basename(args.program).strip(".rs")
+    log.info(f"Starting Houdini for {func} in file {args.program}")
     while len(invariants) > 0:
         llm = LLM(
             grazie_token=args.grazie_token,
             profile=args.profile,
             prompt_dir=args.prompt_dir,
             temperature=0.0,
-            system_prompt=HOUDINI_SYS_PROMPT.replace("{program}", prg),
+            system_prompt=HOUDINI_SYS_PROMPT.replace("{program}", prg).replace(
+                "{function}", func
+            ),
         )
 
-        prg_with_invariants = llm.add(prg, "\n".join(invariants))
+        prg_with_invariants = llm.add(prg, "\n".join(invariants), func)
         with open(LLM_GENERATED_DIR / "collected.rs", "w") as f:
             f.write(prg_with_invariants)
 
