@@ -5,7 +5,6 @@ import os
 
 from typing import Optional
 from verified_cogen.runners import LLM_GENERATED_DIR
-from verified_cogen.tools import basename
 from verified_cogen.tools.verifier import Verifier
 
 from verified_cogen.llm import LLM
@@ -97,29 +96,34 @@ Here's an error from the verifier:
 """
 
 
-def collect_invariants(args, prg: str):
-    func = basename(args.program)[:-3]
+def collect_invariants(name: str, grazie_token: str, prompt_dir: str, prg: str):
+    func = name[:-3]  # TODO: should depend on the programming language (now strips .rs)
     result_invariants = []
-    for temperature in [0.0, 0.1, 0.3, 0.4, 0.5, 0.7, 1.0]:
-        llm = LLM(
-            grazie_token=args.grazie_token,
-            profile=args.profile,
-            prompt_dir=args.prompt_dir,
-            temperature=temperature,
-        )
+    for model in ["gpt-4o", "anthropic-claude-3.5-sonnet"]:
+        for temperature in [0.0, 0.1, 0.4, 0.5, 0.7, 1.0]:
+            llm = LLM(
+                grazie_token=grazie_token,
+                profile=model,
+                prompt_dir=prompt_dir,
+                temperature=temperature,
+            )
 
-        llm.user_prompts.append(
-            INVARIANTS_JSON_PROMPT.replace("{program}", prg).replace("{function}", func)
-        )
-        response = llm._make_request()
-        try:
-            invariants = json.loads(response)
-            result_invariants.extend(invariants)
-            log.debug(f"Got {len(invariants)} invariants at temperature {temperature}")
-        except json.JSONDecodeError:
-            print("Error parsing response as JSON")
-            print(response)
-            continue
+            llm.user_prompts.append(
+                INVARIANTS_JSON_PROMPT.replace("{program}", prg).replace(
+                    "{function}", func
+                )
+            )
+            response = llm._make_request()
+            try:
+                invariants = json.loads(response)
+                result_invariants.extend(invariants)
+                log.debug(
+                    f"Got {len(invariants)} invariants at temperature {temperature}, model {model}"
+                )
+            except json.JSONDecodeError:
+                print("Error parsing response as JSON")
+                print(response)
+                continue
     return list(set(result_invariants))
 
 
@@ -131,7 +135,7 @@ def remove_failed_invariants(
     try:
         new_invariants = json.loads(response)
         log.debug("REMOVED: {}".format(set(invariants).difference(set(new_invariants))))
-        return new_invariants
+        return list(set(new_invariants))
     except json.JSONDecodeError:
         print("Error parsing response as JSON")
         print(response)
@@ -139,62 +143,72 @@ def remove_failed_invariants(
 
 
 def houdini(
-    args, verifier: Verifier, prg: str, invariants: list[str]
-) -> Optional[list[str]]:
-    func = basename(args.program).strip(".rs")
-    log.info(f"Starting Houdini for {func} in file {args.program}")
+    llm: LLM,
+    name: str,
+    verifier: Verifier,
+    prg: str,
+    invariants: list[str],
+) -> Optional[str]:
+    func = name[:-3]
+    log.info(f"Starting Houdini for {func} in file {name}")
+
+    llm.set_system_prompt(
+        HOUDINI_SYS_PROMPT.replace("{program}", prg).replace("{function}", func)
+    )
+
     while len(invariants) > 0:
-        llm = LLM(
-            grazie_token=args.grazie_token,
-            profile=args.profile,
-            prompt_dir=args.prompt_dir,
-            temperature=0.0,
-            system_prompt=HOUDINI_SYS_PROMPT.replace("{program}", prg).replace(
-                "{function}", func
-            ),
-        )
+        llm.reset()
 
         prg_with_invariants = llm.add(prg, "\n".join(invariants), func)
-        with open(LLM_GENERATED_DIR / "collected.rs", "w") as f:
+        with open(LLM_GENERATED_DIR / name, "w") as f:
             f.write(prg_with_invariants)
 
         log.debug(f"Trying to verify with {json.dumps(invariants, indent=2)}")
-        ver_result = verifier.verify(LLM_GENERATED_DIR / "collected.rs")
+        ver_result = verifier.verify(LLM_GENERATED_DIR / name)
         if ver_result is None:
             log.info("Verifier timed out")
             return None
 
         (verified, out, err) = ver_result
         if verified:
-            return invariants
+            return prg_with_invariants
         else:
             log.info("Failed to verify invariants")
             log.debug("Error: {}".format(err))
 
             new_invariants = remove_failed_invariants(llm, invariants, out + err)
-            if new_invariants is None or new_invariants == invariants:
-                return None
-            inv_set = set(invariants)
-            is_subset = True
-            for inv in set(new_invariants):
-                if inv not in inv_set:
-                    is_subset = False
-                    log.error(
-                        f"New invariant {inv} is not a subset of the old invariants"
-                    )
-            if not is_subset:
-                log.error("New invariants are not a subset of the old invariants")
-                log.error("Old invariants: {}".format(json.dumps(invariants, indent=2)))
+            if new_invariants is not None and not set(new_invariants).issubset(
+                set(invariants)
+            ):
                 log.error(
-                    "New invariants: {}".format(json.dumps(new_invariants, indent=2))
+                    "New invariants are not a subset of the old invariants, changing to an intersection"
                 )
-                raise ValueError(
-                    "New invariants are not a subset of the old invariants"
-                )
+                new_invariants = list(set(new_invariants) & set(invariants))
+
+            if new_invariants is None or set(new_invariants) == set(invariants):
+                return None
+
             invariants = new_invariants
 
 
-def main():
+def run_on(
+    llm: LLM,
+    verifier: Verifier,
+    prg: str,
+    name: str,
+    grazie_token: str,
+    prompt_dir: str,
+) -> Optional[str]:
+    log.info("Running on program: {}".format(name))
+
+    invariants = collect_invariants(name, grazie_token, prompt_dir, prg)
+    log.info("Collected {} invariants".format(len(invariants)))
+    log.debug("Invariants: {}".format(json.dumps(invariants, indent=4)))
+
+    return houdini(llm, name, verifier, prg, invariants)
+
+
+if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--grazie-token", required=True)
     parser.add_argument("--profile", required=True)
@@ -204,23 +218,19 @@ def main():
 
     args = parser.parse_args()
 
-    log.info("Running on program: {}".format(args.program))
+    llm = LLM(
+        grazie_token=args.grazie_token,
+        profile=args.profile,
+        prompt_dir=args.prompt_dir,
+        temperature=0.0,
+    )
 
-    with open(args.program, "r") as f:
-        prg = f.read()
-
-    invariants = collect_invariants(args, prg)
-    log.info("Collected {} invariants".format(len(invariants)))
-    log.debug("Invariants: {}".format(json.dumps(invariants, indent=4)))
-
-    verifier = Verifier(os.environ["SHELL"], args.verifier_command)
-    result = houdini(args, verifier, prg, invariants)
+    result = run_on(
+        llm,
+        Verifier(os.environ["SHELL"], args.verifier_command),
+        args.program,
+        args.grazie_token,
+        args.prompt_dir,
+    )
     if result is not None:
-        log.info("Vefication successful")
-        log.debug(json.dumps(result, indent=2))
-    else:
-        log.error("Verification failed")
-
-
-if __name__ == "__main__":
-    main()
+        print(result)

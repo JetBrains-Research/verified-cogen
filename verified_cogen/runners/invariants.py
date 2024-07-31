@@ -1,11 +1,17 @@
 import logging
 import re
 import textwrap
+import pathlib
 
-from verified_cogen.tools.modes import Mode
+from typing import Optional
 
 from verified_cogen.llm import LLM
 from verified_cogen.runners import Runner
+from verified_cogen.tools.modes import Mode
+from verified_cogen.tools import basename
+from verified_cogen.tools.verifier import Verifier
+from verified_cogen.experiments import houdini
+
 
 logger = logging.getLogger(__name__)
 
@@ -65,3 +71,34 @@ class InvariantRunner(Runner):
                 raise ValueError(
                     "Multiple loops in program, not supported in regex mode"
                 )
+
+    @classmethod
+    def run_on_file(
+        cls,
+        logger: logging.Logger,
+        verifier: Verifier,
+        mode: Mode,
+        llm: LLM,
+        total_tries: int,
+        file: str,
+    ) -> Optional[int]:
+        logger.info(f"Running on {file}")
+
+        with open(file, "r") as f:
+            prg = f.read()
+        cls.precheck(prg, mode)
+
+        verification_result = verifier.verify(pathlib.Path(file))
+        if verification_result is not None and verification_result[0]:
+            return 0
+        elif verification_result is None:
+            logger.info("Verification timed out")
+
+        houdini_run = houdini.run_on(
+            llm, verifier, prg, basename(file), llm.grazie_token, llm.prompt_dir
+        )
+
+        if houdini_run is not None:
+            return -1
+
+        return Runner.run_on_file(logger, verifier, mode, llm, total_tries, file)

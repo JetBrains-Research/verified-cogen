@@ -24,13 +24,23 @@ class LLM:
             grazie_jwt_token=grazie_token,
             auth_type=AuthType.USER,
         )
+        self.grazie_token = grazie_token
         self.profile = Profile.get_by_name(profile)
         self.prompt_dir = prompt_dir
-        self.is_gpt = "gpt" in self.profile.name
         self.user_prompts = []
         self.responses = []
         self.had_errors = False
         self.temperature = temperature
+        self.system_prompt = (
+            system_prompt if system_prompt else prompts.sys_prompt(self.prompt_dir)
+        )
+
+    def reset(self):
+        self.user_prompts = []
+        self.responses = []
+        self.had_errors = False
+
+    def set_system_prompt(self, system_prompt: Optional[str]):
         self.system_prompt = (
             system_prompt if system_prompt else prompts.sys_prompt(self.prompt_dir)
         )
