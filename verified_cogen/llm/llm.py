@@ -74,14 +74,15 @@ class LLM:
 
     def produce(self, prg: str):
         self.user_prompts.append(
-            prompts.produce_prompt(self.prompt_dir).format(program=prg)
+            prompts.produce_prompt(self.prompt_dir).replace("{program}", prg)
         )
         return self._make_request()
 
     def add(self, prg: str, checks: str, function: Optional[str] = None):
-        prompt = prompts.add_prompt(self.prompt_dir).format(program=prg, checks=checks)
+        prompt = prompts.add_prompt(self.prompt_dir)
         if "{function}" in prompt and function is not None:
             prompt = prompt.replace("{function}", function)
+        prompt = prompt.replace("{program}", prg).replace("{checks}", checks)
         self.user_prompts.append(prompt)
         return self._make_request()
 

@@ -37,6 +37,7 @@ def get_args():
         "--prompts-directory",
         help="directory containing prompts",
         default=os.getenv("llm/prompts"),
+        required=True,
     )
     parser.add_argument(
         "--grazie-token", help="Grazie JWT token", default=os.getenv("GRAZIE_JWT_TOKEN")
@@ -49,4 +50,5 @@ def get_args():
     parser.add_argument(
         "-s", "--output-style", choices=["stats", "full"], default="full"
     )
+    parser.add_argument("--with-houdini", action="store_true")
     return parser.parse_args()

@@ -35,10 +35,6 @@ fn remove_duplicates(a: &[i32]) -> (result: Vec<i32>)
     let mut result: Vec<i32> = Vec::new();
     let mut i = 0;
     while i < a.len()
-        invariant
-            0 <= i <= a.len(),
-            forall|k: int| #![auto] 0 <= k < result.len() ==> in_array(a@, result[k]),
-            forall|k: int, l: int| 0 <= k < l < result.len() ==> result[k] != result[l],
     {
         if !in_array_exec(&result, a[i]) {
             result.push(a[i]);

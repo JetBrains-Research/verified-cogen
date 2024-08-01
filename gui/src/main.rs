@@ -150,6 +150,7 @@ struct Settings {
     file_mode: FileMode,
     runs: String,
     timeout: String,
+    with_houdini: bool,
 }
 
 impl Default for Settings {
@@ -167,6 +168,7 @@ impl Default for Settings {
             file_mode: FileMode::SingleFile,
             runs: String::from("1"),
             timeout: String::from("60"),
+            with_houdini: false,
         }
     }
 }
@@ -482,6 +484,8 @@ impl AppState {
                     integer_edit_field(ui, "Retries", &mut self.settings.runs, size);
                 }
             });
+
+            ui.checkbox(&mut self.settings.with_houdini, "With houdini");
         });
     }
 

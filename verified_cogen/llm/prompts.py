@@ -62,3 +62,15 @@ def ask_for_fixed_had_errors_prompt(prompt_dir: str) -> str:
 
 def ask_for_timeout_prompt(prompt_dir: str) -> str:
     return read_prompt(f"{prompt_dir}/timeout.txt")
+
+
+def houdini_sys_prompt(prompt_dir: str) -> str:
+    return read_prompt(f"{prompt_dir}/houdini_sys.txt")
+
+
+def remove_failed_invariants_prompt(prompt_dir: str) -> str:
+    return read_prompt(f"{prompt_dir}/remove_failed_invariants.txt")
+
+
+def produce_invariants_json_prompt(prompt_dir: str) -> str:
+    return read_prompt(f"{prompt_dir}/produce_invariants_json.txt")

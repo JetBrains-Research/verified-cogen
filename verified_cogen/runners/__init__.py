@@ -6,7 +6,10 @@ import pathlib
 from verified_cogen.tools import basename, get_cache_dir
 from verified_cogen.tools.modes import Mode
 from verified_cogen.tools.verifier import Verifier
+from verified_cogen.runners.config import Config
 from verified_cogen.llm import LLM
+
+__all__ = ["Runner", "Runner"]
 
 LLM_GENERATED_DIR = pathlib.Path(get_cache_dir()) / "llm-generated"
 
@@ -54,6 +57,7 @@ class Runner(ABC):
     ) -> Optional[int]:
         tries = total_tries
         while tries > 0:
+            logger.info(f"Trying to verify rewritten program with {tries} tries left")
             LLM_GENERATED_DIR.mkdir(parents=True, exist_ok=True)
             output = LLM_GENERATED_DIR / name
             with open(output, "w") as f:
@@ -79,7 +83,7 @@ class Runner(ABC):
         return None
 
     @classmethod
-    def run_on_file(
+    def generic_run_on_file(
         cls,
         logger: Logger,
         verifier: Verifier,
@@ -103,3 +107,16 @@ class Runner(ABC):
         return cls.__try_fixing(
             logger, verifier, llm, total_tries, inv_prg, basename(file)
         )
+
+    @classmethod
+    def run_on_file(
+        cls,
+        logger: Logger,
+        verifier: Verifier,
+        mode: Mode,
+        llm: LLM,
+        total_tries: int,
+        file: str,
+        config: Config,
+    ) -> Optional[int]:
+        return cls.generic_run_on_file(logger, verifier, mode, llm, total_tries, file)

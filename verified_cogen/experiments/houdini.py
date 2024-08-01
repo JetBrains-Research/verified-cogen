@@ -5,95 +5,13 @@ import os
 
 from typing import Optional
 from verified_cogen.runners import LLM_GENERATED_DIR
+from verified_cogen.tools import basename
 from verified_cogen.tools.verifier import Verifier
+from verified_cogen.llm import prompts
 
 from verified_cogen.llm import LLM
 
 log = logging.getLogger(__name__)
-
-
-INVARIANTS_JSON_PROMPT = """Given the following Rust program, output Verus invariants that should go into the `while` loop
-in the function {function}.
-Ensure that the invariants are as comprehensive as they can be.
-Even if you think some invariant is not totally necessary, better add it than not.
-Don't be afraid of using disjunctions if you see that some invariant is not true, for example, at the beginning of the loop.
-Respond with a JSON array of strings, representing the invariants.
-Remember that invariants should not contain a word `invariant` in them, just the expression.
-Here are some examples of verified functions:
-```rust
-fn incr_list(l: Vec<i32>) -> (result: Vec<i32>)
-    requires
-        forall|i: int| 0 <= i < l.len() ==> l[i] + 1 <= i32::MAX,  // avoid overflow
-
-    ensures
-        result.len() == l.len(),
-        forall|i: int| 0 <= i < l.len() ==> #[trigger] result[i] == l[i] + 1,
-{
-    let mut result = Vec::new();
-    for i in 0..l.len()
-        invariant
-            forall|i: int| 0 <= i < l.len() ==> l[i] + 1 <= i32::MAX,
-            result.len() == i,
-            forall|j: int| 0 <= j < i ==> #[trigger] result[j] == l[j] + 1,
-    {
-        result.push(l[i] + 1);
-    }
-    result
-}
-```
-
-```rust
-#[verifier::loop_isolation(false)]
-fn unique(a: &[i32]) -> (result: Vec<i32>)
-    requires
-        forall|i: int, j: int|
-            #![trigger a[i], a[j]]
-            0 <= i && i < j && j < a.len() ==> a[i] <= a[j],
-    ensures
-        forall|i: int, j: int|
-            #![trigger result[i], result[j]]
-            0 <= i && i < j && j < result.len() ==> result[i] < result[j],
-{
-    let mut result: Vec<i32> = Vec::new();
-    let mut i = 0;
-    while i < a.len()
-        invariant
-            0 <= i <= a.len(),
-            forall|k: int, l: int|
-                #![trigger result[k], result[l]]
-                0 <= k && k < l && l < result.len() ==> result[k] < result[l],
-            forall|k: int|
-                #![trigger result[k]]
-                0 <= k && k < result.len() ==> exists|m: int| 0 <= m < i && result[k] == a[m],
-    {
-        if result.len() == 0 || result[result.len() - 1] != a[i] {
-            assert(result.len() == 0 || result[result.len() - 1] < a[i as int]);
-            result.push(a[i]);
-        }
-        i = i + 1;
-    }
-    result
-}
-```
-The program:
-{program}
-"""
-
-HOUDINI_SYS_PROMPT = """
-You are an expert in a Rust verification framework Verus.
-Do not provide ANY explanations. Don't include markdown backticks. Respond only in Rust code when not asked otherwise.
-Do not touch any functions other that {function}
-You will be working with the following program:
-{program}
-"""
-
-REMOVE_FAILED_INVARIANTS_PROMPT = """Some of the provided invariants either have syntax errors or failed to verify.
-Could you please remove the invariants that failed to verify and provide the rest again as a JSON array of strings?
-DO NOT MODIFY THE INVARIANTS OR ADD NEW ONES.
-
-Here's an error from the verifier:
-{error}
-"""
 
 
 def collect_invariants(name: str, grazie_token: str, prompt_dir: str, prg: str):
@@ -109,15 +27,15 @@ def collect_invariants(name: str, grazie_token: str, prompt_dir: str, prg: str):
             )
 
             llm.user_prompts.append(
-                INVARIANTS_JSON_PROMPT.replace("{program}", prg).replace(
-                    "{function}", func
-                )
+                prompts.produce_invariants_json_prompt(prompt_dir)
+                .replace("{program}", prg)
+                .replace("{function}", func)
             )
             response = llm._make_request()
             try:
                 invariants = json.loads(response)
                 result_invariants.extend(invariants)
-                log.debug(
+                log.info(
                     f"Got {len(invariants)} invariants at temperature {temperature}, model {model}"
                 )
             except json.JSONDecodeError:
@@ -130,11 +48,13 @@ def collect_invariants(name: str, grazie_token: str, prompt_dir: str, prg: str):
 def remove_failed_invariants(
     llm: LLM, invariants: list[str], err: str
 ) -> Optional[list[str]]:
-    llm.user_prompts.append(REMOVE_FAILED_INVARIANTS_PROMPT.format(error=err))
+    llm.user_prompts.append(
+        prompts.remove_failed_invariants_prompt(llm.prompt_dir).format(error=err)
+    )
     response = llm._make_request()
     try:
         new_invariants = json.loads(response)
-        log.debug("REMOVED: {}".format(set(invariants).difference(set(new_invariants))))
+        log.info("REMOVED: {}".format(set(invariants).difference(set(new_invariants))))
         return list(set(new_invariants))
     except json.JSONDecodeError:
         print("Error parsing response as JSON")
@@ -153,7 +73,7 @@ def houdini(
     log.info(f"Starting Houdini for {func} in file {name}")
 
     llm.set_system_prompt(
-        HOUDINI_SYS_PROMPT.replace("{program}", prg).replace("{function}", func)
+        prompts.houdini_sys_prompt(llm.prompt_dir).replace("{program}", prg)
     )
 
     while len(invariants) > 0:
@@ -163,7 +83,7 @@ def houdini(
         with open(LLM_GENERATED_DIR / name, "w") as f:
             f.write(prg_with_invariants)
 
-        log.debug(f"Trying to verify with {json.dumps(invariants, indent=2)}")
+        log.info(f"Trying to verify with {json.dumps(invariants, indent=2)}")
         ver_result = verifier.verify(LLM_GENERATED_DIR / name)
         if ver_result is None:
             log.info("Verifier timed out")
@@ -174,7 +94,7 @@ def houdini(
             return prg_with_invariants
         else:
             log.info("Failed to verify invariants")
-            log.debug("Error: {}".format(err))
+            log.info("Error: {}".format(err))
 
             new_invariants = remove_failed_invariants(llm, invariants, out + err)
             if new_invariants is not None and not set(new_invariants).issubset(
@@ -203,7 +123,7 @@ def run_on(
 
     invariants = collect_invariants(name, grazie_token, prompt_dir, prg)
     log.info("Collected {} invariants".format(len(invariants)))
-    log.debug("Invariants: {}".format(json.dumps(invariants, indent=4)))
+    log.info("Invariants: {}".format(json.dumps(invariants, indent=4)))
 
     return houdini(llm, name, verifier, prg, invariants)
 
@@ -225,10 +145,14 @@ if __name__ == "__main__":
         temperature=0.0,
     )
 
+    with open(args.program, "r") as f:
+        prg = f.read()
+
     result = run_on(
         llm,
         Verifier(os.environ["SHELL"], args.verifier_command),
-        args.program,
+        prg,
+        basename(args.program),
         args.grazie_token,
         args.prompt_dir,
     )

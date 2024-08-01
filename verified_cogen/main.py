@@ -6,6 +6,7 @@ from tqdm import tqdm
 from verified_cogen.llm import LLM
 from verified_cogen.runners.generic import GenericRunner
 from verified_cogen.runners.invariants import InvariantRunner
+from verified_cogen.runners.config import Config
 from verified_cogen.tools import pprint_stat, rename_file, tabulate_list
 from verified_cogen.tools.modes import Mode
 from verified_cogen.tools.verifier import Verifier
@@ -81,8 +82,9 @@ def main():
     runner = InvariantRunner if args.bench_type == "invariants" else GenericRunner
 
     verifier = Verifier(args.shell, args.verifier_command, args.verifier_timeout)
+    config = Config(args.with_houdini)
     if args.dir is not None:
-        files = list(pathlib.Path(args.dir).glob("[!.]*"))
+        files = sorted(list(pathlib.Path(args.dir).glob("[!.]*")))
         for file in files:
             with open(file) as f:
                 runner.precheck(f.read(), mode)
@@ -112,7 +114,9 @@ def main():
             args.prompts_directory,
             args.temperature,
         )
-        tries = runner.run_on_file(logger, verifier, mode, llm, args.tries, args.input)
+        tries = runner.run_on_file(
+            logger, verifier, mode, llm, args.tries, args.input, config
+        )
         if tries == 0:
             print("Verified without modification")
         elif tries is not None:

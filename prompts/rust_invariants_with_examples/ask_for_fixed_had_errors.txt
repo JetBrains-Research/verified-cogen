@@ -1,4 +1,4 @@
 There are still some errors:
 {error}
 
-Could you please fix them?
+Could you please fix them? If some invariants does not hold for a number of retries already, try just removing them.
