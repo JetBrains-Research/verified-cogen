@@ -23,10 +23,9 @@ def rolling_max(numbers: List[int]) -> List[int]:
         Invariant(Acc(list_pred(result)))
         Invariant(0 <= i and i <= len(numbers))
         Invariant(len(result) == i)
-        Invariant(Forall(range(i), lambda i1: numbers[i1] <= result[i1]))
-        Invariant(Old(running_max) is None or ((Old(running_max) is not None) and (getVal(Old(running_max)) <= getVal(running_max))))
         Invariant(Implies(len(result) > 0, running_max is not None))
-        Invariant(Implies(len(result) > 0, result[-1] == getVal(running_max)))
+        Invariant(Old(running_max) is None or ((Old(running_max) is not None) and (getVal(Old(running_max)) <= getVal(running_max))))
+        Invariant(Forall(range(i), lambda i1: numbers[i1] <= result[i1]))
         Invariant(Forall(range(i - 1), lambda i1: result[i1] <= result[i1 + 1]))
 
         n = numbers[i]

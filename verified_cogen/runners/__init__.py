@@ -63,7 +63,7 @@ class Runner(ABC):
                 logger.info("Verification timed out")
                 tries -= 1
                 if tries > 0:
-                    inv_prg = llm.ask_for_timeout()
+                    inv_prg = llm.ask_for_timeout(inv_prg)
             else:
                 verified_inv, out_inv, err_inv = verification_result
                 if verified_inv:

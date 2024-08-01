@@ -81,6 +81,6 @@ class LLM:
         self.user_prompts.append(prompt.format(error=err))
         return self._make_request()
 
-    def ask_for_timeout(self):
-        self.user_prompts.append(prompts.ask_for_timeout_prompt(self.prompt_dir))
+    def ask_for_timeout(self, prg : str):
+        self.user_prompts.append(prompts.ask_for_timeout_prompt(self.prompt_dir).replace("{program}", prg))
         return self._make_request()

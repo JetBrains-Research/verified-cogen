@@ -6,6 +6,7 @@ from tqdm import tqdm
 from verified_cogen.llm import LLM
 from verified_cogen.runners.generic import GenericRunner
 from verified_cogen.runners.invariants import InvariantRunner
+from verified_cogen.runners.invariants_CoT import InvariantCoTRunner
 from verified_cogen.tools import pprint_stat, rename_file, tabulate_list
 from verified_cogen.tools.modes import Mode
 from verified_cogen.tools.verifier import Verifier
@@ -17,7 +18,10 @@ logger = logging.getLogger(__name__)
 def run_once(files, args, runner, verifier, mode, is_once) -> tuple[int, int, int]:
     success, success_zero_tries, failed = [], [], []
 
-    for file in tqdm(files):
+    successful_progress_bar = tqdm(total=100.0, desc="Successful Iterations (%)", unit="%", position=0,
+                                   bar_format="{desc}: {percentage:3.0f}%|{bar}|")
+
+    for file in tqdm(files, position=1):
         llm = LLM(
             args.grazie_token,
             args.llm_profile,
@@ -43,6 +47,10 @@ def run_once(files, args, runner, verifier, mode, is_once) -> tuple[int, int, in
         else:
             logger.error(f"{name} failed")
             failed.append(name)
+
+        successful_progress_bar.reset()
+        successful_progress_bar.update(100.0 * len(success) / (len(success_zero_tries) + len(success) + len(failed)))
+        successful_progress_bar.refresh()
 
     if is_once:
         if args.output_style == "full":
@@ -78,7 +86,7 @@ def main():
     if args.input is None and args.dir is None:
         args.input = input("Input file: ").strip()
 
-    runner = InvariantRunner if args.bench_type == "invariants" else GenericRunner
+    runner = InvariantRunner if args.bench_type == "invariants" else (InvariantCoTRunner if args.bench_type == "invariants_cot"  else GenericRunner)
 
     verifier = Verifier(args.shell, args.verifier_command, args.verifier_timeout)
     if args.dir is not None:
