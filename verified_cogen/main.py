@@ -1,8 +1,6 @@
 import logging
 import pathlib
 
-from tqdm import tqdm
-
 from verified_cogen.llm import LLM
 from verified_cogen.runners.generate import GenerateRunner
 from verified_cogen.runners.generic import GenericRunner
