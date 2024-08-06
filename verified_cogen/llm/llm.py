@@ -1,3 +1,5 @@
+import logging
+from http.client import RemoteDisconnected
 from typing import Optional
 
 from grazie.api.client.chat.prompt import ChatPrompt
@@ -6,8 +8,11 @@ from grazie.api.client.gateway import AuthType, GrazieApiGatewayClient
 from grazie.api.client.llm_parameters import LLMParameters
 from grazie.api.client.parameters import Parameters
 from grazie.api.client.profiles import Profile
-from verified_cogen.tools import extract_code_from_llm_output
+
 import verified_cogen.llm.prompts as prompts
+from verified_cogen.tools import extract_code_from_llm_output
+
+logger = logging.getLogger(__name__)
 
 
 class LLM:
@@ -35,7 +40,9 @@ class LLM:
             system_prompt if system_prompt else prompts.sys_prompt(self.prompt_dir)
         )
 
-    def _request(self, temperature: Optional[float] = None):
+    def _request(self, temperature: Optional[float] = None, tries: int = 5):
+        if tries == 0:
+            raise Exception("Exhausted tries to get response from Grazie API")
         if temperature is None:
             temperature = self.temperature
         prompt = ChatPrompt().add_system(self.system_prompt)
@@ -51,11 +58,17 @@ class LLM:
                 prompt = prompt.add_assistant(self.responses[current_response])
                 current_response += 1
 
-        return self.grazie.chat(
-            chat=prompt,
-            profile=self.profile,
-            parameters={LLMParameters.Temperature: Parameters.FloatValue(temperature)},
-        )
+        try:
+            return self.grazie.chat(
+                chat=prompt,
+                profile=self.profile,
+                parameters={
+                    LLMParameters.Temperature: Parameters.FloatValue(temperature)
+                },
+            )
+        except RemoteDisconnected:
+            logger.warning("Grazie API is down, retrying...")
+            return self._request(temperature, tries - 1)
 
     def _make_request(self):
         response = self._request().content

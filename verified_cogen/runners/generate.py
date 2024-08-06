@@ -1,50 +1,37 @@
-from abc import ABC
-from logging import Logger
+import logging
 from typing import Optional
 import pathlib
 
-from verified_cogen.tools import basename, get_cache_dir
 from verified_cogen.tools.modes import Mode
-from verified_cogen.tools.verifier import Verifier
+
 from verified_cogen.llm import LLM
+from verified_cogen.runners import Runner
+from verified_cogen.tools.verifier import Verifier
+from verified_cogen.tools import basename, get_cache_dir
+
 
 LLM_GENERATED_DIR = pathlib.Path(get_cache_dir()) / "llm-generated"
 
+logger = logging.getLogger(__name__)
 
-class Runner(ABC):
+
+class GenerateRunner(Runner):
     @classmethod
     def rewrite(cls, llm: LLM, prg: str) -> str:
-        """Rewrite the program with additional checks in one step."""
-        ...
+        return llm.rewrite(prg)
 
     @classmethod
     def produce(cls, llm: LLM, prg: str) -> str:
-        """Produce the additional checks for the program."""
-        ...
+        raise ValueError("Produce not supported for generate")
 
     @classmethod
     def insert(cls, llm: LLM, prg: str, checks: str, mode: Mode) -> str:
-        """Insert the additional checks into the program."""
-        ...
-
-    @classmethod
-    def precheck(cls, prg: str, mode: Mode):
-        pass
-
-    @classmethod
-    def invoke(cls, logger: Logger, llm: LLM, prg: str, mode: Mode) -> str:
-        logger.info("Invoking LLM")
-        if mode.is_singlestep:
-            inv_prg = cls.rewrite(llm, prg)
-        else:
-            raise ValueError(f"Unexpected mode: {mode}")
-        logger.info("Invocation done")
-        return inv_prg
+        raise ValueError("Insert not supported for generate")
 
     @classmethod
     def try_fixing(
         cls,
-        logger: Logger,
+        logger: logging.Logger,
         verifier: Verifier,
         llm: LLM,
         total_tries: int,
@@ -54,7 +41,7 @@ class Runner(ABC):
         tries = total_tries
         while tries > 0:
             LLM_GENERATED_DIR.mkdir(parents=True, exist_ok=True)
-            output = LLM_GENERATED_DIR / name
+            output = LLM_GENERATED_DIR / f"{name[:-7]}.dfy"
             with open(output, "w") as f:
                 f.write(inv_prg)
             verification_result = verifier.verify(output)
@@ -80,7 +67,7 @@ class Runner(ABC):
     @classmethod
     def run_on_file(
         cls,
-        logger: Logger,
+        logger: logging.Logger,
         verifier: Verifier,
         mode: Mode,
         llm: LLM,
@@ -88,12 +75,6 @@ class Runner(ABC):
         file: str,
     ) -> Optional[int]:
         logger.info(f"Running on {file}")
-
-        verification_result = verifier.verify(pathlib.Path(file))
-        if verification_result is not None and verification_result[0]:
-            return 0
-        elif verification_result is None:
-            logger.info("Verification timed out")
 
         with open(file, "r") as f:
             prg = f.read()
