@@ -1,0 +1,12 @@
+ For a given string, flip lowercase characters to uppercase and uppercase to lowercase.
+>>> flip_case('Hello')
+'hELLO'
+
+Here's a correct unverified solution in python:
+```python
+def flip_case(string: str) -> str:
+    return string.swapcase()
+def check(flip_case):
+    assert flip_case('Hello') == 'hELLO'
+check(flip_case)
+```

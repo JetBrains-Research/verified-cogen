@@ -1,0 +1,19 @@
+
+Given the lengths of the three sides of a triangle. Return True if the three
+sides form a right-angled triangle, False otherwise.
+A right-angled triangle is a triangle in which one angle is right angle or 
+90 degree.
+Example:
+right_angle_triangle(3, 4, 5) == True
+right_angle_triangle(1, 2, 3) == False
+
+Here's a correct unverified solution in python:
+```python
+def right_angle_triangle(a, b, c):
+    return a*a == b*b + c*c or b*b == a*a + c*c or c*c == a*a + b*b
+def check(right_angle_triangle):
+    # Check some simple cases
+    assert right_angle_triangle(3, 4, 5) == True, "This prints if this assert fails 1 (good for debugging!)"
+    assert right_angle_triangle(1, 2, 3) == False
+check(right_angle_triangle)
+```

@@ -1,0 +1,15 @@
+ Given a string, find out how many distinct characters (regardless of case) does it consist of
+>>> count_distinct_characters('xyzXYZ')
+3
+>>> count_distinct_characters('Jerry')
+4
+
+Here's a correct unverified solution in python:
+```python
+def count_distinct_characters(string: str) -> int:
+    return len(set(string.lower()))
+def check(count_distinct_characters):
+    assert count_distinct_characters('xyzXYZ') == 3
+    assert count_distinct_characters('Jerry') == 4
+check(count_distinct_characters)
+```
