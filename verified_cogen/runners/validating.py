@@ -63,7 +63,7 @@ class ValidatingRunner(Runner):
 
     @classmethod
     def insert(cls, llm: LLM, prg: str, checks: str, mode: Mode) -> str:
-        return ValidatingRunner._add_validators(prg, InvariantRunner.insert(llm, prg, mode))
+        return ValidatingRunner._add_validators(prg, InvariantRunner.insert(llm, prg, checks, mode))
 
     @classmethod
     def precheck(cls, prg: str, mode: Mode):
