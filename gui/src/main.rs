@@ -73,12 +73,13 @@ enum BenchMode {
     Invariants,
     Generic,
     Generate,
+    Validating,
 }
 
 impl BenchMode {
     fn llm_generated_path(&self, path: &str) -> PathBuf {
         let name = match self {
-            BenchMode::Invariants | BenchMode::Generic => basename(path).to_string(),
+            BenchMode::Invariants | BenchMode::Generic | BenchMode::Validating => basename(path).to_string(),
             BenchMode::Generate => {
                 let base = basename(path);
                 base.chars()
@@ -97,6 +98,7 @@ impl Display for BenchMode {
             BenchMode::Invariants => write!(f, "invariants"),
             BenchMode::Generic => write!(f, "generic"),
             BenchMode::Generate => write!(f, "generate"),
+            BenchMode::Validating => write!(f, "validating")
         }
     }
 }
@@ -485,6 +487,11 @@ impl AppState {
                     &mut self.settings.bench_type,
                     BenchMode::Generate,
                     "Generate",
+                );
+                ui.radio_value(
+                    &mut self.settings.bench_type,
+                    BenchMode::Validating,
+                    "Validating"
                 );
             });
             ui.horizontal(|ui| {

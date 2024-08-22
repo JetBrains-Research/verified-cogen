@@ -5,6 +5,7 @@ from verified_cogen.llm import LLM
 from verified_cogen.runners.generate import GenerateRunner
 from verified_cogen.runners.generic import GenericRunner
 from verified_cogen.runners.invariants import InvariantRunner
+from verified_cogen.runners.validating import ValidatingRunner
 from verified_cogen.tools import pprint_stat, rename_file, tabulate_list
 from verified_cogen.tools.modes import Mode
 from verified_cogen.tools.verifier import Verifier
@@ -81,6 +82,7 @@ def main():
         "invariants": InvariantRunner,
         "generic": GenericRunner,
         "generate": GenerateRunner,
+        "validating": ValidatingRunner,
     }[args.bench_type]
 
     verifier = Verifier(args.shell, args.verifier_command, args.verifier_timeout)
