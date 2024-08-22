@@ -57,10 +57,10 @@ class InvariantRunner(Runner):
 
     @classmethod
     def precheck(cls, prg: str, mode: Mode):
-        while_count = prg.count("while")
-        if while_count == 0:
-            raise ValueError("No loops in program")
         if mode == Mode.REGEX:
+            while_count = prg.count("while")
+            if while_count == 0:
+                raise ValueError("No loops in program")
             if while_count > 1:
                 raise ValueError(
                     "Multiple loops in program, not supported in regex mode"
