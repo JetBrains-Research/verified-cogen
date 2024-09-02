@@ -9,7 +9,8 @@ from verified_cogen.runners.invariants import InvariantRunner
 # Regular expression to match Dafny method definitions
 method_pattern = re.compile(r'method\s+(\w+)\s*\((.*?)\)\s*returns\s*\((.*?)\)(.*?)\{', re.DOTALL)
 
-def generate_validators(dafny_code):
+
+def generate_validators(dafny_code: str) -> str:
     """
     Create validator-methods for every method in dafny program
 
@@ -45,6 +46,18 @@ def generate_validators(dafny_code):
     return '\n'.join(validators)
 
 
+def remove_asserts_and_invariants(dafny_code: str) -> str:
+    patterns = [
+        r'// assert-line.*\n',
+        r'// assert-start.*?// assert-end\n',
+        r'// invariants-start.*?// invariants-end\n'
+    ]
+    combined_pattern = '|'.join(patterns)
+    cleaned_code = re.sub(combined_pattern, '', dafny_code, flags=re.DOTALL)
+    cleaned_code = re.sub(r'\n\s*\n', '\n', cleaned_code)
+    return cleaned_code.strip()
+
+
 class ValidatingRunner(Runner):
 
     @classmethod
@@ -52,6 +65,10 @@ class ValidatingRunner(Runner):
         validators = generate_validators(prg)
         val_prg = inv_prg + "\n// ==== verifiers ==== //\n" + validators
         return val_prg
+
+    @classmethod
+    def preprocess(cls, prg: str, mode: Mode) -> str:
+        return remove_asserts_and_invariants(prg)
 
     @classmethod
     def rewrite(cls, llm: LLM, prg: str) -> str:

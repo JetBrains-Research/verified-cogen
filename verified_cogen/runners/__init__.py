@@ -32,6 +32,10 @@ class Runner(ABC):
         pass
 
     @classmethod
+    def preprocess(cls, prg: str, mode: Mode) -> str:
+        return prg
+
+    @classmethod
     def invoke(cls, logger: Logger, llm: LLM, prg: str, mode: Mode) -> str:
         logger.info("Invoking LLM")
         if mode.is_singlestep:
@@ -40,6 +44,14 @@ class Runner(ABC):
             raise ValueError(f"Unexpected mode: {mode}")
         logger.info("Invocation done")
         return inv_prg
+
+    @classmethod
+    def verify_program(cls, verifier: Verifier, name: str, prg: str):
+        LLM_GENERATED_DIR.mkdir(parents=True, exist_ok=True)
+        output = LLM_GENERATED_DIR / name
+        with open(output, "w") as f:
+            f.write(prg)
+        return verifier.verify(output)
 
     @classmethod
     def try_fixing(
@@ -53,11 +65,7 @@ class Runner(ABC):
     ) -> Optional[int]:
         tries = total_tries
         while tries > 0:
-            LLM_GENERATED_DIR.mkdir(parents=True, exist_ok=True)
-            output = LLM_GENERATED_DIR / name
-            with open(output, "w") as f:
-                f.write(inv_prg)
-            verification_result = verifier.verify(output)
+            verification_result = cls.verify_program(verifier, name, inv_prg)
             if verification_result is None:
                 logger.info("Verification timed out")
                 tries -= 1
@@ -87,18 +95,19 @@ class Runner(ABC):
         total_tries: int,
         file: str,
     ) -> Optional[int]:
+        name = basename(file)
         logger.info(f"Running on {file}")
 
-        verification_result = verifier.verify(pathlib.Path(file))
+        with open(file, "r") as f:
+            prg = cls.preprocess(f.read(), mode)
+
+        verification_result = cls.verify_program(verifier, name, prg)
         if verification_result is not None and verification_result[0]:
             return 0
         elif verification_result is None:
             logger.info("Verification timed out")
-
-        with open(file, "r") as f:
-            prg = f.read()
         cls.precheck(prg, mode)
         inv_prg = cls.invoke(logger, llm, prg, mode)
         return cls.try_fixing(
-            logger, verifier, llm, total_tries, inv_prg, basename(file)
+            logger, verifier, llm, total_tries, inv_prg, name
         )

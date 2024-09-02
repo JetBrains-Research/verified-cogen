@@ -4,7 +4,7 @@ from verified_cogen.main import get_args, rename_file
 from verified_cogen.tools.modes import Mode
 from verified_cogen.tools.verifier import Verifier
 from verified_cogen.llm.llm import LLM
-from verified_cogen.runners.invariants import InvariantRunner
+from verified_cogen.runners.validating import ValidatingRunner
 
 logger = logging.getLogger(__name__)
 
@@ -19,10 +19,9 @@ def main():
     assert args.retries == 0
 
     directory = pathlib.Path(args.dir)
-    marker_directory = directory / f"../tries_{directory.name}"
+    marker_directory = pathlib.Path(f"results/tries_{directory.name}")
     marker_directory.mkdir(exist_ok=True, parents=True)
-    files = list(directory.glob("[!.]*"))
-
+    files = list(directory.glob("[!.]*.dfy"))
     verifier = Verifier(args.shell, args.verifier_command)
 
     for file in files:
@@ -39,10 +38,13 @@ def main():
             continue
         print("Processing:", display_name)
         try:
-            tries = InvariantRunner.run_on_file(
+            tries = ValidatingRunner.run_on_file(
                 logger, verifier, mode, llm, args.tries, str(file)
             )
-        except:
+        except KeyboardInterrupt:
+            return
+        except Exception as e:
+            print(e)
             tries = None
         with marker_file.open("w") as f:
             f.write(str(tries))
