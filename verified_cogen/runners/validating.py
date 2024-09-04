@@ -7,7 +7,9 @@ from verified_cogen.runners import Runner
 from verified_cogen.runners.invariants import InvariantRunner
 
 # Regular expression to match Dafny method definitions
-method_pattern = re.compile(r'method\s+(\w+)\s*\((.*?)\)\s*returns\s*\((.*?)\)(.*?)\{', re.DOTALL)
+method_pattern = re.compile(
+    r"method\s+(\w+)\s*\((.*?)\)\s*returns\s*\((.*?)\)(.*?)\{", re.DOTALL
+)
 
 
 def generate_validators(dafny_code: str) -> str:
@@ -34,7 +36,9 @@ def generate_validators(dafny_code: str) -> str:
         returns = match.group(3)
         specs = match.group(4)
 
-        validator = f"method {method_name}_valid({parameters}) returns ({returns}){specs}"
+        validator = (
+            f"method {method_name}_valid({parameters}) returns ({returns}){specs}"
+        )
         validator += "{ var ret := "
 
         validator += f"{method_name}({', '.join(param.split(':')[0].strip() for param in parameters.split(',') if param.strip())});"
@@ -43,23 +47,23 @@ def generate_validators(dafny_code: str) -> str:
 
         validators.append(validator)
 
-    return '\n'.join(validators)
+    return "\n".join(validators)
 
 
 def remove_asserts_and_invariants(dafny_code: str) -> str:
     patterns = [
-        r'// assert-line.*\n',
-        r'// assert-start.*?// assert-end\n',
-        r'// invariants-start.*?// invariants-end\n'
+        r" *// assert-start.*?// assert-end\n",
+        r" *// invariants-start.*?// invariants-end\n",
     ]
-    combined_pattern = '|'.join(patterns)
-    cleaned_code = re.sub(combined_pattern, '', dafny_code, flags=re.DOTALL)
-    cleaned_code = re.sub(r'\n\s*\n', '\n', cleaned_code)
-    return cleaned_code.strip()
+    combined_pattern = "|".join(patterns)
+    cleaned_code = re.sub(combined_pattern, "", dafny_code, flags=re.DOTALL)
+    cleaned_code = re.sub(r"\n\s*\n", "\n", cleaned_code)
+    lines = cleaned_code.split("\n")
+    lines = [line for line in lines if "// assert-line" not in line]
+    return "\n".join(lines).strip()
 
 
 class ValidatingRunner(Runner):
-
     @classmethod
     def _add_validators(cls, prg: str, inv_prg: str):
         validators = generate_validators(prg)
@@ -80,7 +84,9 @@ class ValidatingRunner(Runner):
 
     @classmethod
     def insert(cls, llm: LLM, prg: str, checks: str, mode: Mode) -> str:
-        return ValidatingRunner._add_validators(prg, InvariantRunner.insert(llm, prg, checks, mode))
+        return ValidatingRunner._add_validators(
+            prg, InvariantRunner.insert(llm, prg, checks, mode)
+        )
 
     @classmethod
     def precheck(cls, prg: str, mode: Mode):
