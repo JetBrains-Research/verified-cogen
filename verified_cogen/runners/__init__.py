@@ -1,4 +1,3 @@
-from abc import ABC
 from logging import Logger
 from typing import Optional
 import pathlib
@@ -11,103 +10,95 @@ from verified_cogen.llm import LLM
 LLM_GENERATED_DIR = pathlib.Path(get_cache_dir()) / "llm-generated"
 
 
-class Runner(ABC):
-    @classmethod
-    def rewrite(cls, llm: LLM, prg: str) -> str:
+class Runner:
+    llm: LLM
+    logger: Logger
+    verifier: Verifier
+
+    def __init__(self, llm: LLM, logger: Logger, verifier: Verifier):
+        self.llm = llm
+        self.logger = logger
+        self.verifier = verifier
+
+    def rewrite(self, prg: str) -> str:
         """Rewrite the program with additional checks in one step."""
         ...
 
-    @classmethod
-    def produce(cls, llm: LLM, prg: str) -> str:
+    def produce(self, prg: str) -> str:
         """Produce the additional checks for the program."""
         ...
 
-    @classmethod
-    def insert(cls, llm: LLM, prg: str, checks: str, mode: Mode) -> str:
+    def insert(self, prg: str, checks: str, mode: Mode) -> str:
         """Insert the additional checks into the program."""
         ...
 
-    @classmethod
-    def precheck(cls, prg: str, mode: Mode):
+    def precheck(self, prg: str, mode: Mode):
         pass
 
-    @classmethod
-    def preprocess(cls, prg: str, mode: Mode) -> str:
+    def preprocess(self, prg: str, mode: Mode) -> str:
         return prg
 
-    @classmethod
-    def invoke(cls, logger: Logger, llm: LLM, prg: str, mode: Mode) -> str:
-        logger.info("Invoking LLM")
+    def invoke(self, prg: str, mode: Mode) -> str:
+        self.logger.info("Invoking LLM")
         if mode.is_singlestep:
-            inv_prg = cls.rewrite(llm, prg)
+            inv_prg = self.rewrite(prg)
         else:
             raise ValueError(f"Unexpected mode: {mode}")
-        logger.info("Invocation done")
+        self.logger.info("Invocation done")
         return inv_prg
 
-    @classmethod
-    def verify_program(cls, verifier: Verifier, name: str, prg: str):
+    def verify_program(self, name: str, prg: str):
         LLM_GENERATED_DIR.mkdir(parents=True, exist_ok=True)
         output = LLM_GENERATED_DIR / name
         with open(output, "w") as f:
             f.write(prg)
-        return verifier.verify(output)
+        return self.verifier.verify(output)
 
-    @classmethod
     def try_fixing(
-        cls,
-        logger: Logger,
-        verifier: Verifier,
-        llm: LLM,
+        self,
         total_tries: int,
         inv_prg: str,
         name: str,
     ) -> Optional[int]:
         tries = total_tries
         while tries > 0:
-            verification_result = cls.verify_program(verifier, name, inv_prg)
+            verification_result = self.verify_program(name, inv_prg)
             if verification_result is None:
-                logger.info("Verification timed out")
+                self.logger.info("Verification timed out")
                 tries -= 1
                 if tries > 0:
-                    inv_prg = llm.ask_for_timeout()
+                    inv_prg = self.llm.ask_for_timeout()
             else:
                 verified_inv, out_inv, err_inv = verification_result
                 if verified_inv:
                     return total_tries - tries + 1
                 else:
-                    logger.info("Verification failed:")
-                    logger.info(out_inv)
-                    logger.info(err_inv)
-                    logger.info("Retrying...")
+                    self.logger.info("Verification failed:")
+                    self.logger.info(out_inv)
+                    self.logger.info(err_inv)
+                    self.logger.info("Retrying...")
                     tries -= 1
                     if tries > 0:
-                        inv_prg = llm.ask_for_fixed(out_inv + err_inv)
+                        inv_prg = self.llm.ask_for_fixed(out_inv + err_inv)
         return None
 
-    @classmethod
     def run_on_file(
-        cls,
-        logger: Logger,
-        verifier: Verifier,
+        self,
         mode: Mode,
-        llm: LLM,
         total_tries: int,
         file: str,
     ) -> Optional[int]:
         name = basename(file)
-        logger.info(f"Running on {file}")
+        self.logger.info(f"Running on {file}")
 
         with open(file, "r") as f:
-            prg = cls.preprocess(f.read(), mode)
+            prg = self.preprocess(f.read(), mode)
 
-        verification_result = cls.verify_program(verifier, name, prg)
+        verification_result = self.verify_program(name, prg)
         if verification_result is not None and verification_result[0]:
             return 0
         elif verification_result is None:
-            logger.info("Verification timed out")
-        cls.precheck(prg, mode)
-        inv_prg = cls.invoke(logger, llm, prg, mode)
-        return cls.try_fixing(
-            logger, verifier, llm, total_tries, inv_prg, name
-        )
+            self.logger.info("Verification timed out")
+        self.precheck(prg, mode)
+        inv_prg = self.invoke(prg, mode)
+        return self.try_fixing(total_tries, inv_prg, name)

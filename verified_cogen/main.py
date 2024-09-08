@@ -5,6 +5,7 @@ from verified_cogen.llm import LLM
 from verified_cogen.runners.generate import GenerateRunner
 from verified_cogen.runners.generic import GenericRunner
 from verified_cogen.runners.invariants import InvariantRunner
+from verified_cogen.runners.languages import init_basic_languages
 from verified_cogen.runners.validating import ValidatingRunner
 from verified_cogen.tools import pprint_stat, rename_file, tabulate_list
 from verified_cogen.tools.modes import Mode
@@ -66,6 +67,8 @@ def run_once(files, args, runner, verifier, mode, is_once) -> tuple[int, int, in
 
 
 def main():
+    init_basic_languages()
+
     args = get_args()
     mode = Mode(args.insert_conditions_mode)
     if mode == Mode.REGEX:

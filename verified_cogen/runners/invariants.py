@@ -43,20 +43,16 @@ def insert_invariants(llm: LLM, prg: str, inv: str, mode: Mode):
 
 
 class InvariantRunner(Runner):
-    @classmethod
-    def rewrite(cls, llm: LLM, prg: str) -> str:
-        return llm.rewrite(prg)
+    def rewrite(self, prg: str) -> str:
+        return self.llm.rewrite(prg)
 
-    @classmethod
-    def produce(cls, llm: LLM, prg: str) -> str:
-        return llm.produce(prg)
+    def produce(self, prg: str) -> str:
+        return self.llm.produce(prg)
 
-    @classmethod
-    def insert(cls, llm: LLM, prg: str, checks: str, mode: Mode) -> str:
-        return insert_invariants(llm, prg, checks, mode)
+    def insert(self, prg: str, checks: str, mode: Mode) -> str:
+        return insert_invariants(self.llm, prg, checks, mode)
 
-    @classmethod
-    def precheck(cls, prg: str, mode: Mode):
+    def precheck(self, prg: str, mode: Mode):
         if mode == Mode.REGEX:
             while_count = prg.count("while")
             if while_count == 0:

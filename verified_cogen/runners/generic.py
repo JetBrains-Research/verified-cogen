@@ -9,16 +9,13 @@ logger = logging.getLogger(__name__)
 
 
 class GenericRunner(Runner):
-    @classmethod
-    def rewrite(cls, llm: LLM, prg: str) -> str:
-        return llm.rewrite(prg)
+    def rewrite(self, prg: str) -> str:
+        return self.llm.rewrite(prg)
 
-    @classmethod
-    def produce(cls, llm: LLM, prg: str) -> str:
-        return llm.produce(prg)
+    def produce(self, prg: str) -> str:
+        return self.llm.produce(prg)
 
-    @classmethod
-    def insert(cls, llm: LLM, prg: str, checks: str, mode: Mode) -> str:
+    def insert(self, prg: str, checks: str, mode: Mode) -> str:
         if mode == Mode.REGEX:
             raise ValueError("Regex mode not supported for generic")
-        return llm.add(prg, checks)
+        return self.llm.add(prg, checks)
