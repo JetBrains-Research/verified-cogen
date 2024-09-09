@@ -1,0 +1,45 @@
+
+Checks if given string is a palindrome
+>>> is_palindrome('')
+True
+>>> is_palindrome('aba')
+True
+>>> is_palindrome('aaaaa')
+True
+>>> is_palindrome('zbcd')
+False
+
+Here's a correct unverified solution in python:
+```python
+def is_palindrome(string: str) -> bool:
+    """ Test if given string is a palindrome """
+    return string == string[::-1]
+
+
+def make_palindrome(string: str) -> str:
+    if not string:
+        return ''
+
+    beginning_of_suffix = 0
+
+    while not is_palindrome(string[beginning_of_suffix:]):
+        beginning_of_suffix += 1
+
+    return string + string[:beginning_of_suffix][::-1]
+def check(make_palindrome):
+    assert make_palindrome('') == ''
+    assert make_palindrome('cat') == 'catac'
+    assert make_palindrome('cata') == 'catac'
+check(make_palindrome)
+def is_palindrome(text: str):
+    for i in range(len(text)):
+        if text[i] != text[len(text) - 1 - i]:
+            return False
+    return True
+def check(is_palindrome):
+    assert is_palindrome('') == True
+    assert is_palindrome('aba') == True
+    assert is_palindrome('aaaaa') == True
+    assert is_palindrome('zbcd') == False
+check(is_palindrome)
+```

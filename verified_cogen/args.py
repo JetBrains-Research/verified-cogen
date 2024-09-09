@@ -17,7 +17,7 @@ def get_args():
     )
     parser.add_argument(
         "--bench-type",
-        help="benchmark type, available: {invariants, generic}",
+        help="benchmark type, available: {invariants, generic, generate, validating}",
         default="invariants",
     )
     parser.add_argument("--temperature", help="model temperature", default=0, type=int)

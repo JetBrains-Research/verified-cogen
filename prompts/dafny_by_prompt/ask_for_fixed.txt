@@ -1,0 +1,4 @@
+The following errors occurred during verification:
+{error}
+
+Please fix the error by modifying the program accordingly.

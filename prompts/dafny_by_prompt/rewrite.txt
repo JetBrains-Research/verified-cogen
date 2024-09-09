@@ -1,0 +1,6 @@
+Following is a prompt that you should follow to generate a verified Dafny program.
+Ensure that the program is syntactically correct and compiles without errors.
+Keep the pre and post conditions simple and easy to vefify.
+
+Prompt:
+{program}

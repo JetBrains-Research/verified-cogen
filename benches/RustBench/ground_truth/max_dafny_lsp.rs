@@ -3,7 +3,7 @@ use vstd::prelude::*;
 verus! {
 
 #[verifier::loop_isolation(false)]
-fn max(a: &[i32]) -> (x: usize)
+fn max_dafny_lsp(a: &[i32]) -> (x: usize)
     requires
         a.len() > 0,
     ensures

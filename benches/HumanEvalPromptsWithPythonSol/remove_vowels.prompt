@@ -1,0 +1,28 @@
+
+remove_vowels is a function that takes string and returns string without vowels.
+>>> remove_vowels('')
+''
+>>> remove_vowels("abcdef\nghijklm")
+'bcdf\nghjklm'
+>>> remove_vowels('abcdef')
+'bcdf'
+>>> remove_vowels('aaaaa')
+''
+>>> remove_vowels('aaBAA')
+'B'
+>>> remove_vowels('zbcd')
+'zbcd'
+
+Here's a correct unverified solution in python:
+```python
+def remove_vowels(text):
+    return "".join([s for s in text if s.lower() not in ["a", "e", "i", "o", "u"]])
+def check(remove_vowels):
+    assert remove_vowels('') == ''
+    assert remove_vowels("abcdef\nghijklm") == 'bcdf\nghjklm'
+    assert remove_vowels('abcdef') == 'bcdf'
+    assert remove_vowels('aaaaa') == ''
+    assert remove_vowels('aaBAA') == 'B'
+    assert remove_vowels('zbcd') == 'zbcd'
+check(remove_vowels)
+```

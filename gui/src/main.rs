@@ -72,6 +72,24 @@ enum BenchMode {
     #[default]
     Invariants,
     Generic,
+    Generate,
+    Validating,
+}
+
+impl BenchMode {
+    fn llm_generated_path(&self, path: &str) -> PathBuf {
+        let name = match self {
+            BenchMode::Invariants | BenchMode::Generic | BenchMode::Validating => basename(path).to_string(),
+            BenchMode::Generate => {
+                let base = basename(path);
+                base.chars()
+                    .take(base.len() - 7)
+                    .chain(".dfy".chars())
+                    .collect::<String>()
+            }
+        };
+        APP_DIRS.cache_dir().join("llm-generated").join(name)
+    }
 }
 
 impl Display for BenchMode {
@@ -79,6 +97,8 @@ impl Display for BenchMode {
         match self {
             BenchMode::Invariants => write!(f, "invariants"),
             BenchMode::Generic => write!(f, "generic"),
+            BenchMode::Generate => write!(f, "generate"),
+            BenchMode::Validating => write!(f, "validating")
         }
     }
 }
@@ -234,10 +254,8 @@ impl AppState {
                                     *output = Some(py_output);
                                 }
 
-                                let llm_generated_path = APP_DIRS
-                                    .cache_dir()
-                                    .join("llm-generated")
-                                    .join(basename(path));
+                                let llm_generated_path =
+                                    settings.bench_type.llm_generated_path(path);
                                 let llm_code = std::fs::read_to_string(llm_generated_path).ok();
                                 if let Ok(mut last_verified_code) = last_verified_code.write() {
                                     *last_verified_code = llm_code;
@@ -465,6 +483,16 @@ impl AppState {
                     "Invariants",
                 );
                 ui.radio_value(&mut self.settings.bench_type, BenchMode::Generic, "Generic");
+                ui.radio_value(
+                    &mut self.settings.bench_type,
+                    BenchMode::Generate,
+                    "Generate",
+                );
+                ui.radio_value(
+                    &mut self.settings.bench_type,
+                    BenchMode::Validating,
+                    "Validating"
+                );
             });
             ui.horizontal(|ui| {
                 let max_rect = ui.max_rect();

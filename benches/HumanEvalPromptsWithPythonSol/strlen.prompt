@@ -1,0 +1,15 @@
+ Return length of given string
+>>> strlen('')
+0
+>>> strlen('abc')
+3
+
+Here's a correct unverified solution in python:
+```python
+def strlen(string: str) -> int:
+    return len(string)
+def check(strlen):
+    assert strlen('') == 0
+    assert strlen('abc') == 3
+check(strlen)
+```

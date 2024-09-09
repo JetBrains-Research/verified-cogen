@@ -1,0 +1,29 @@
+Create a function encrypt that takes a string as an argument and
+returns a string encrypted with the alphabet being rotated. 
+The alphabet should be rotated in a manner such that the letters 
+shift down by two multiplied to two places.
+For example:
+encrypt('hi') returns 'lm'
+encrypt('asdfghjkl') returns 'ewhjklnop'
+encrypt('gf') returns 'kj'
+encrypt('et') returns 'ix'
+
+Here's a correct unverified solution in python:
+```python
+def encrypt(s):
+    d = 'abcdefghijklmnopqrstuvwxyz'
+    out = ''
+    for c in s:
+        if c in d:
+            out += d[(d.index(c)+2*2) % 26]
+        else:
+            out += c
+    return out
+def check(encrypt):
+    # Check some simple cases
+    assert encrypt('hi') == 'lm', "This prints if this assert fails 1 (good for debugging!)"
+    assert encrypt('asdfghjkl') == 'ewhjklnop', "This prints if this assert fails 1 (good for debugging!)"
+    assert encrypt('gf') == 'kj', "This prints if this assert fails 1 (good for debugging!)"
+    assert encrypt('et') == 'ix'
+check(encrypt)
+```

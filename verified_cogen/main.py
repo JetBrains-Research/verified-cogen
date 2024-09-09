@@ -1,11 +1,11 @@
 import logging
 import pathlib
 
-from tqdm import tqdm
-
 from verified_cogen.llm import LLM
+from verified_cogen.runners.generate import GenerateRunner
 from verified_cogen.runners.generic import GenericRunner
 from verified_cogen.runners.invariants import InvariantRunner
+from verified_cogen.runners.validating import ValidatingRunner
 from verified_cogen.tools import pprint_stat, rename_file, tabulate_list
 from verified_cogen.tools.modes import Mode
 from verified_cogen.tools.verifier import Verifier
@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 def run_once(files, args, runner, verifier, mode, is_once) -> tuple[int, int, int]:
     success, success_zero_tries, failed = [], [], []
 
-    for file in tqdm(files):
+    for file in files:
         llm = LLM(
             args.grazie_token,
             args.llm_profile,
@@ -78,11 +78,19 @@ def main():
     if args.input is None and args.dir is None:
         args.input = input("Input file: ").strip()
 
-    runner = InvariantRunner if args.bench_type == "invariants" else GenericRunner
+    runner = {
+        "invariants": InvariantRunner,
+        "generic": GenericRunner,
+        "generate": GenerateRunner,
+        "validating": ValidatingRunner,
+    }[args.bench_type]
 
     verifier = Verifier(args.shell, args.verifier_command, args.verifier_timeout)
     if args.dir is not None:
         files = list(pathlib.Path(args.dir).glob("[!.]*"))
+        for file in files:
+            with open(file) as f:
+                runner.precheck(f.read(), mode)
 
         if args.runs == 1:
             run_once(files, args, runner, verifier, mode, is_once=True)

@@ -5,7 +5,7 @@ llm-generated
 .envrc
 **/.DS_Store
 pyrightconfig.json
-**/DafnyBench/
+benches/DafnyBench/
 break_assert.rs
 .venv
 **/target
