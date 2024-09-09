@@ -3,6 +3,13 @@ from typing import Pattern
 
 
 class Language:
+    _instance = None
+
+    def __new__(cls, *args, **kwargs):
+        if not isinstance(cls._instance, cls):
+            cls._instance = super().__new__(cls, *args, **kwargs)
+        return cls._instance
+
     @abstractmethod
     def __init__(self): ...
 
@@ -24,6 +31,7 @@ class GenericLanguage(Language):
         validators = []
 
         for match in methods:
+            print(match.groups())
             method_name, parameters, returns, specs = (
                 match.group(1),
                 match.group(2),
