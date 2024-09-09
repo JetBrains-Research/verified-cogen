@@ -3,9 +3,8 @@ from verified_cogen.runners.languages.language import GenericLanguage
 import re
 
 DAFNY_VALIDATOR_TEMPLATE = """\
-def {method_name}_valid({parameters}) -> ({returns}):{specs}\
-    ret = {method_name}({param_names})
-    return ret
+method {method_name}_valid({parameters}) returns ({returns}){specs}\
+{ var ret := {method_name}({param_names}); return ret; }
 """
 
 

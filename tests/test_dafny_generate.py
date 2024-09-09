@@ -16,6 +16,7 @@ def test_dafny_generate():
             result := value * 2;
         }"""
     )
+    result = dafny_lang.generate_validators(code)
     assert dafny_lang.generate_validators(code) == dedent(
         """\
         method main_valid(value: int) returns (result: int)

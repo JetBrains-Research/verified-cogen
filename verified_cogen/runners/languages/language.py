@@ -3,13 +3,6 @@ from typing import Pattern
 
 
 class Language:
-    _instance = None
-
-    def __new__(cls, *args, **kwargs):
-        if not isinstance(cls._instance, cls):
-            cls._instance = super().__new__(cls, *args, **kwargs)
-        return cls._instance
-
     @abstractmethod
     def __init__(self): ...
 

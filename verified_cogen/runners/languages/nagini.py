@@ -3,7 +3,7 @@ from verified_cogen.runners.languages.language import GenericLanguage
 import re
 
 NAGINI_VALIDATOR_TEMPLATE = """\
-def {method_name}_valid({parameters}) -> ({returns}):{specs}
+def {method_name}_valid({parameters}) -> {returns}:{specs}
     ret = {method_name}({param_names})
     return ret
 """
