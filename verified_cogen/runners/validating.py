@@ -1,4 +1,3 @@
-
 from verified_cogen.runners import Runner
 from verified_cogen.runners.languages.language import Language
 from verified_cogen.tools.modes import Mode
