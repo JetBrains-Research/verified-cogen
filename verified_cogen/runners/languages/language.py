@@ -16,14 +16,27 @@ class Language:
     @abstractmethod
     def generate_validators(self, code: str) -> str: ...
 
+    @abstractmethod
+    def remove_asserts_and_invariants(self, code: str) -> str: ...
+
 
 class GenericLanguage(Language):
     method_regex: Pattern[str]
     validator_template: str
+    assert_invariant_patterns: list[str]
+    inline_assert_comment: str
 
-    def __init__(self, method_regex: Pattern[str], validator_template: str):
+    def __init__(
+        self,
+        method_regex: Pattern[str],
+        validator_template: str,
+        assert_invariants_pattern: list[str],
+        inline_assert_comment: str,
+    ):
         self.method_regex = method_regex
         self.validator_template = validator_template
+        self.assert_invariant_patterns = assert_invariants_pattern
+        self.inline_assert_comment = inline_assert_comment
 
     def generate_validators(self, code: str) -> str:
         methods = self.method_regex.finditer(code)
@@ -55,6 +68,16 @@ class GenericLanguage(Language):
             )
 
         return "\n".join(validators)
+
+    def remove_asserts_and_invariants(self, code: str) -> str:
+        import re
+
+        combined_pattern = "|".join(self.assert_invariant_patterns)
+        cleaned_code = re.sub(combined_pattern, "", code, flags=re.DOTALL)
+        cleaned_code = re.sub(r"\n\s*\n", "\n", cleaned_code)
+        lines = cleaned_code.split("\n")
+        lines = [line for line in lines if self.inline_assert_comment not in line]
+        return "\n".join(lines).strip()
 
 
 class LanguageDatabase:

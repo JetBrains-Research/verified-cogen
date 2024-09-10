@@ -1,15 +1,40 @@
 from textwrap import dedent
-from verified_cogen.runners.validating import remove_asserts_and_invariants
+from verified_cogen.runners.languages import LanguageDatabase, init_basic_languages
+
+init_basic_languages()
+
+
+def test_dafny_generate():
+    dafny_lang = LanguageDatabase().get("dafny")
+    code = dedent(
+        """\
+        method main(value: int) returns (result: int)
+            requires value >= 10
+            ensures result >= 20
+        {
+            assert value * 2 >= 20; // assert-line
+            result := value * 2;
+        }"""
+    )
+    assert dafny_lang.generate_validators(code) == dedent(
+        """\
+        method main_valid(value: int) returns (result: int)
+            requires value >= 10
+            ensures result >= 20
+        { var ret := main(value); return ret; }
+        """
+    )
 
 
 def test_remove_line():
+    dafny_lang = LanguageDatabase().get("dafny")
     code = dedent(
         """\
         method main() {
             assert a == 1; // assert-line
         }"""
     )
-    assert remove_asserts_and_invariants(code) == dedent(
+    assert dafny_lang.remove_asserts_and_invariants(code) == dedent(
         """\
         method main() {
         }"""
@@ -17,6 +42,8 @@ def test_remove_line():
 
 
 def test_remove_multiline_assert():
+    dafny_lang = LanguageDatabase().get("dafny")
+
     code = dedent(
         """\
         method main() {
@@ -27,7 +54,7 @@ def test_remove_multiline_assert():
             // assert-end
         }"""
     )
-    assert remove_asserts_and_invariants(code) == dedent(
+    assert dafny_lang.remove_asserts_and_invariants(code) == dedent(
         """\
         method main() {
         }"""
@@ -35,6 +62,8 @@ def test_remove_multiline_assert():
 
 
 def test_remove_invariants():
+    dafny_lang = LanguageDatabase().get("dafny")
+
     code = dedent(
         """\
         method main() {
@@ -47,7 +76,7 @@ def test_remove_invariants():
             }
         }"""
     )
-    assert remove_asserts_and_invariants(code) == dedent(
+    assert dafny_lang.remove_asserts_and_invariants(code) == dedent(
         """\
         method main() {
             while true
@@ -58,6 +87,8 @@ def test_remove_invariants():
 
 
 def test_remove_all():
+    dafny_lang = LanguageDatabase().get("dafny")
+
     code = dedent(
         """\
         method is_prime(k: int) returns (result: bool)
@@ -87,7 +118,7 @@ def test_remove_all():
           }
         }"""
     )
-    assert remove_asserts_and_invariants(code) == dedent(
+    assert dafny_lang.remove_asserts_and_invariants(code) == dedent(
         """\
         method is_prime(k: int) returns (result: bool)
           requires k >= 2

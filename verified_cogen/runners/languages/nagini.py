@@ -19,4 +19,9 @@ class NaginiLanguage(GenericLanguage):
                 re.DOTALL,
             ),
             NAGINI_VALIDATOR_TEMPLATE,
+            [
+                r" *# assert-start.*?# assert-end\n?",
+                r" *# invariants-start.*?# invariants-end\n?",
+            ],
+            "# assert-line",
         )

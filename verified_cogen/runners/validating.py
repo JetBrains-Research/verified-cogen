@@ -10,19 +10,6 @@ from verified_cogen.runners.invariants import InvariantRunner
 from verified_cogen.tools.verifier import Verifier
 
 
-def remove_asserts_and_invariants(dafny_code: str) -> str:
-    patterns = [
-        r" *// assert-start.*?// assert-end\n",
-        r" *// invariants-start.*?// invariants-end\n",
-    ]
-    combined_pattern = "|".join(patterns)
-    cleaned_code = re.sub(combined_pattern, "", dafny_code, flags=re.DOTALL)
-    cleaned_code = re.sub(r"\n\s*\n", "\n", cleaned_code)
-    lines = cleaned_code.split("\n")
-    lines = [line for line in lines if "// assert-line" not in line]
-    return "\n".join(lines).strip()
-
-
 class ValidatingRunner(Runner):
     invariant_runner: InvariantRunner
     language: Language
@@ -40,7 +27,7 @@ class ValidatingRunner(Runner):
         return val_prg
 
     def preprocess(self, prg: str, mode: Mode) -> str:
-        return remove_asserts_and_invariants(prg)
+        return self.language.remove_asserts_and_invariants(prg)
 
     def rewrite(self, prg: str) -> str:
         return self._add_validators(prg, self.invariant_runner.rewrite(prg))

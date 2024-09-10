@@ -17,4 +17,9 @@ class DafnyLanguage(GenericLanguage):
                 r"method\s+(\w+)\s*\((.*?)\)\s*returns\s*\((.*?)\)(.*?)\{", re.DOTALL
             ),
             DAFNY_VALIDATOR_TEMPLATE,
+            [
+                r" *// assert-start.*?// assert-end\n",
+                r" *// invariants-start.*?// invariants-end\n",
+            ],
+            "// assert-line",
         )
