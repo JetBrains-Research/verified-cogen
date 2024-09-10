@@ -1,6 +1,7 @@
-from typing import Pattern
-from verified_cogen.runners.languages.language import GenericLanguage
 import re
+from typing import Pattern
+
+from verified_cogen.runners.languages.language import GenericLanguage
 
 DAFNY_VALIDATOR_TEMPLATE = """\
 method {method_name}_valid({parameters}) returns ({returns}){specs}\

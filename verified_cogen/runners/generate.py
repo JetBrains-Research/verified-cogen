@@ -1,12 +1,10 @@
 import logging
-from typing import Optional
 import pathlib
-
-from verified_cogen.tools.modes import Mode
+from typing import Optional
 
 from verified_cogen.runners import Runner
 from verified_cogen.tools import basename, get_cache_dir
-
+from verified_cogen.tools.modes import Mode
 
 LLM_GENERATED_DIR = pathlib.Path(get_cache_dir()) / "llm-generated"
 

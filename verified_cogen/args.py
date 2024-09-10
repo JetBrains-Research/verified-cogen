@@ -1,6 +1,7 @@
 import argparse
-from verified_cogen.tools.modes import VALID_MODES
 import os
+
+from verified_cogen.tools.modes import VALID_MODES
 
 
 def get_args():

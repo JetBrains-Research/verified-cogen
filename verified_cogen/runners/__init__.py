@@ -1,11 +1,11 @@
+import pathlib
 from logging import Logger
 from typing import Optional
-import pathlib
 
+from verified_cogen.llm import LLM
 from verified_cogen.tools import basename, get_cache_dir
 from verified_cogen.tools.modes import Mode
 from verified_cogen.tools.verifier import Verifier
-from verified_cogen.llm import LLM
 
 LLM_GENERATED_DIR = pathlib.Path(get_cache_dir()) / "llm-generated"
 

@@ -1,15 +1,21 @@
-import pathlib
 import logging
+import pathlib
+
+from verified_cogen.llm.llm import LLM
 from verified_cogen.main import get_args, rename_file
+from verified_cogen.runners.invariants import InvariantRunner
+from verified_cogen.runners.languages import register_basic_languages
+from verified_cogen.runners.languages.language import LanguageDatabase
+from verified_cogen.runners.validating import ValidatingRunner
 from verified_cogen.tools.modes import Mode
 from verified_cogen.tools.verifier import Verifier
-from verified_cogen.llm.llm import LLM
-from verified_cogen.runners.validating import ValidatingRunner
 
 logger = logging.getLogger(__name__)
 
 
 def main():
+    register_basic_languages()
+
     args = get_args()
     mode = Mode(args.insert_conditions_mode)
     assert mode != Mode.REGEX
@@ -31,6 +37,10 @@ def main():
             args.prompts_directory,
             args.temperature,
         )
+        runner = ValidatingRunner(
+            wrapping=InvariantRunner(llm, logger, verifier),
+            language=LanguageDatabase().get("dfy"),
+        )
         display_name = rename_file(file)
         marker_file = marker_directory.joinpath(file.relative_to(directory))
         if marker_file.exists():
@@ -38,9 +48,7 @@ def main():
             continue
         print("Processing:", display_name)
         try:
-            tries = ValidatingRunner.run_on_file(
-                logger, verifier, mode, llm, args.tries, str(file)
-            )
+            tries = runner.run_on_file(mode, args.tries, str(file))
         except KeyboardInterrupt:
             return
         except Exception as e:

@@ -1,6 +1,7 @@
-from typing import Pattern
-from verified_cogen.runners.languages.language import GenericLanguage
 import re
+from typing import Pattern
+
+from verified_cogen.runners.languages.language import GenericLanguage
 
 NAGINI_VALIDATOR_TEMPLATE = """\
 def {method_name}_valid({parameters}) -> {returns}:{specs}\

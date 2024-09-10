@@ -1,24 +1,16 @@
-import re
-from logging import Logger
 
+from verified_cogen.runners import Runner
 from verified_cogen.runners.languages.language import Language
 from verified_cogen.tools.modes import Mode
 
-from verified_cogen.llm import LLM
-from verified_cogen.runners import Runner
-from verified_cogen.runners.invariants import InvariantRunner
-from verified_cogen.tools.verifier import Verifier
-
 
 class ValidatingRunner(Runner):
-    invariant_runner: InvariantRunner
+    wrapped_runner: Runner
     language: Language
 
-    def __init__(
-        self, llm: LLM, logger: Logger, verifier: Verifier, language: Language
-    ):
-        super().__init__(llm, logger, verifier)
-        self.invariant_runner = InvariantRunner(llm, logger, verifier)
+    def __init__(self, wrapping: Runner, language: Language):
+        super().__init__(wrapping.llm, wrapping.logger, wrapping.verifier)
+        self.wrapped_runner = wrapping
         self.language = language
 
     def _add_validators(self, prg: str, inv_prg: str):
@@ -30,15 +22,13 @@ class ValidatingRunner(Runner):
         return self.language.remove_asserts_and_invariants(prg)
 
     def rewrite(self, prg: str) -> str:
-        return self._add_validators(prg, self.invariant_runner.rewrite(prg))
+        return self._add_validators(prg, self.wrapped_runner.rewrite(prg))
 
     def produce(self, prg: str) -> str:
-        return self._add_validators(prg, self.invariant_runner.produce(prg))
+        return self._add_validators(prg, self.wrapped_runner.produce(prg))
 
     def insert(self, prg: str, checks: str, mode: Mode) -> str:
-        return self._add_validators(
-            prg, self.invariant_runner.insert(prg, checks, mode)
-        )
+        return self._add_validators(prg, self.wrapped_runner.insert(prg, checks, mode))
 
     def precheck(self, prg: str, mode: Mode):
-        return self.invariant_runner.precheck(prg, mode)
+        return self.wrapped_runner.precheck(prg, mode)

@@ -90,7 +90,7 @@ class LanguageDatabase:
             cls._instance = super().__new__(cls, *args, **kwargs)
         return cls._instance
 
-    def add(self, name: str, aliases: list[str], definition: Language):
+    def register(self, name: str, aliases: list[str], definition: Language):
         self.languages[name] = definition
         self.regularise[name] = name
         for alias in aliases:

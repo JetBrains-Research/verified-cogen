@@ -2,10 +2,9 @@ import logging
 import re
 import textwrap
 
-from verified_cogen.tools.modes import Mode
-
 from verified_cogen.llm import LLM
 from verified_cogen.runners import Runner
+from verified_cogen.tools.modes import Mode
 
 logger = logging.getLogger(__name__)
 

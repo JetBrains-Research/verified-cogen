@@ -1,8 +1,8 @@
 import re
 from textwrap import dedent
-from verified_cogen.runners.languages import LanguageDatabase, init_basic_languages
+from verified_cogen.runners.languages import LanguageDatabase, register_basic_languages
 
-init_basic_languages()
+register_basic_languages()
 
 
 def test_nagini_generate():

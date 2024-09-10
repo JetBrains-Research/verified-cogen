@@ -1,16 +1,16 @@
 import logging
 import pathlib
 
+from verified_cogen.args import get_args
 from verified_cogen.llm import LLM
 from verified_cogen.runners.generate import GenerateRunner
 from verified_cogen.runners.generic import GenericRunner
 from verified_cogen.runners.invariants import InvariantRunner
-from verified_cogen.runners.languages import init_basic_languages
+from verified_cogen.runners.languages import register_basic_languages
 from verified_cogen.runners.validating import ValidatingRunner
 from verified_cogen.tools import pprint_stat, rename_file, tabulate_list
 from verified_cogen.tools.modes import Mode
 from verified_cogen.tools.verifier import Verifier
-from verified_cogen.args import get_args
 
 logger = logging.getLogger(__name__)
 
@@ -67,7 +67,7 @@ def run_once(files, args, runner, verifier, mode, is_once) -> tuple[int, int, in
 
 
 def main():
-    init_basic_languages()
+    register_basic_languages()
 
     args = get_args()
     mode = Mode(args.insert_conditions_mode)

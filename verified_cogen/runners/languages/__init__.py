@@ -3,6 +3,6 @@ from verified_cogen.runners.languages.language import LanguageDatabase
 from verified_cogen.runners.languages.nagini import NaginiLanguage
 
 
-def init_basic_languages():
-    LanguageDatabase().add("dafny", ["dfy"], DafnyLanguage())
-    LanguageDatabase().add("nagini", ["py", "python"], NaginiLanguage())
+def register_basic_languages():
+    LanguageDatabase().register("dafny", ["dfy"], DafnyLanguage())
+    LanguageDatabase().register("nagini", ["py", "python"], NaginiLanguage())
