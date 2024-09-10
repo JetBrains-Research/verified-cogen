@@ -40,8 +40,11 @@ class Runner:
 
     def invoke(self, prg: str, mode: Mode) -> str:
         self.logger.info("Invoking LLM")
-        if mode.is_singlestep:
+        if mode == Mode.LLM_SINGLE_STEP:
             inv_prg = self.rewrite(prg)
+        elif mode == Mode.LLM or mode == Mode.REGEX:
+            checks = self.produce(prg)
+            inv_prg = self.insert(prg, checks, mode)
         else:
             raise ValueError(f"Unexpected mode: {mode}")
         self.logger.info("Invocation done")
