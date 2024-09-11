@@ -79,9 +79,9 @@ class Runner:
                     self.logger.info("Verification failed:")
                     self.logger.info(out_inv)
                     self.logger.info(err_inv)
-                    self.logger.info("Retrying...")
                     tries -= 1
                     if tries > 0:
+                        self.logger.info(f"Retrying with {tries} tries left...")
                         inv_prg = self.llm.ask_for_fixed(out_inv + err_inv)
         return None
 

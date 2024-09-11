@@ -8,4 +8,5 @@ PYLOG_LEVEL=INFO NOFILE=1 incremental_run \
     --prompts-directory=prompts/humaneval-dafny \
     --verifier-command="dafny verify --allow-warnings --verification-time-limit 10" \
     --insert-conditions-mode=llm-single-step \
+    --tries 10 \
     --dir="Benches/HumanEval-Dafny"

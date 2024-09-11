@@ -36,6 +36,7 @@ def main():
         results = json.load(f)
 
     files = list(directory.glob("[!.]*.dfy"))
+    files.sort()
     verifier = Verifier(args.shell, args.verifier_command)
 
     for file in files:
@@ -52,9 +53,9 @@ def main():
         display_name = rename_file(file)
         marker_name = str(file.relative_to(directory))
         if marker_name in results and isinstance(results[marker_name], int):
-            print("Skipping:", display_name)
+            logger.info(f"Skipping: {display_name} as it has already been verified")
             continue
-        print("Processing:", display_name)
+        logger.info(f"Processing: {display_name}")
         try:
             tries = runner.run_on_file(mode, args.tries, str(file))
         except KeyboardInterrupt:
@@ -64,6 +65,9 @@ def main():
             tries = None
         if tries is not None:
             results[marker_name] = tries
+            logger.info(f"Verified {display_name} in {tries} tries")
+        else:
+            logger.info(f"Failed to verify {display_name}")
         with open(json_results, "w") as f:
             json.dump(results, f, indent=2)
 

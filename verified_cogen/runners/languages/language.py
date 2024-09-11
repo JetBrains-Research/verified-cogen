@@ -44,7 +44,6 @@ class GenericLanguage(Language):
         validators = []
 
         for match in methods:
-            print(match.groups())
             method_name, parameters, returns, specs = (
                 match.group(1),
                 match.group(2),

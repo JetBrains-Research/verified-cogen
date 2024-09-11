@@ -1,5 +1,40 @@
 Rewrite the following dafny program, adding correct invariants into `while` loops.
 Also add assertions in nessesary places.
 Do not change the code, only add invariants and assertions. Don't remove any helper functions, they are there to help you.
+You might need to work with accumulating functions, such as sum, so here's an example of how to do that:
+```dafny
+function sum(s: seq<int>) : int {
+    if |s| == 0 then 0 else s[0] + sum(s[1..])
+}
+
+lemma sum_prop(s: seq<int>)
+    requires |s| > 0
+    ensures sum(s) == sum(s[..|s| - 1]) + s[ |s| - 1 ]
+{
+    if (|s| > 1) {
+        assert (s[1..][..|s[1..]| - 1]) == s[1..|s| - 1];
+    }
+}
+
+method sum_loop(numbers: seq<int>) returns (s: int)
+    ensures s == sum(numbers)
+ {
+    assert numbers[..|numbers|] == numbers;
+    s := 0;
+    var i := 0;
+    while (i < |numbers|)
+        invariant 0 <= i <= |numbers|
+        invariant s == sum(numbers[..i])
+    {
+        assert sum(numbers[..i + 1]) == sum(numbers[..i]) + numbers[i] by {
+            assert numbers[..i+1][..i] == numbers[..i];
+            sum_prop(numbers[..i + 1]);
+        }
+        s := s + numbers[i];
+
+        i := i + 1;
+    }
+}
+```
 The program:
 {program}

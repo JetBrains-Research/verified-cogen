@@ -17,3 +17,5 @@ run.sh
 **/.pytest_cache
 run_nagini.py
 /tmp
+results
+results/*
