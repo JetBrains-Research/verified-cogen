@@ -1,0 +1,5 @@
+Rewrite the following dafny program, adding correct invariants into `while` loops.
+Also add assertions in nessesary places.
+Do not change the code, only add invariants and assertions. Don't remove any helper functions, they are there to help you.
+The program:
+{program}

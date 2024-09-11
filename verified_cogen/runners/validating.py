@@ -24,7 +24,7 @@ class ValidatingRunner(Runner):
         return self._add_validators(prg, self.wrapped_runner.rewrite(prg))
 
     def produce(self, prg: str) -> str:
-        return self._add_validators(prg, self.wrapped_runner.produce(prg))
+        return self.wrapped_runner.produce(prg)
 
     def insert(self, prg: str, checks: str, mode: Mode) -> str:
         return self._add_validators(prg, self.wrapped_runner.insert(prg, checks, mode))

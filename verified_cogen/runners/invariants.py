@@ -35,10 +35,10 @@ def insert_invariants(llm: LLM, prg: str, inv: str, mode: Mode):
         return insert_invariants_regex(prg, inv)
     elif mode == Mode.LLM:
         return insert_invariants_llm(llm, prg, inv)
-    elif mode.is_singlestep:
+    elif mode == Mode.LLM_SINGLE_STEP:
         raise ValueError("Single-step mode does not require insertion")
     else:
-        raise ValueError(f"Unexpected mode: {mode}")
+        raise ValueError(f"insert_invariants: Unexpected mode: {mode}")
 
 
 class InvariantRunner(Runner):

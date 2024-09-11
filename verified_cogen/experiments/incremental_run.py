@@ -1,5 +1,6 @@
 import logging
 import pathlib
+import json
 
 from verified_cogen.llm.llm import LLM
 from verified_cogen.main import get_args, rename_file
@@ -25,8 +26,15 @@ def main():
     assert args.retries == 0
 
     directory = pathlib.Path(args.dir)
-    marker_directory = pathlib.Path(f"results/tries_{directory.name}")
-    marker_directory.mkdir(exist_ok=True, parents=True)
+    results_directory = pathlib.Path("results")
+    results_directory.mkdir(exist_ok=True)
+    json_results = pathlib.Path("results") / f"tries_{directory.name}.json"
+    if not json_results.exists():
+        with open(json_results, "w") as f:
+            json.dump({}, f)
+    with open(json_results, "r") as f:
+        results = json.load(f)
+
     files = list(directory.glob("[!.]*.dfy"))
     verifier = Verifier(args.shell, args.verifier_command)
 
@@ -42,8 +50,8 @@ def main():
             language=LanguageDatabase().get("dfy"),
         )
         display_name = rename_file(file)
-        marker_file = marker_directory.joinpath(file.relative_to(directory))
-        if marker_file.exists():
+        marker_name = str(file.relative_to(directory))
+        if marker_name in results and isinstance(results[marker_name], int):
             print("Skipping:", display_name)
             continue
         print("Processing:", display_name)
@@ -54,8 +62,10 @@ def main():
         except Exception as e:
             print(e)
             tries = None
-        with marker_file.open("w") as f:
-            f.write(str(tries))
+        if tries is not None:
+            results[marker_name] = tries
+        with open(json_results, "w") as f:
+            json.dump(results, f, indent=2)
 
 
 if __name__ == "__main__":
