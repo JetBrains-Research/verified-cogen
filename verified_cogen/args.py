@@ -50,6 +50,7 @@ def get_default_parser():
     parser.add_argument(
         "-s", "--output-style", choices=["stats", "full"], default="full"
     )
+    parser.add_argument("--filter-by-ext", help="filter by extension", default=None)
     return parser
 
 

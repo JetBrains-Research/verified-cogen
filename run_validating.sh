@@ -10,6 +10,7 @@ PYLOG_LEVEL=INFO NOFILE=1 poetry run incremental_run \
     --llm-profile="anthropic-claude-3.5-sonnet" \
     --insert-conditions-mode=llm-single-step \
     --tries 10 \
+    --bench-type=validating \
     --verifier-command="$vcmd" \
     --prompts-directory="$prompts_dir" \
     --dir="$dir" \
