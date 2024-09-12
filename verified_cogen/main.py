@@ -7,15 +7,33 @@ from verified_cogen.runners.generate import GenerateRunner
 from verified_cogen.runners.generic import GenericRunner
 from verified_cogen.runners.invariants import InvariantRunner
 from verified_cogen.runners.languages import register_basic_languages
+from verified_cogen.runners.languages.language import LanguageDatabase
 from verified_cogen.runners.validating import ValidatingRunner
-from verified_cogen.tools import pprint_stat, rename_file, tabulate_list
+from verified_cogen.tools import (
+    ext_glob,
+    pprint_stat,
+    rename_file,
+    tabulate_list,
+    extension_from_file_list,
+)
 from verified_cogen.tools.modes import Mode
 from verified_cogen.tools.verifier import Verifier
+from pathlib import Path
+from typing import Callable
+from verified_cogen.runners import Runner
+from logging import Logger
 
 logger = logging.getLogger(__name__)
 
 
-def run_once(files, args, runner, verifier, mode, is_once) -> tuple[int, int, int]:
+def run_once(
+    files: list[Path],
+    args,
+    runner_cls: Callable[[LLM, Logger, Verifier], Runner],
+    verifier: Verifier,
+    mode: Mode,
+    is_once: bool,
+) -> tuple[int, int, int]:
     success, success_zero_tries, failed = [], [], []
 
     for file in files:
@@ -26,12 +44,12 @@ def run_once(files, args, runner, verifier, mode, is_once) -> tuple[int, int, in
             args.temperature,
         )
 
+        runner = runner_cls(llm, logger, verifier)
+
         retries = args.retries + 1
         tries = None
         while retries > 0 and tries is None:
-            tries = runner.run_on_file(
-                logger, verifier, mode, llm, args.tries, str(file)
-            )
+            tries = runner.run_on_file(mode, args.tries, str(file))
             retries -= 1
 
         name = rename_file(file)
@@ -66,6 +84,28 @@ def run_once(files, args, runner, verifier, mode, is_once) -> tuple[int, int, in
     return len(success_zero_tries), len(success), len(failed)
 
 
+def make_runner_cls(
+    bench_type: str, extension: str
+) -> Callable[[LLM, Logger, Verifier], Runner]:
+    def runner_cls(llm: LLM, logger: Logger, verifier: Verifier):
+        match bench_type:
+            case "invariants":
+                return InvariantRunner(llm, logger, verifier)
+            case "generic":
+                return GenericRunner(llm, logger, verifier)
+            case "generate":
+                return GenerateRunner(llm, logger, verifier)
+            case "validating":
+                return ValidatingRunner(
+                    InvariantRunner(llm, logger, verifier),
+                    LanguageDatabase().get(extension),
+                )
+            case _:
+                raise ValueError(f"Unexpected bench_type: {bench_type}")
+
+    return runner_cls
+
+
 def main():
     register_basic_languages()
 
@@ -81,26 +121,32 @@ def main():
     if args.input is None and args.dir is None:
         args.input = input("Input file: ").strip()
 
-    runner = {
-        "invariants": InvariantRunner,
-        "generic": GenericRunner,
-        "generate": GenerateRunner,
-        "validating": ValidatingRunner,
-    }[args.bench_type]
-
     verifier = Verifier(args.shell, args.verifier_command, args.verifier_timeout)
     if args.dir is not None:
-        files = list(pathlib.Path(args.dir).glob("[!.]*"))
+        files = sorted(list(pathlib.Path(args.dir).glob(ext_glob(args.filter_by_ext))))
+        runner_cls = make_runner_cls(args.bench_type, extension_from_file_list(files))
+        runner = runner_cls(
+            LLM(
+                args.grazie_token,
+                args.llm_profile,
+                args.prompts_directory,
+                args.temperature,
+            ),
+            logger,
+            verifier,
+        )
         for file in files:
             with open(file) as f:
                 runner.precheck(f.read(), mode)
 
         if args.runs == 1:
-            run_once(files, args, runner, verifier, mode, is_once=True)
+            run_once(files, args, runner_cls, verifier, mode, is_once=True)
         else:
             success_zero_tries, success, failed = 0, 0, 0
             for _ in range(args.runs):
-                s0, s, f = run_once(files, args, runner, verifier, mode, is_once=False)
+                s0, s, f = run_once(
+                    files, args, runner_cls, verifier, mode, is_once=False
+                )
                 success_zero_tries += s0
                 success += s
                 failed += f
@@ -120,7 +166,10 @@ def main():
             args.prompts_directory,
             args.temperature,
         )
-        tries = runner.run_on_file(logger, verifier, mode, llm, args.tries, args.input)
+        runner = make_runner_cls(args.bench_type, Path(args.input).suffix[1:])(
+            llm, logger, verifier
+        )
+        tries = runner.run_on_file(mode, args.tries, args.input)
         if tries == 0:
             print("Verified without modification")
         elif tries is not None:

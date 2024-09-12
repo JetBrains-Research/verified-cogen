@@ -3,7 +3,8 @@ import pathlib
 import json
 
 from verified_cogen.llm.llm import LLM
-from verified_cogen.main import get_args, rename_file
+from verified_cogen.args import get_args
+from verified_cogen.tools import rename_file, ext_glob, extension_from_file_list
 from verified_cogen.runners.invariants import InvariantRunner
 from verified_cogen.runners.languages import register_basic_languages
 from verified_cogen.runners.languages.language import LanguageDatabase
@@ -21,7 +22,7 @@ def main():
     mode = Mode(args.insert_conditions_mode)
     assert mode != Mode.REGEX
     assert args.dir is not None
-    assert args.bench_type == "invariants"
+    assert args.bench_type == "validating", args.bench_type
     assert args.runs == 1
     assert args.retries == 0
 
@@ -35,8 +36,11 @@ def main():
     with open(json_results, "r") as f:
         results = json.load(f)
 
-    files = list(directory.glob("[!.]*.dfy"))
+    files = list(directory.glob(ext_glob(args.filter_by_ext)))
+    assert len(files) > 0, "No files found in the directory"
     files.sort()
+
+    language = LanguageDatabase().get(extension_from_file_list(files))
     verifier = Verifier(args.shell, args.verifier_command)
 
     for file in files:
@@ -48,7 +52,7 @@ def main():
         )
         runner = ValidatingRunner(
             wrapping=InvariantRunner(llm, logger, verifier),
-            language=LanguageDatabase().get("dfy"),
+            language=language,
         )
         display_name = rename_file(file)
         marker_name = str(file.relative_to(directory))
