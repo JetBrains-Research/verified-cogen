@@ -3,7 +3,8 @@ import pathlib
 import json
 
 from verified_cogen.llm.llm import LLM
-from verified_cogen.main import get_args, rename_file
+from verified_cogen.args import get_default_parser
+from verified_cogen.tools import rename_file
 from verified_cogen.runners.invariants import InvariantRunner
 from verified_cogen.runners.languages import register_basic_languages
 from verified_cogen.runners.languages.language import LanguageDatabase
@@ -17,7 +18,10 @@ logger = logging.getLogger(__name__)
 def main():
     register_basic_languages()
 
-    args = get_args()
+    parser = get_default_parser()
+    parser.add_argument("--filter-by-ext", help="filter by extension", default=None)
+
+    args = parser.parse_args()
     mode = Mode(args.insert_conditions_mode)
     assert mode != Mode.REGEX
     assert args.dir is not None
@@ -35,8 +39,23 @@ def main():
     with open(json_results, "r") as f:
         results = json.load(f)
 
-    files = list(directory.glob("[!.]*.dfy"))
+    if args.filter_by_ext is not None:
+        files = list(directory.glob(f"[!.]*.{args.filter_by_ext}"))
+    else:
+        files = list(directory.glob("[!.]*"))
+    assert len(files) > 0, "No files found in the directory"
     files.sort()
+
+    extension = files[0].suffix[1:]
+    if (
+        different := next((f for f in files if f.suffix[1:] != extension), None)
+    ) is not None:
+        logger.error(
+            f"Found files different extensions: {files[0].name} and {different.name}, please use a single extension"
+        )
+        return
+
+    language = LanguageDatabase().get(extension)
     verifier = Verifier(args.shell, args.verifier_command)
 
     for file in files:
@@ -48,7 +67,7 @@ def main():
         )
         runner = ValidatingRunner(
             wrapping=InvariantRunner(llm, logger, verifier),
-            language=LanguageDatabase().get("dfy"),
+            language=language,
         )
         display_name = rename_file(file)
         marker_name = str(file.relative_to(directory))
