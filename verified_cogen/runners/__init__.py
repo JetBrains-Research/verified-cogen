@@ -32,6 +32,14 @@ class Runner:
         """Insert the additional checks into the program."""
         ...
 
+    def ask_for_timeout(self) -> str:
+        """Ask the LLM to fix the program with a timeout."""
+        return self.llm.ask_for_timeout()
+
+    def ask_for_fixed(self, err: str) -> str:
+        """Ask the LLM to fix the program with the given output."""
+        return self.llm.ask_for_fixed(err)
+
     def precheck(self, prg: str, mode: Mode):
         pass
 
@@ -70,7 +78,7 @@ class Runner:
                 self.logger.info("Verification timed out")
                 tries -= 1
                 if tries > 0:
-                    inv_prg = self.llm.ask_for_timeout()
+                    inv_prg = self.ask_for_timeout()
             else:
                 verified_inv, out_inv, err_inv = verification_result
                 if verified_inv:
@@ -82,7 +90,7 @@ class Runner:
                     tries -= 1
                     if tries > 0:
                         self.logger.info(f"Retrying with {tries} tries left...")
-                        inv_prg = self.llm.ask_for_fixed(out_inv + err_inv)
+                        inv_prg = self.ask_for_fixed(out_inv + err_inv)
         return None
 
     def run_on_file(
