@@ -1,4 +1,4 @@
-name: Run pytest and ruff
+name: Run pytest, ruff, and pyright
 
 on: [push]
 
@@ -8,7 +8,7 @@ env:
   POETRY_URL: https://install.python-poetry.org
 
 jobs:
-  run-pytest:
+  run-tests:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
