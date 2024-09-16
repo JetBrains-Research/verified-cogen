@@ -135,7 +135,7 @@ def main():
             ),
             logger,
             verifier,
-            log_tries
+            log_tries,
         )
         for file in files:
             with open(file) as f:

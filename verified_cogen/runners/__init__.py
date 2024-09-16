@@ -16,7 +16,13 @@ class Runner:
     verifier: Verifier
     log_tries: Optional[pathlib.Path]
 
-    def __init__(self, llm: LLM, logger: Logger, verifier: Verifier, log_tries: Optional[pathlib.Path] = None):
+    def __init__(
+        self,
+        llm: LLM,
+        logger: Logger,
+        verifier: Verifier,
+        log_tries: Optional[pathlib.Path] = None,
+    ):
         self.llm = llm
         self.logger = logger
         self.verifier = verifier
@@ -83,7 +89,9 @@ class Runner:
     ) -> Optional[int]:
         tries = total_tries
         while tries > 0:
-            verification_result = self.verify_program(name, total_tries - tries + 1, inv_prg)
+            verification_result = self.verify_program(
+                name, total_tries - tries + 1, inv_prg
+            )
             if verification_result is None:
                 self.logger.info("Verification timed out")
                 tries -= 1
