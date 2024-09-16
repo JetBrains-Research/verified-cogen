@@ -51,6 +51,7 @@ def get_default_parser():
         "-s", "--output-style", choices=["stats", "full"], default="full"
     )
     parser.add_argument("--filter-by-ext", help="filter by extension", default=None)
+    parser.add_argument("--log-tries", help="Save output of every try to given dir", default=None)
     return parser
 
 

@@ -120,6 +120,7 @@ def main():
 
     if args.input is None and args.dir is None:
         args.input = input("Input file: ").strip()
+    log_tries = pathlib.Path(args.log_tries) if args.log_tries is not None else None
 
     verifier = Verifier(args.shell, args.verifier_command, args.verifier_timeout)
     if args.dir is not None:
@@ -134,6 +135,7 @@ def main():
             ),
             logger,
             verifier,
+            log_tries
         )
         for file in files:
             with open(file) as f:
@@ -167,7 +169,7 @@ def main():
             args.temperature,
         )
         runner = make_runner_cls(args.bench_type, Path(args.input).suffix[1:])(
-            llm, logger, verifier
+            llm, logger, verifier, log_tries
         )
         tries = runner.run_on_file(mode, args.tries, args.input)
         if tries == 0:
