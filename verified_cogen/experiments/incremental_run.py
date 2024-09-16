@@ -27,6 +27,7 @@ def main():
     assert args.retries == 0
 
     directory = pathlib.Path(args.dir)
+    log_tries = pathlib.Path(args.log_tries) if args.log_tries is not None else None
     results_directory = pathlib.Path("results")
     results_directory.mkdir(exist_ok=True)
     json_results = pathlib.Path("results") / f"tries_{directory.name}.json"
@@ -51,7 +52,7 @@ def main():
             args.temperature,
         )
         runner = ValidatingRunner(
-            wrapping=InvariantRunner(llm, logger, verifier),
+            wrapping=InvariantRunner(llm, logger, verifier, log_tries),
             language=language,
         )
         display_name = rename_file(file)

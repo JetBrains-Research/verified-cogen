@@ -14,11 +14,21 @@ class Runner:
     llm: LLM
     logger: Logger
     verifier: Verifier
+    log_tries: Optional[pathlib.Path]
 
-    def __init__(self, llm: LLM, logger: Logger, verifier: Verifier):
+    def __init__(
+        self,
+        llm: LLM,
+        logger: Logger,
+        verifier: Verifier,
+        log_tries: Optional[pathlib.Path] = None,
+    ):
         self.llm = llm
         self.logger = logger
         self.verifier = verifier
+        self.log_tries = log_tries
+        if self.log_tries is not None:
+            self.log_tries.mkdir(exist_ok=True, parents=True)
 
     def rewrite(self, prg: str) -> str:
         """Rewrite the program with additional checks in one step."""
@@ -58,9 +68,16 @@ class Runner:
         self.logger.info("Invocation done")
         return inv_prg
 
-    def verify_program(self, name: str, prg: str):
+    def _verification_file(self, name: str, try_n: int) -> pathlib.Path:
+        if self.log_tries is not None:
+            base, extension = name.rsplit(".", 1)
+            return self.log_tries / f"{base}.{try_n}.{extension}"
+        else:
+            return LLM_GENERATED_DIR / name
+
+    def verify_program(self, name: str, try_n: int, prg: str):
         LLM_GENERATED_DIR.mkdir(parents=True, exist_ok=True)
-        output = LLM_GENERATED_DIR / name
+        output = self._verification_file(name, try_n)
         with open(output, "w") as f:
             f.write(prg)
         return self.verifier.verify(output)
@@ -73,7 +90,9 @@ class Runner:
     ) -> Optional[int]:
         tries = total_tries
         while tries > 0:
-            verification_result = self.verify_program(name, inv_prg)
+            verification_result = self.verify_program(
+                name, total_tries - tries + 1, inv_prg
+            )
             if verification_result is None:
                 self.logger.info("Verification timed out")
                 tries -= 1
@@ -105,7 +124,7 @@ class Runner:
         with open(file, "r") as f:
             prg = self.preprocess(f.read(), mode)
 
-        verification_result = self.verify_program(name, prg)
+        verification_result = self.verify_program(name, 0, prg)
         if verification_result is not None and verification_result[0]:
             return 0
         elif verification_result is None:
