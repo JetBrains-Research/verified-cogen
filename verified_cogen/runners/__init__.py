@@ -27,7 +27,8 @@ class Runner:
         self.logger = logger
         self.verifier = verifier
         self.log_tries = log_tries
-        self.log_tries.mkdir(exist_ok=True, parents=True)
+        if self.log_tries is not None:
+            self.log_tries.mkdir(exist_ok=True, parents=True)
 
     def rewrite(self, prg: str) -> str:
         """Rewrite the program with additional checks in one step."""

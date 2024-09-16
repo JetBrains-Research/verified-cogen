@@ -38,5 +38,7 @@ jobs:
         run: poetry run ruff format verified_cogen --check
       - name: Run ruff linter
         run: poetry run ruff check verified_cogen
+      - name: Run pyright
+        run: poetry run pyright verified_cogen
       - name: Run pytest
         run: poetry run pytest
