@@ -41,9 +41,9 @@ impl AppState {
         let last_verified_code = Arc::clone(&self.last_verified_code);
         let last_verified_ext = Arc::clone(&self.last_verified_extension);
         let incremental_run = self.settings.incremental_run;
-        let incremental_file_count = Arc::clone(&self.incremental_file_count);
+        let file_count = Arc::clone(&self.file_count);
         let cnt = self.files.as_ref().map(|f| f.len());
-        let incremental_run_results = Arc::clone(&self.incremental_run_results);
+        let run_results = Arc::clone(&self.run_results);
 
         let settings = self.settings.clone();
         let file_mode = self.settings.file_mode.clone();
@@ -57,7 +57,7 @@ impl AppState {
                 if let Ok(mut output) = output.write() {
                     *output = None;
                 }
-                if let Ok(mut results) = incremental_run_results.write() {
+                if let Ok(mut results) = run_results.write() {
                     *results = None;
                 }
                 let log_dir = APP_DIRS.cache_dir().join("log");
@@ -100,6 +100,32 @@ impl AppState {
                                 if let Ok(mut output) = output.write() {
                                     *output = Some(py_output);
                                 }
+
+                                let mut results_contents = String::new();
+                                let name = basename(directory);
+
+                                let results_path = match incremental_run {
+                                    true => {
+                                        PathBuf::from("results").join(format!("tries_{name}.json"))
+                                    }
+                                    false => APP_DIRS.cache_dir().join("total_cnt.json"),
+                                };
+
+                                File::open(results_path)
+                                    .expect("results are not where they should be")
+                                    .read_to_string(&mut results_contents)
+                                    .expect("failed read");
+
+                                if let Ok(mut results) = run_results.write() {
+                                    *results = Some(
+                                        serde_json::from_str(&results_contents)
+                                            .expect("results must contain a valid json"),
+                                    );
+                                    file_count.store(
+                                        cnt.expect("should be dir"),
+                                        std::sync::atomic::Ordering::SeqCst,
+                                    );
+                                }
                             }
                         }
                     }
@@ -113,26 +139,6 @@ impl AppState {
                         }
                     }
                     *log = None;
-                }
-                let p = path.as_ref().map(|p| p.to_string_lossy());
-                if let (true, Ok(mut results), Some(path)) =
-                    (incremental_run, incremental_run_results.write(), p)
-                {
-                    let mut results_contents = String::new();
-                    let name = basename(&path);
-                    File::open(PathBuf::from("results").join(format!("tries_{name}.json")))
-                        .expect("results are not where they should be")
-                        .read_to_string(&mut results_contents)
-                        .expect("failed read");
-
-                    *results = Some(
-                        serde_json::from_str(&results_contents)
-                            .expect("results must contain a valid json"),
-                    );
-                    incremental_file_count.store(
-                        cnt.expect("should be dir"),
-                        std::sync::atomic::Ordering::SeqCst,
-                    );
                 }
             });
             if let Err(err) = result {

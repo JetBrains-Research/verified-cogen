@@ -15,6 +15,7 @@ from verified_cogen.tools import (
     rename_file,
     tabulate_list,
     extension_from_file_list,
+    get_cache_dir,
 )
 from verified_cogen.tools.modes import Mode
 from verified_cogen.tools.verifier import Verifier
@@ -33,8 +34,9 @@ def run_once(
     verifier: Verifier,
     mode: Mode,
     is_once: bool,
-) -> tuple[int, int, int]:
+) -> tuple[int, int, int, dict[str, int]]:
     success, success_zero_tries, failed = [], [], []
+    cnt = dict()
 
     for file in files:
         llm = LLM(
@@ -63,6 +65,9 @@ def run_once(
             logger.error(f"{name} failed")
             failed.append(name)
 
+        if tries is not None:
+            cnt[name] = tries
+
     if is_once:
         if args.output_style == "full":
             success_zero_tries_tabbed = tabulate_list(success_zero_tries)
@@ -81,7 +86,7 @@ def run_once(
         pprint_stat("Verified with modification", len(success), len(files))
         pprint_stat("Failed", len(failed), len(files))
 
-    return len(success_zero_tries), len(success), len(failed)
+    return len(success_zero_tries), len(success), len(failed), cnt
 
 
 def make_runner_cls(
@@ -143,16 +148,24 @@ def main():
                 runner.precheck(f.read(), mode)
 
         if args.runs == 1:
-            run_once(files, args, runner_cls, verifier, mode, is_once=True)
+            _, _, _, total_cnt = run_once(
+                files, args, runner_cls, verifier, mode, is_once=True
+            )
         else:
             success_zero_tries, success, failed = 0, 0, 0
+            total_cnt = {rename_file(f): 0 for f in files}
             for _ in range(args.runs):
-                s0, s, f = run_once(
+                s0, s, f, cnt = run_once(
                     files, args, runner_cls, verifier, mode, is_once=False
                 )
                 success_zero_tries += s0
                 success += s
                 failed += f
+
+                new_total: dict[str, int] = dict()
+                for k in set(cnt.keys()) & set(total_cnt.keys()):
+                    new_total[k] = cnt[k] + total_cnt[k]
+                total_cnt = new_total
 
             pprint_stat(
                 "Verified without modification",
@@ -162,6 +175,11 @@ def main():
             )
             pprint_stat("Verified with modification", success, len(files), args.runs)
             pprint_stat("Failed", failed, len(files), args.runs)
+
+        with open(pathlib.Path(get_cache_dir()) / "total_cnt.json", "w") as f:
+            import json
+
+            json.dump({k: v / args.runs for k, v in total_cnt.items()}, f)
     else:
         llm = LLM(
             args.grazie_token,

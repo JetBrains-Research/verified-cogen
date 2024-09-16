@@ -15,12 +15,10 @@ impl AppState {
             ui.add(Separator::default().vertical().grow(panel_height));
 
             ui.vertical(|ui| {
-                if let Ok(incremental_run_results) = self.incremental_run_results.read() {
+                if let Ok(run_results) = self.run_results.read() {
                     part += 1.0;
-                    if let Some(results) = incremental_run_results.as_ref() {
-                        let cnt = self
-                            .incremental_file_count
-                            .load(std::sync::atomic::Ordering::SeqCst);
+                    if let Some(results) = run_results.as_ref() {
+                        let cnt = self.file_count.load(std::sync::atomic::Ordering::SeqCst);
                         ui.push_id("plot", |ui| {
                             ui.set_max_height(panel_height / part);
                             self.plot(results, cnt, ui);

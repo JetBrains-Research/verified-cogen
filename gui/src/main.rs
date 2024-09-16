@@ -110,7 +110,7 @@ impl Display for BenchMode {
     }
 }
 
-type IncrementalRunResults = HashMap<String, usize>;
+type RunResults = HashMap<String, f64>;
 
 #[derive(Default)]
 struct AppState {
@@ -122,8 +122,8 @@ struct AppState {
     running: Arc<AtomicBool>,
     last_verified_code: Arc<RwLock<Option<String>>>,
     last_verified_extension: Arc<RwLock<Option<String>>>,
-    incremental_run_results: Arc<RwLock<Option<IncrementalRunResults>>>,
-    incremental_file_count: Arc<AtomicUsize>,
+    run_results: Arc<RwLock<Option<RunResults>>>,
+    file_count: Arc<AtomicUsize>,
     output: Arc<RwLock<Option<(String, String)>>>,
     log: Arc<RwLock<Option<String>>>,
 }

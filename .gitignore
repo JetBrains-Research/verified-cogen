@@ -6,6 +6,7 @@ llm-generated
 **/.DS_Store
 pyrightconfig.json
 benches/DafnyBench/
+benches/HumanEval-Dafny-Mini/
 break_assert.rs
 .venv
 **/target
