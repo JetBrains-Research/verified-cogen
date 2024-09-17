@@ -1,14 +1,10 @@
 import logging
-from typing import Optional
 import pathlib
+from typing import Optional
 
-from verified_cogen.tools.modes import Mode
-
-from verified_cogen.llm import LLM
 from verified_cogen.runners import Runner
-from verified_cogen.tools.verifier import Verifier
 from verified_cogen.tools import basename, get_cache_dir
-
+from verified_cogen.tools.modes import Mode
 
 LLM_GENERATED_DIR = pathlib.Path(get_cache_dir()) / "llm-generated"
 
@@ -16,24 +12,17 @@ logger = logging.getLogger(__name__)
 
 
 class GenerateRunner(Runner):
-    @classmethod
-    def rewrite(cls, llm: LLM, prg: str) -> str:
-        return llm.rewrite(prg)
+    def rewrite(self, prg: str) -> str:
+        return self.llm.rewrite(prg)
 
-    @classmethod
-    def produce(cls, llm: LLM, prg: str) -> str:
+    def produce(self, prg: str) -> str:
         raise ValueError("Produce not supported for generate")
 
-    @classmethod
-    def insert(cls, llm: LLM, prg: str, checks: str, mode: Mode) -> str:
+    def insert(self, prg: str, checks: str, mode: Mode) -> str:
         raise ValueError("Insert not supported for generate")
 
-    @classmethod
     def try_fixing(
-        cls,
-        logger: logging.Logger,
-        verifier: Verifier,
-        llm: LLM,
+        self,
         total_tries: int,
         inv_prg: str,
         name: str,
@@ -44,12 +33,12 @@ class GenerateRunner(Runner):
             output = LLM_GENERATED_DIR / f"{name[:-7]}.dfy"
             with open(output, "w") as f:
                 f.write(inv_prg)
-            verification_result = verifier.verify(output)
+            verification_result = self.verifier.verify(output)
             if verification_result is None:
                 logger.info("Verification timed out")
                 tries -= 1
                 if tries > 0:
-                    inv_prg = llm.ask_for_timeout()
+                    inv_prg = self.llm.ask_for_timeout()
             else:
                 verified_inv, out_inv, err_inv = verification_result
                 if verified_inv:
@@ -61,16 +50,12 @@ class GenerateRunner(Runner):
                     logger.info("Retrying...")
                     tries -= 1
                     if tries > 0:
-                        inv_prg = llm.ask_for_fixed(out_inv + err_inv)
+                        inv_prg = self.llm.ask_for_fixed(out_inv + err_inv)
         return None
 
-    @classmethod
     def run_on_file(
-        cls,
-        logger: logging.Logger,
-        verifier: Verifier,
+        self,
         mode: Mode,
-        llm: LLM,
         total_tries: int,
         file: str,
     ) -> Optional[int]:
@@ -78,8 +63,6 @@ class GenerateRunner(Runner):
 
         with open(file, "r") as f:
             prg = f.read()
-        cls.precheck(prg, mode)
-        inv_prg = cls.invoke(logger, llm, prg, mode)
-        return cls.try_fixing(
-            logger, verifier, llm, total_tries, inv_prg, basename(file)
-        )
+        self.precheck(prg, mode)
+        inv_prg = self.invoke(prg, mode)
+        return self.try_fixing(total_tries, inv_prg, basename(file))
