@@ -1,5 +1,6 @@
 from abc import abstractmethod
 from typing import Pattern
+import re
 
 
 class Language:
@@ -39,6 +40,7 @@ class GenericLanguage(Language):
         self.inline_assert_comment = inline_assert_comment
 
     def generate_validators(self, code: str) -> str:
+        code = re.sub(r"^ *#.*(\r\n|\r|\n)?", "", code, flags=re.MULTILINE)
         methods = self.method_regex.finditer(code)
 
         validators = []
@@ -53,9 +55,9 @@ class GenericLanguage(Language):
 
             validators.append(
                 self.validator_template.replace("{method_name}", method_name)
-                .replace("{parameters}", parameters)
-                .replace("{returns}", returns)
-                .replace("{specs}", specs)
+                .replace("{parameters}", parameters or "")
+                .replace("{returns}", returns or "")
+                .replace("{specs}", specs or "\n")
                 .replace(
                     "{param_names}",
                     ", ".join(

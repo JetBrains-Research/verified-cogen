@@ -1,18 +1,18 @@
 use eframe::egui::Ui;
 use egui_plot::{uniform_grid_spacer, Line, Plot};
 
-use crate::{AppState, IncrementalRunResults};
+use crate::{AppState, RunResults};
 
 impl AppState {
-    pub fn plot(&self, results: &IncrementalRunResults, file_cnt: usize, ui: &mut Ui) {
+    pub fn plot(&self, results: &RunResults, file_cnt: usize, ui: &mut Ui) {
         let tries: Vec<_> = results.values().copied().collect();
         let max_tries = *tries
             .iter()
-            .max()
+            .max_by(|a, b| a.total_cmp(b))
             .expect("results should contain at least one file");
-        let mut cnt = vec![0; max_tries + 1];
+        let mut cnt = vec![0; max_tries.ceil() as usize + 1];
         for t in tries {
-            cnt[t] += 1;
+            cnt[t.ceil() as usize] += 1;
         }
         let percent = cnt
             .into_iter()
