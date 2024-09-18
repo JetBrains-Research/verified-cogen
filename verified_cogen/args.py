@@ -1,9 +1,10 @@
 import argparse
-from verified_cogen.tools.modes import VALID_MODES
 import os
 
+from verified_cogen.tools.modes import VALID_MODES
 
-def get_args():
+
+def get_default_parser():
     parser = argparse.ArgumentParser()
     parser.add_argument("-i", "--input", help="input file", required=False)
     parser.add_argument("-d", "--dir", help="directory to run on", required=False)
@@ -49,4 +50,12 @@ def get_args():
     parser.add_argument(
         "-s", "--output-style", choices=["stats", "full"], default="full"
     )
-    return parser.parse_args()
+    parser.add_argument("--filter-by-ext", help="filter by extension", default=None)
+    parser.add_argument(
+        "--log-tries", help="Save output of every try to given dir", default=None
+    )
+    return parser
+
+
+def get_args():
+    return get_default_parser().parse_args()

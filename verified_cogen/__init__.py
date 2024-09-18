@@ -1,7 +1,8 @@
 import logging
 import os
-from verified_cogen.tools import get_cache_dir
 import pathlib
+
+from verified_cogen.tools import get_cache_dir
 
 
 def init_logging():

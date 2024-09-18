@@ -6,6 +6,7 @@ llm-generated
 **/.DS_Store
 pyrightconfig.json
 benches/DafnyBench/
+benches/HumanEval-Dafny-Mini/
 break_assert.rs
 .venv
 **/target
@@ -17,3 +18,5 @@ run.sh
 **/.pytest_cache
 run_nagini.py
 /tmp
+results
+results/*

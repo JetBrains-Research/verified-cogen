@@ -1,4 +1,4 @@
-name: Run pytest
+name: Run pytest, ruff, and pyright
 
 on: [push]
 
@@ -8,7 +8,7 @@ env:
   POETRY_URL: https://install.python-poetry.org
 
 jobs:
-  run-pytest:
+  run-tests:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -34,5 +34,11 @@ jobs:
           echo "$HOME/.local/bin" >> $GITHUB_PATH
       - name: Install Dependencies
         run: poetry install
+      - name: Run ruff format check
+        run: poetry run ruff format verified_cogen --check
+      - name: Run ruff linter
+        run: poetry run ruff check verified_cogen
+      - name: Run pyright
+        run: poetry run pyright verified_cogen
       - name: Run pytest
         run: poetry run pytest

@@ -2,10 +2,9 @@ import logging
 import re
 import textwrap
 
-from verified_cogen.tools.modes import Mode
-
 from verified_cogen.llm import LLM
 from verified_cogen.runners import Runner
+from verified_cogen.tools.modes import Mode
 
 logger = logging.getLogger(__name__)
 
@@ -36,27 +35,23 @@ def insert_invariants(llm: LLM, prg: str, inv: str, mode: Mode):
         return insert_invariants_regex(prg, inv)
     elif mode == Mode.LLM:
         return insert_invariants_llm(llm, prg, inv)
-    elif mode.is_singlestep:
+    elif mode == Mode.LLM_SINGLE_STEP:
         raise ValueError("Single-step mode does not require insertion")
     else:
-        raise ValueError(f"Unexpected mode: {mode}")
+        raise ValueError(f"insert_invariants: Unexpected mode: {mode}")
 
 
 class InvariantRunner(Runner):
-    @classmethod
-    def rewrite(cls, llm: LLM, prg: str) -> str:
-        return llm.rewrite(prg)
+    def rewrite(self, prg: str) -> str:
+        return self.llm.rewrite(prg)
 
-    @classmethod
-    def produce(cls, llm: LLM, prg: str) -> str:
-        return llm.produce(prg)
+    def produce(self, prg: str) -> str:
+        return self.llm.produce(prg)
 
-    @classmethod
-    def insert(cls, llm: LLM, prg: str, checks: str, mode: Mode) -> str:
-        return insert_invariants(llm, prg, checks, mode)
+    def insert(self, prg: str, checks: str, mode: Mode) -> str:
+        return insert_invariants(self.llm, prg, checks, mode)
 
-    @classmethod
-    def precheck(cls, prg: str, mode: Mode):
+    def precheck(self, prg: str, mode: Mode):
         if mode == Mode.REGEX:
             while_count = prg.count("while")
             if while_count == 0:

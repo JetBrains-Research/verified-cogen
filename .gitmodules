@@ -1,3 +1,7 @@
 [submodule "Nagini-Conversion"]
 	path = Nagini-Conversion
 	url = https://github.com/alex28sh/Nagini-Convertion
+
+[submodule "benches/HumanEval-Dafny"]
+	path = benches/HumanEval-Dafny
+	url = https://github.com/JetBrains-Research/HumanEval-Dafny

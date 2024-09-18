@@ -1,5 +1,7 @@
 import pathlib
 import re
+from typing import Optional
+
 import appdirs
 
 
@@ -13,6 +15,23 @@ def basename(path: str):
 
 def rename_file(file: pathlib.Path) -> str:
     return " ".join(file.stem.split("_")).title()
+
+
+def ext_glob(filter_by_ext: Optional[str]) -> str:
+    if filter_by_ext is None:
+        return "[!.]*"
+    return f"[!.]*.{filter_by_ext}"
+
+
+def extension_from_file_list(files: list[pathlib.Path]) -> str:
+    extension = files[0].suffix[1:]
+    if (
+        different := next((f for f in files if f.suffix[1:] != extension), None)
+    ) is not None:
+        raise ValueError(
+            f"Found files different extensions: {files[0].name} and {different.name}, please use a single extension"
+        )
+    return extension
 
 
 def pprint_stat(name: str, stat: int, total: int, runs=1):

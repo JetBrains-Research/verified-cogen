@@ -3,7 +3,7 @@ use std::{
     process::{Command, Output},
 };
 
-use eframe::egui::{self, TextEdit};
+use eframe::egui::{self, TextEdit, Ui};
 
 use crate::Settings;
 
@@ -59,12 +59,20 @@ fn add_common_arguments<'a>(
     token: &str,
     settings: &Settings,
 ) -> &'a mut Command {
+    let bench_type = if settings.incremental_run {
+        String::from("validating")
+    } else {
+        settings.bench_type.to_string()
+    };
+    if settings.do_filter {
+        cmd.args(["--filter-by-ext", &settings.filter_by_ext]);
+    }
     cmd.args(["--verifier-command", &settings.verifier_command])
         .args(["--prompts-directory", &settings.prompts_directory])
         .args(["--insert-conditions-mode", "llm-single-step"])
         .args(["--llm-profile", settings.llm_profile.as_grazie()])
         .args(["--grazie-token", token])
-        .args(["--bench-type", &settings.bench_type.to_string()])
+        .args(["--bench-type", &bench_type])
         .args(["--tries", &make_tries(&settings.tries)])
         .args(["--retries", &make_retries(&settings.retries)])
         .args(["--verifier-timeout", &make_timeout(&settings.timeout)])
@@ -129,4 +137,10 @@ pub fn integer_edit_field(
         *value = tmp_value;
     }
     res
+}
+
+pub(crate) fn paint_code(ui: &mut Ui, code: &str, lang: &str) {
+    let theme = egui_extras::syntax_highlighting::CodeTheme::from_memory(ui.ctx());
+
+    egui_extras::syntax_highlighting::code_view_ui(ui, &theme, code, lang);
 }
