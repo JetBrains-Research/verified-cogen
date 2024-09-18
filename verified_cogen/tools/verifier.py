@@ -2,6 +2,7 @@ import logging
 import subprocess
 from pathlib import Path
 from typing import Optional
+import os
 
 log = logging.getLogger(__name__)
 
@@ -23,6 +24,7 @@ class Verifier:
                 timeout=self.timeout,
             )
         except subprocess.TimeoutExpired:
+            os.system("killall z3")
             return None
         return (
             res.returncode == 0,

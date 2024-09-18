@@ -12,7 +12,14 @@ from verified_cogen.runners.validating import ValidatingRunner
 from verified_cogen.tools.modes import Mode
 from verified_cogen.tools.verifier import Verifier
 
+import sys
+
 logger = logging.getLogger(__name__)
+handler = logging.StreamHandler(sys.stdout)
+
+formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+handler.setFormatter(formatter)
+logger.addHandler(handler)
 
 
 def main():
