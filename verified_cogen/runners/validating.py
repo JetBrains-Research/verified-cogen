@@ -16,7 +16,7 @@ class ValidatingRunner(Runner):
 
     def _add_validators(self, prg: str, inv_prg: str):
         validators = self.language.generate_validators(prg)
-        val_prg = inv_prg + "\n// ==== verifiers ==== //\n" + validators
+        val_prg = inv_prg + "\n" + self.language.simple_comment + " ==== verifiers ==== \n" + validators
         return val_prg
 
     def preprocess(self, prg: str, mode: Mode) -> str:

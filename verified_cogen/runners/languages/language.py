@@ -5,6 +5,7 @@ import re
 
 class Language:
     _instance = None
+    simple_comment = None
 
     def __new__(cls, *args, **kwargs):
         if not isinstance(cls._instance, cls):
@@ -33,7 +34,9 @@ class GenericLanguage(Language):
         validator_template: str,
         assert_invariants_pattern: list[str],
         inline_assert_comment: str,
+        simple_comment: str,
     ):
+        self.simple_comment = simple_comment
         self.method_regex = method_regex
         self.validator_template = validator_template
         self.assert_invariant_patterns = assert_invariants_pattern
