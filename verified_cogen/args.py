@@ -54,6 +54,9 @@ def get_default_parser():
     parser.add_argument(
         "--log-tries", help="Save output of every try to given dir", default=None
     )
+    parser.add_argument(
+        "--output-logging", help="Print logs to standard output", default=False
+    )
     return parser
 
 
