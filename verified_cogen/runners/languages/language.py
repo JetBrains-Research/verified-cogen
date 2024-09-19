@@ -43,7 +43,6 @@ class GenericLanguage(Language):
         self.inline_assert_comment = inline_assert_comment
 
     def generate_validators(self, code: str) -> str:
-        code = re.sub(r"^ *#.*(\r\n|\r|\n)?", "", code, flags=re.MULTILINE)
         methods = self.method_regex.finditer(code)
 
         validators = []
