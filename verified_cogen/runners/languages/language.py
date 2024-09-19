@@ -1,11 +1,10 @@
 from abc import abstractmethod
 from typing import Pattern
-import re
 
 
 class Language:
     _instance = None
-    simple_comment = None
+    simple_comment: str
 
     def __new__(cls, *args, **kwargs):
         if not isinstance(cls._instance, cls):
