@@ -13,6 +13,9 @@ incremental_run = "verified_cogen.experiments.incremental_run:main"
 profile = "black"
 src_paths = ["verified_cogen"]
 
+[tool.pyright]
+typeCheckingMode = "strict"
+
 [[tool.poetry.source]]
 name = "PyPI"
 priority = "primary"
