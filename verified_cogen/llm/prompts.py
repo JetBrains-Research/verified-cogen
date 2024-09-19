@@ -1,19 +1,19 @@
-from typing import Optional
+from typing import Any, Optional
 
 
 class Singleton(object):
     _instance = None
 
-    def __new__(cls, *args, **kwargs):
+    def __new__(cls, *args: list[Any], **kwargs: dict[str, Any]):
         if not isinstance(cls._instance, cls):
             cls._instance = super().__new__(cls, *args, **kwargs)
         return cls._instance
 
 
 class PromptCache(Singleton):
-    cache: dict = {}
+    cache: dict[str, str] = {}
 
-    def __init__(self):
+    def __init__(self, *args: list[Any], **kwargs: dict[str, Any]):
         self.cache = {}
 
     def get(self, key: str) -> Optional[str]:

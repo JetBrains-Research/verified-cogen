@@ -13,7 +13,7 @@ def {method_name}_valid({parameters}) -> {returns}:{specs}\
 class NaginiLanguage(GenericLanguage):
     method_regex: Pattern[str]
 
-    def __init__(self):
+    def __init__(self):  # type: ignore
         super().__init__(
             re.compile(
                 r"def\s+(\w+)\s*\((.*?)\)\s*->\s*(.*?):(:?(?:\r\n|\r|\n)?( *(?:Requires|Ensures)\([^\r\n]*\)(?:\r\n|\r|\n)?)*)",

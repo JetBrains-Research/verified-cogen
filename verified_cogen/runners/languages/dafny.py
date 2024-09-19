@@ -12,7 +12,7 @@ method {method_name}_valid({parameters}) returns ({returns}){specs}\
 class DafnyLanguage(GenericLanguage):
     method_regex: Pattern[str]
 
-    def __init__(self):
+    def __init__(self):  # type: ignore
         super().__init__(
             re.compile(
                 r"method\s+(\w+)\s*\((.*?)\)\s*returns\s*\((.*?)\)(.*?)\{", re.DOTALL

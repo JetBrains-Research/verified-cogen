@@ -2,6 +2,47 @@ import argparse
 import os
 
 from verified_cogen.tools.modes import VALID_MODES
+from typing import no_type_check, Optional
+
+
+class ProgramArgs:
+    input: Optional[str]
+    dir: Optional[str]
+    runs: int
+    insert_conditions_mode: str
+    bench_type: str
+    temperature: int
+    shell: str
+    verifier_command: str
+    verifier_timeout: int
+    prompts_directory: str
+    grazie_token: str
+    llm_profile: str
+    tries: int
+    retries: int
+    output_style: str
+    filter_by_ext: Optional[str]
+    log_tries: Optional[str]
+
+    @no_type_check
+    def __init__(self, args):
+        self.input = args.input
+        self.dir = args.dir
+        self.runs = args.runs
+        self.insert_conditions_mode = args.insert_conditions_mode
+        self.bench_type = args.bench_type
+        self.temperature = args.temperature
+        self.shell = args.shell
+        self.verifier_command = args.verifier_command
+        self.verifier_timeout = args.verifier_timeout
+        self.prompts_directory = args.prompts_directory
+        self.grazie_token = args.grazie_token
+        self.llm_profile = args.llm_profile
+        self.tries = args.tries
+        self.retries = args.retries
+        self.output_style = args.output_style
+        self.filter_by_ext = args.filter_by_ext
+        self.log_tries = args.log_tries
 
 
 def get_default_parser():
@@ -50,12 +91,12 @@ def get_default_parser():
     parser.add_argument(
         "-s", "--output-style", choices=["stats", "full"], default="full"
     )
-    parser.add_argument("--filter-by-ext", help="filter by extension", default=None)
+    parser.add_argument("--filter-by-ext", help="filter by extension", required=False)
     parser.add_argument(
-        "--log-tries", help="Save output of every try to given dir", default=None
+        "--log-tries", help="Save output of every try to given dir", required=False
     )
     return parser
 
 
-def get_args():
-    return get_default_parser().parse_args()
+def get_args() -> ProgramArgs:
+    return ProgramArgs(get_default_parser().parse_args())

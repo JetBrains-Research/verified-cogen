@@ -1,7 +1,7 @@
 import logging
 import pathlib
 
-from verified_cogen.args import get_args
+from verified_cogen.args import ProgramArgs, get_args
 from verified_cogen.llm import LLM
 from verified_cogen.runners.generate import GenerateRunner
 from verified_cogen.runners.generic import GenericRunner
@@ -29,26 +29,28 @@ logger = logging.getLogger(__name__)
 
 def run_once(
     files: list[Path],
-    args,
+    args: ProgramArgs,
     runner_cls: Callable[[LLM, Logger, Verifier], Runner],
     verifier: Verifier,
     mode: Mode,
     is_once: bool,
 ) -> tuple[int, int, int, dict[str, int]]:
-    success, success_zero_tries, failed = [], [], []
-    cnt = dict()
+    _init: tuple[list[str], list[str], list[str]] = ([], [], [])
+    success, success_zero_tries, failed = _init
+
+    cnt: dict[str, int] = dict()
 
     for file in files:
         llm = LLM(
-            args.grazie_token,
-            args.llm_profile,
-            args.prompts_directory,
-            args.temperature,
+            args.grazie_token,  # type: ignore
+            args.llm_profile,  # type: ignore
+            args.prompts_directory,  # type: ignore
+            args.temperature,  # type: ignore
         )
 
         runner = runner_cls(llm, logger, verifier)
 
-        retries = args.retries + 1
+        retries = args.retries + 1  # type: ignore
         tries = None
         while retries > 0 and tries is None:
             tries = runner.run_on_file(mode, args.tries, str(file))
@@ -181,6 +183,7 @@ def main():
 
             json.dump({k: v / args.runs for k, v in total_cnt.items()}, f)
     else:
+        assert args.input is not None, "input file must be specified"
         llm = LLM(
             args.grazie_token,
             args.llm_profile,

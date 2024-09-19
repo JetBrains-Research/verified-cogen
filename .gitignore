@@ -4,7 +4,6 @@ data
 llm-generated
 .envrc
 **/.DS_Store
-pyrightconfig.json
 benches/DafnyBench/
 benches/HumanEval-Dafny-Mini/
 break_assert.rs
@@ -13,6 +12,7 @@ break_assert.rs
 log
 .ruff_cache
 .vscode
+.zed
 run.sh
 /dist/
 **/.pytest_cache
