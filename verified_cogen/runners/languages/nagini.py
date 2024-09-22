@@ -16,7 +16,7 @@ class NaginiLanguage(GenericLanguage):
     def __init__(self):  # type: ignore
         super().__init__(
             re.compile(
-                r"def\s+(\w+)\s*\((.*?)\)\s*->\s*(.*?):(:?(?:\r\n|\r|\n)?( *(?:Requires|Ensures)\([^\r\n]*\)(?:\r\n|\r|\n)?)*)",
+                r"def\s+(\w+)\s*\((.*?)\)\s*->\s*(.*?):(.*?(\r\n|\r|\n))\s+# impl-start",
                 re.DOTALL,
             ),
             NAGINI_VALIDATOR_TEMPLATE,
@@ -25,4 +25,5 @@ class NaginiLanguage(GenericLanguage):
                 r" *# invariants-start.*?# invariants-end\n?",
             ],
             "# assert-line",
+            "#",
         )

@@ -23,4 +23,5 @@ class DafnyLanguage(GenericLanguage):
                 r" *// invariants-start.*?// invariants-end\n",
             ],
             "// assert-line",
+            "//",
         )

@@ -1,10 +1,10 @@
 from abc import abstractmethod
 from typing import Pattern, Any
-import re
 
 
 class Language:
     _instance = None
+    simple_comment: str
 
     def __new__(cls, *args: list[Any], **kwargs: dict[str, Any]):
         if not isinstance(cls._instance, cls):
@@ -33,14 +33,15 @@ class GenericLanguage(Language):
         validator_template: str,
         assert_invariants_pattern: list[str],
         inline_assert_comment: str,
+        simple_comment: str,
     ):
+        self.simple_comment = simple_comment
         self.method_regex = method_regex
         self.validator_template = validator_template
         self.assert_invariant_patterns = assert_invariants_pattern
         self.inline_assert_comment = inline_assert_comment
 
     def generate_validators(self, code: str) -> str:
-        code = re.sub(r"^ *#.*(\r\n|\r|\n)?", "", code, flags=re.MULTILINE)
         methods = self.method_regex.finditer(code)
 
         validators: list[str] = []

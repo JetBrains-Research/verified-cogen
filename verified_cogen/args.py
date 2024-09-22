@@ -23,6 +23,7 @@ class ProgramArgs:
     output_style: str
     filter_by_ext: Optional[str]
     log_tries: Optional[str]
+    output_logging: bool
 
     @no_type_check
     def __init__(self, args):
@@ -43,6 +44,7 @@ class ProgramArgs:
         self.output_style = args.output_style
         self.filter_by_ext = args.filter_by_ext
         self.log_tries = args.log_tries
+        self.output_logging = args.output_logging
 
 
 def get_default_parser():
@@ -94,6 +96,9 @@ def get_default_parser():
     parser.add_argument("--filter-by-ext", help="filter by extension", required=False)
     parser.add_argument(
         "--log-tries", help="Save output of every try to given dir", required=False
+    )
+    parser.add_argument(
+        "--output-logging", help="Print logs to standard output", default=False
     )
     return parser
 

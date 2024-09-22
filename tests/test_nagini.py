@@ -11,8 +11,10 @@ def test_nagini_generate():
         def main(value: int) -> int:
             Requires(value >= 10)
             Ensures(Result() >= 20)
+            # impl-start
             Assert(value * 2 >= 20) # assert-line
-            return value * 2"""
+            return value * 2
+            # impl-end"""
     )
     assert nagini_lang.generate_validators(code) == dedent(
         """\
@@ -43,8 +45,12 @@ def test_nagini_with_comments():
     assert nagini_lang.generate_validators(code) == dedent(
         """\
         def main_valid(value: int) -> int:
+            # pre-conditions-start
             Requires(value >= 10)
+            # pre-conditions-end
+            # post-conditions-start
             Ensures(Result() >= 20)
+            # post-conditions-end
             ret = main(value)
             return ret"""
     )
@@ -247,17 +253,23 @@ def test_nagini_large():
             ret = alpha(c)
             return ret
         def flip__char_valid(c : int) -> int :
+            # pre-conditions-start
             Ensures(lower(c) == upper(Result()))
             Ensures(upper(c) == lower(Result()))
+            # pre-conditions-end
             ret = flip__char(c)
             return ret
         def flip__case_valid(s : List[int]) -> List[int] :
+            # pre-conditions-start
             Requires(Acc(list_pred(s)))
+            # pre-conditions-end
+            # post-conditions-start
             Ensures(Acc(list_pred(s)))
             Ensures(Acc(list_pred(Result())))
             Ensures((len(Result())) == (len(s)))
             Ensures(Forall(int, lambda d_0_i_: (Implies(((0) <= (d_0_i_)) and ((d_0_i_) < (len(s))), lower((s)[d_0_i_]) == upper((Result())[d_0_i_])))))
             Ensures(Forall(int, lambda d_0_i_: (Implies(((0) <= (d_0_i_)) and ((d_0_i_) < (len(s))), upper((s)[d_0_i_]) == lower((Result())[d_0_i_])))))
+            # post-conditions-end
             ret = flip__case(s)
             return ret"""
     )
@@ -287,8 +299,10 @@ def test_nagini_small():
     assert nagini_lang.generate_validators(code) == dedent(
         """\
         def flip__char_valid(c : int) -> int :
+            # pre-conditions-start
             Ensures(lower(c) == upper(Result()))
             Ensures(upper(c) == lower(Result()))
+            # pre-conditions-end
             ret = flip__char(c)
             return ret"""
     )
