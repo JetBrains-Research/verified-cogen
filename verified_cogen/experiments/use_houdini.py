@@ -2,7 +2,7 @@ import argparse
 import json
 import logging
 import os
-from typing import Optional
+from typing import Optional, no_type_check
 
 from verified_cogen.llm import LLM
 from verified_cogen.runners import LLM_GENERATED_DIR
@@ -10,6 +10,24 @@ from verified_cogen.tools import basename
 from verified_cogen.tools.verifier import Verifier
 
 log = logging.getLogger(__name__)
+
+
+class ProgramArgs:
+    grazie_token: str
+    profile: str
+    prompt_dir: str
+    program: str
+    verifier_command: str
+
+    @no_type_check
+    def __init__(self, *args):
+        (
+            self.grazie_token,
+            self.profile,
+            self.prompt_dir,
+            self.program,
+            self.verifier_command,
+        ) = args
 
 
 INVARIANTS_JSON_PROMPT = """Given the following Rust program, output Verus invariants that should go into the `while` loop
@@ -96,9 +114,9 @@ Here's an error from the verifier:
 """
 
 
-def collect_invariants(args, prg: str):
+def collect_invariants(args: ProgramArgs, prg: str) -> list[str]:
     func = basename(args.program)[:-3]
-    result_invariants = []
+    result_invariants: list[str] = []
     for temperature in [0.0, 0.1, 0.3, 0.4, 0.5, 0.7, 1.0]:
         llm = LLM(
             grazie_token=args.grazie_token,
@@ -110,7 +128,7 @@ def collect_invariants(args, prg: str):
         llm.user_prompts.append(
             INVARIANTS_JSON_PROMPT.replace("{program}", prg).replace("{function}", func)
         )
-        response = llm._make_request()
+        response = llm._make_request()  # type: ignore
         try:
             invariants = json.loads(response)
             result_invariants.extend(invariants)
@@ -126,7 +144,7 @@ def remove_failed_invariants(
     llm: LLM, invariants: list[str], err: str
 ) -> Optional[list[str]]:
     llm.user_prompts.append(REMOVE_FAILED_INVARIANTS_PROMPT.format(error=err))
-    response = llm._make_request()
+    response = llm._make_request()  # type: ignore
     try:
         new_invariants = json.loads(response)
         log.debug("REMOVED: {}".format(set(invariants).difference(set(new_invariants))))
@@ -138,7 +156,7 @@ def remove_failed_invariants(
 
 
 def houdini(
-    args, verifier: Verifier, prg: str, invariants: list[str]
+    args: ProgramArgs, verifier: Verifier, prg: str, invariants: list[str]
 ) -> Optional[list[str]]:
     func = basename(args.program).strip(".rs")
     log.info(f"Starting Houdini for {func} in file {args.program}")
@@ -201,7 +219,7 @@ def main():
     parser.add_argument("--program", required=True)
     parser.add_argument("--verifier-command", required=True)
 
-    args = parser.parse_args()
+    args = ProgramArgs(*parser.parse_args())
 
     log.info("Running on program: {}".format(args.program))
 

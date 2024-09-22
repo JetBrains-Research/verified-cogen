@@ -3,6 +3,7 @@ from http.client import RemoteDisconnected
 from typing import Optional
 
 from grazie.api.client.chat.prompt import ChatPrompt
+from grazie.api.client.chat.response import ChatResponse
 from grazie.api.client.endpoints import GrazieApiGatewayUrls
 from grazie.api.client.gateway import AuthType, GrazieApiGatewayClient
 from grazie.api.client.llm_parameters import LLMParameters
@@ -32,15 +33,17 @@ class LLM:
         self.profile = Profile.get_by_name(profile)
         self.prompt_dir = prompt_dir
         self.is_gpt = "gpt" in self.profile.name
-        self.user_prompts = []
-        self.responses = []
+        self.user_prompts: list[str] = []
+        self.responses: list[str] = []
         self.had_errors = False
         self.temperature = temperature
         self.system_prompt = (
             system_prompt if system_prompt else prompts.sys_prompt(self.prompt_dir)
         )
 
-    def _request(self, temperature: Optional[float] = None, tries: int = 5):
+    def _request(
+        self, temperature: Optional[float] = None, tries: int = 5
+    ) -> ChatResponse:
         if tries == 0:
             raise Exception("Exhausted tries to get response from Grazie API")
         if temperature is None:
@@ -70,31 +73,31 @@ class LLM:
             logger.warning("Grazie API is down, retrying...")
             return self._request(temperature, tries - 1)
 
-    def _make_request(self):
+    def _make_request(self) -> str:
         response = self._request().content
         self.responses.append(response)
         return extract_code_from_llm_output(response)
 
-    def produce(self, prg: str):
+    def produce(self, prg: str) -> str:
         self.user_prompts.append(
             prompts.produce_prompt(self.prompt_dir).format(program=prg)
         )
         return self._make_request()
 
-    def add(self, prg: str, checks: str, function: Optional[str] = None):
+    def add(self, prg: str, checks: str, function: Optional[str] = None) -> str:
         prompt = prompts.add_prompt(self.prompt_dir).format(program=prg, checks=checks)
         if "{function}" in prompt and function is not None:
             prompt = prompt.replace("{function}", function)
         self.user_prompts.append(prompt)
         return self._make_request()
 
-    def rewrite(self, prg: str):
+    def rewrite(self, prg: str) -> str:
         self.user_prompts.append(
             prompts.rewrite_prompt(self.prompt_dir).replace("{program}", prg)
         )
         return self._make_request()
 
-    def ask_for_fixed(self, err: str):
+    def ask_for_fixed(self, err: str) -> str:
         prompt = (
             prompts.ask_for_fixed_had_errors_prompt(self.prompt_dir)
             if self.had_errors
@@ -103,6 +106,6 @@ class LLM:
         self.user_prompts.append(prompt.format(error=err))
         return self._make_request()
 
-    def ask_for_timeout(self):
+    def ask_for_timeout(self) -> str:
         self.user_prompts.append(prompts.ask_for_timeout_prompt(self.prompt_dir))
         return self._make_request()

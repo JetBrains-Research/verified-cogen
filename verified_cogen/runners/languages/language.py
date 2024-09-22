@@ -1,18 +1,18 @@
 from abc import abstractmethod
-from typing import Pattern
+from typing import Pattern, Any
 
 
 class Language:
     _instance = None
     simple_comment: str
 
-    def __new__(cls, *args, **kwargs):
+    def __new__(cls, *args: list[Any], **kwargs: dict[str, Any]):
         if not isinstance(cls._instance, cls):
             cls._instance = super().__new__(cls, *args, **kwargs)
         return cls._instance
 
     @abstractmethod
-    def __init__(self): ...
+    def __init__(self, *args: list[Any], **kwargs: dict[str, Any]): ...
 
     @abstractmethod
     def generate_validators(self, code: str) -> str: ...
@@ -27,7 +27,7 @@ class GenericLanguage(Language):
     assert_invariant_patterns: list[str]
     inline_assert_comment: str
 
-    def __init__(
+    def __init__(  # type: ignore
         self,
         method_regex: Pattern[str],
         validator_template: str,
@@ -44,7 +44,7 @@ class GenericLanguage(Language):
     def generate_validators(self, code: str) -> str:
         methods = self.method_regex.finditer(code)
 
-        validators = []
+        validators: list[str] = []
 
         for match in methods:
             method_name, parameters, returns, specs = (
@@ -87,7 +87,7 @@ class LanguageDatabase:
     languages: dict[str, Language] = dict()
     regularise: dict[str, str] = dict()
 
-    def __new__(cls, *args, **kwargs):
+    def __new__(cls, *args: list[Any], **kwargs: dict[str, Any]):
         if not isinstance(cls._instance, cls):
             cls._instance = super().__new__(cls, *args, **kwargs)
         return cls._instance

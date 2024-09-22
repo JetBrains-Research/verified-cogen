@@ -2,11 +2,11 @@ import pathlib
 import re
 from typing import Optional
 
-import appdirs
+import appdirs  # type: ignore
 
 
-def get_cache_dir():
-    return appdirs.user_cache_dir("verified-cogen", "jetbrains.research")
+def get_cache_dir() -> str:
+    return appdirs.user_cache_dir("verified-cogen", "jetbrains.research")  # type: ignore
 
 
 def basename(path: str):
@@ -34,11 +34,11 @@ def extension_from_file_list(files: list[pathlib.Path]) -> str:
     return extension
 
 
-def pprint_stat(name: str, stat: int, total: int, runs=1):
+def pprint_stat(name: str, stat: int, total: int, runs: int = 1):
     print(f"{name}: {stat / runs} ({stat / (total * runs) * 100:.2f}%)")
 
 
-def tabulate_list(lst: list):
+def tabulate_list(lst: list[str]) -> str:
     return "\n\t - " + "\n\t - ".join(lst)
 
 
