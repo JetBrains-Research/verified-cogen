@@ -20,3 +20,5 @@ run_nagini.py
 /tmp
 results
 results/*
+/log_tries/
+/log_tries/*
