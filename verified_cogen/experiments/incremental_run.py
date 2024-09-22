@@ -63,8 +63,9 @@ def main():
             args.temperature,
         )
         runner = ValidatingRunner(
-            wrapping=InvariantRunner(llm, logger, verifier, log_tries),
+            wrapping=InvariantRunner(llm, logger, verifier),
             language=language,
+            log_tries=log_tries,
         )
         display_name = rename_file(file)
         marker_name = str(file.relative_to(directory))

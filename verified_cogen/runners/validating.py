@@ -1,3 +1,4 @@
+import pathlib
 from typing import Optional
 from verified_cogen.runners import Runner
 from verified_cogen.runners.languages.language import Language
@@ -9,8 +10,13 @@ class ValidatingRunner(Runner):
     language: Language
     prg: Optional[str] = None
 
-    def __init__(self, wrapping: Runner, language: Language):
-        super().__init__(wrapping.llm, wrapping.logger, wrapping.verifier)
+    def __init__(
+        self,
+        wrapping: Runner,
+        language: Language,
+        log_tries: Optional[pathlib.Path] = None,
+    ):
+        super().__init__(wrapping.llm, wrapping.logger, wrapping.verifier, log_tries)
         self.wrapped_runner = wrapping
         self.language = language
 
