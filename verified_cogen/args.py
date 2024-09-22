@@ -26,6 +26,7 @@ class ProgramArgs:
 
     @no_type_check
     def __init__(self, args):
+        self.output_logging = args.output_logging
         self.input = args.input
         self.dir = args.dir
         self.runs = args.runs
