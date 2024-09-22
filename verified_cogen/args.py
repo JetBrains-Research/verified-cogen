@@ -23,10 +23,10 @@ class ProgramArgs:
     output_style: str
     filter_by_ext: Optional[str]
     log_tries: Optional[str]
+    output_logging: bool
 
     @no_type_check
     def __init__(self, args):
-        self.output_logging = args.output_logging
         self.input = args.input
         self.dir = args.dir
         self.runs = args.runs
@@ -44,6 +44,7 @@ class ProgramArgs:
         self.output_style = args.output_style
         self.filter_by_ext = args.filter_by_ext
         self.log_tries = args.log_tries
+        self.output_logging = args.output_logging
 
 
 def get_default_parser():
