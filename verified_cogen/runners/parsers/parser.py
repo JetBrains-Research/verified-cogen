@@ -5,11 +5,6 @@ from typing import Any
 class Parser:
     _instance = None
 
-    def __new__(cls, *args: list[Any], **kwargs: dict[str, Any]):
-        if not isinstance(cls._instance, cls):
-            cls._instance = super().__new__(cls, *args, **kwargs)
-        return cls._instance
-
     @abstractmethod
     def __init__(self, *args: list[Any], **kwargs: dict[str, Any]): ...
 
