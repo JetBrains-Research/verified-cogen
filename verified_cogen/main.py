@@ -8,6 +8,7 @@ from verified_cogen.runners.generic import GenericRunner
 from verified_cogen.runners.invariants import InvariantRunner
 from verified_cogen.runners.languages import register_basic_languages
 from verified_cogen.runners.languages.language import LanguageDatabase
+from verified_cogen.runners.parsers import JsonParser
 from verified_cogen.runners.validating import ValidatingRunner
 from verified_cogen.tools import (
     ext_glob,
@@ -21,7 +22,7 @@ from verified_cogen.tools.modes import Mode
 from verified_cogen.tools.verifier import Verifier
 from pathlib import Path
 from typing import Callable, Optional
-from verified_cogen.runners import Runner
+from verified_cogen.runners import Runner, IdentParser, Parser
 from logging import Logger
 
 logger = logging.getLogger(__name__)
@@ -92,19 +93,19 @@ def run_once(
 
 
 def make_runner_cls(
-    bench_type: str, extension: str, log_tries: Optional[pathlib.Path]
+    bench_type: str, extension: str, parser: Parser, log_tries: Optional[pathlib.Path]
 ) -> Callable[[LLM, Logger, Verifier], Runner]:
     def runner_cls(llm: LLM, logger: Logger, verifier: Verifier):
         match bench_type:
             case "invariants":
-                return InvariantRunner(llm, logger, verifier, log_tries)
+                return InvariantRunner(llm, logger, verifier, parser, log_tries)
             case "generic":
-                return GenericRunner(llm, logger, verifier, log_tries)
+                return GenericRunner(llm, logger, verifier, parser, log_tries)
             case "generate":
-                return GenerateRunner(llm, logger, verifier, log_tries)
+                return GenerateRunner(llm, logger, verifier, parser, log_tries)
             case "validating":
                 return ValidatingRunner(
-                    InvariantRunner(llm, logger, verifier, log_tries),
+                    InvariantRunner(llm, logger, verifier, parser, log_tries),
                     LanguageDatabase().get(extension),
                 )
             case _:
@@ -128,12 +129,13 @@ def main():
     if args.input is None and args.dir is None:
         args.input = input("Input file: ").strip()
     log_tries = pathlib.Path(args.log_tries) if args.log_tries is not None else None
+    parser = IdentParser() if args.parser == "identParser" else JsonParser()
 
     verifier = Verifier(args.shell, args.verifier_command, args.verifier_timeout)
     if args.dir is not None:
         files = sorted(list(pathlib.Path(args.dir).glob(ext_glob(args.filter_by_ext))))
         runner_cls = make_runner_cls(
-            args.bench_type, extension_from_file_list(files), log_tries
+            args.bench_type, extension_from_file_list(files), parser, log_tries
         )
         runner = runner_cls(
             LLM(
