@@ -193,7 +193,7 @@ def main():
             args.temperature,
         )
         runner = make_runner_cls(
-            args.bench_type, Path(args.input).suffix[1:], log_tries
+            args.bench_type, Path(args.input).suffix[1:], parser, log_tries
         )(llm, logger, verifier)
         tries = runner.run_on_file(mode, args.tries, args.input)
         if tries == 0:
