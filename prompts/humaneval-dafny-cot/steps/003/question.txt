@@ -1,0 +1,4 @@
+As we've already analyzed the specifications and the loops, it's time to try to analyze what invariants and patterns hold during the execution of the program. Go over the found loops in the following program in the code and try to find out what invariants and patterns they hold.
+```dafny
+{program}
+```
