@@ -1,6 +1,7 @@
 from abc import abstractmethod
 from typing import Any
 
+
 class Parser:
     _instance = None
 
@@ -14,6 +15,7 @@ class Parser:
 
     @abstractmethod
     def parse(self, text: str) -> str: ...
+
 
 class ParserDatabase:
     _instance = None

@@ -102,9 +102,7 @@ def get_default_parser():
     parser.add_argument(
         "--output-logging", help="Print logs to standard output", default=False
     )
-    parser.add_argument(
-        "--parser", help="Parser for rewriting", default="identParser"
-    )
+    parser.add_argument("--parser", help="Parser for rewriting", default="identParser")
     return parser
 
 

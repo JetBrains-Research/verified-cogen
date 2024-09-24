@@ -3,7 +3,6 @@ import json
 
 
 class JsonParser(Parser):
-
     def __init__(self):
         super().__init__()
 
