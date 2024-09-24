@@ -16,7 +16,9 @@ class ValidatingRunner(Runner):
         language: Language,
         log_tries: Optional[pathlib.Path] = None,
     ):
-        super().__init__(wrapping.llm, wrapping.logger, wrapping.verifier, log_tries)
+        super().__init__(
+            wrapping.llm, wrapping.logger, wrapping.verifier, log_tries=log_tries
+        )
         self.wrapped_runner = wrapping
         self.language = language
 
