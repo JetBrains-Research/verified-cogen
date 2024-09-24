@@ -1,0 +1,5 @@
+Given the following program, for each function, determine if it has a specification. If it does not, is it itself a specification? If it is a specification, what does it specify?
+
+```verus
+{program}
+```

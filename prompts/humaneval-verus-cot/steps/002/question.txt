@@ -1,0 +1,4 @@
+Given the following program, for each function, determine if it has loops. If it does, try to determine what the loop does in detail. Go through all your thinking and reasoning process step by step.
+```verus
+{program}
+```

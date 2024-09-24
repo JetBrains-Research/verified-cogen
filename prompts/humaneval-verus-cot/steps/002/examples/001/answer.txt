@@ -1,0 +1,6 @@
+We know that `spec` and `proof` functions cannot have loops. Since `sum` is a `spec` function and `sum_prop` is a `proof` function, they have no loops.
+Now, let's examine the 'sum_loop' method. This method contains a while loop that iterates through the elements of the 'numbers' sequence. The loop starts with 's' and 'i' initialized to 0, and continues as long as 'i' is less than the length of 'numbers'. Let's try to understand what 's' and 'i' represent in this context.
+
+Looking at the body of the loop, we can see that it adds the current element of 'numbers' to 's'. This means that 's' is the running sum of the elements in 'numbers', namely 's = sum(numbers@.subrange(0, i as int))'. 'i' is easier to analyze. It is the index of the current element being processed. In each iteration of the loop, 'i' is incremented by 1, so 'i' represents the index of the next element to be processed.
+
+Each iteration of the loop adds the current element to 's' after checking for overflow. If there is overflow `None` is returned using the shorthand `?` operator. Then 'i' is incremented to move to the next element. This process continues until 'i' reaches the length of 'numbers', at which point the loop terminates and 's' holds the final sum of the elements in 'numbers'.
