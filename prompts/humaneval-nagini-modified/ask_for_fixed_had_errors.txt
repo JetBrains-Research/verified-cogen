@@ -1,0 +1,13 @@
+There are still some errors:
+{error}
+
+Could you please fix them?
+Don't add any additional text comments, your response must contain only program with invariants.
+Do not provide ANY explanations. Don't include markdown backticks. Respond only in Python code, nothing else.
+
+Pay attention to important details of Nagini syntax:
+1. You should use only single inequalities of type `a <= b` or equalities `a == b`
+2. Use `Acc(list_pred(x))` invariants for variables of type List[] (for example, if x is of type List[int], add `Acc(list_pred(x))` invariants to all cycles in the scope of variable x)
+3. Try to reuse the invariants, encountered as preconditions and postconditions, if these invariants hold during cycle execution
+4. Don't use any built-in functions
+5. Put invariants into beginning of each cycle

@@ -3,6 +3,8 @@ from logging import Logger
 from typing import Optional
 
 from verified_cogen.llm import LLM
+from verified_cogen.runners.parsers import IdentParser
+from verified_cogen.runners.parsers.parser import Parser
 from verified_cogen.tools import basename, get_cache_dir
 from verified_cogen.tools.modes import Mode
 from verified_cogen.tools.verifier import Verifier
@@ -15,12 +17,14 @@ class Runner:
     logger: Logger
     verifier: Verifier
     log_tries: Optional[pathlib.Path]
+    parser: Parser
 
     def __init__(
         self,
         llm: LLM,
         logger: Logger,
         verifier: Verifier,
+        parser: Parser = IdentParser(),
         log_tries: Optional[pathlib.Path] = None,
     ):
         self.llm = llm
@@ -29,6 +33,7 @@ class Runner:
         self.log_tries = log_tries
         if self.log_tries is not None:
             self.log_tries.mkdir(exist_ok=True, parents=True)
+        self.parser = parser
 
     def rewrite(self, prg: str) -> str:
         """Rewrite the program with additional checks in one step."""

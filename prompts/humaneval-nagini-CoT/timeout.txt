@@ -1,0 +1,5 @@
+The verifier timed out during the verification.
+This usually means that the provided invariants were too broad or were difficult to check.
+Most probably you will need to add some invariants, that can help with verification of the current invariants or postconditions, or
+delete unnecessary invariants.
+Could you please try to improve the invariants and try again?

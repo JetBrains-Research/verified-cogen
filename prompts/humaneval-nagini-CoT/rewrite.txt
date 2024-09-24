@@ -1,0 +1,134 @@
+Request:
+    Rewrite the following Python program, adding correct Nagini invariants into `while` loops.
+    Do not change the code, only add the invariants.
+    Ensure that the invariants are as comprehensive as they can be.
+    Even if you think some invariant is not totally necessary, better add it than not.
+    Don't add any additional text comments, your response must contain only program with invariants.
+    Provide JSON with described steps and Python code. Python code should not contain any explanations. Your response should contain only JSON.
+    Remember: strings in JSON format cannot contain any new lines.
+
+    Pay attention to important details of Nagini syntax:
+    1. You should use only single inequalities of type `a <= b` or equalities `a == b`
+    2. Use `Acc(list_pred(x))` invariants for variables of type List[] (for example, if x is of type List[int], add `Acc(list_pred(x))` invariants to all cycles in the scope of variable x)
+    3. Try to reuse the invariants, encountered as preconditions and postconditions, if these invariants hold during cycle execution
+    4. Don't use any built-in functions
+    5. Put invariants into begginning of each cycle
+
+    The program:
+    ```
+        from typing import cast, List, Dict, Set, Optional, Union
+        from nagini_contracts.contracts import *
+
+        @Pure
+        def getVal(mx: Optional[int]) -> int:
+            Requires(mx is not None)
+            return mx
+
+        def rolling_max(numbers: List[int]) -> List[int]:
+            Requires(Acc(list_pred(numbers)))
+            Ensures(Acc(list_pred(numbers)))
+            Ensures(Acc(list_pred(Result())))
+            Ensures(len(Result()) == len(numbers))
+            Ensures(Forall(range(len(numbers)), lambda i: numbers[i] <= Result()[i]))
+            Ensures(Forall(range(len(numbers) - 1), lambda i: Result()[i] <= Result()[i + 1]))
+
+            running_max = None # type: Optional[int]
+            result = [] # type: List[int]
+
+            i = 0
+            while i < len(numbers):
+                n = numbers[i]
+                if running_max is None or running_max < n:
+                    running_max = n
+
+                result.append(running_max)
+                i += 1
+
+            return result
+    ```
+
+Response:
+    {
+        "step1": "Identify loops in the code. There is only one loop: 21 line",
+        "step2": "Start with the 1st loop. Identify lists in the scope of 1st loop: numbers, result",
+        "step3": "Add access invariants for these lists: Invariant(Acc(list_pred(numbers))), Invariant(Acc(list_pred(result)))",
+        "step4": "Knowing how changes i variable in the loop, add simple invariant about i variable: Invariant(0 <= i and i <= len(numbers))",
+        "step5": "Add invariant that helps to prove postcondition Ensures(len(Result()) == len(numbers)): Invariant(len(result) == i)",
+        "step6": "Now notice how running_max changes during the cycle and add following invariants: Invariant(Implies(len(result) > 0, running_max is not None)), Invariant(Old(running_max) is None or ((Old(running_max) is not None) and (getVal(Old(running_max)) <= getVal(running_max))))",
+        "step7": "Invariants from steps 3-6 help us to prove Ensures(Forall(range(len(numbers)), lambda i: numbers[i] <= Result()[i])) postcondition using the invariant: Invariant(Forall(range(i), lambda i1: numbers[i1] <= result[i1]))",
+        "step8": "Invariants from steps 3-6 help us to prove Ensures(Forall(range(len(numbers) - 1), lambda i: Result()[i] <= Result()[i + 1])) postcondition using the invariant: Invariant(Forall(range(i - 1), lambda i1: result[i1] <= result[i1 + 1]))",
+        "step9": "There are no more loops in the program",
+        "code": "from typing import cast, List, Dict, Set, Optional, Union\\nfrom nagini_contracts.contracts import *\\n\\n@Pure\\ndef getVal(mx: Optional[int]) -> int:\\n    Requires(mx is not None)\\n    return mx\\n\\ndef rolling_max(numbers: List[int]) -> List[int]:\\n    Requires(Acc(list_pred(numbers)))\\n    Ensures(Acc(list_pred(numbers)))\\n    Ensures(Acc(list_pred(Result())))\\n    Ensures(len(Result()) == len(numbers))\\n    Ensures(Forall(range(len(numbers)), lambda i: numbers[i] <= Result()[i]))\\n    Ensures(Forall(range(len(numbers) - 1), lambda i: Result()[i] <= Result()[i + 1]))\\n\\n    running_max = None # type: Optional[int]\\n    result = [] # type: List[int]\\n\\n    i = 0\\n    while i < len(numbers):\\n        Invariant(Acc(list_pred(numbers)))\\n        Invariant(Acc(list_pred(result)))\\n        Invariant(0 <= i and i <= len(numbers))\\n        Invariant(len(result) == i)\\n        Invariant(Implies(len(result) > 0, running_max is not None))\\n        Invariant(Old(running_max) is None or ((Old(running_max) is not None) and (getVal(Old(running_max)) <= getVal(running_max))))\\n        Invariant(Forall(range(i), lambda i1: numbers[i1] <= result[i1]))\\n        Invariant(Forall(range(i - 1), lambda i1: result[i1] <= result[i1 + 1]))\\n\\n        n = numbers[i]\\n        if running_max is None or running_max < n:\\n            running_max = n\\n\\n        result.append(running_max)\\n        i += 1\\n\\n    return result"
+    }
+
+Request:
+    Rewrite the following Python program, adding correct Nagini invariants into `while` loops.
+    Do not change the code, only add the invariants.
+    Ensure that the invariants are as comprehensive as they can be.
+    Even if you think some invariant is not totally necessary, better add it than not.
+    Don't add any additional text comments, your response must contain only program with invariants.
+    Provide JSON with described steps and Python code. Python code should not contain any explanations. Your response should contain only JSON.
+    Remember: strings in JSON format cannot contain any new lines.
+
+    Pay attention to important details of Nagini syntax:
+    1. You should use only single inequalities of type `a <= b` or equalities `a == b`
+    2. Use `Acc(list_pred(x))` invariants for variables of type List[] (for example, if x is of type List[int], add `Acc(list_pred(x))` invariants to all cycles in the scope of variable x)
+    3. Try to reuse the invariants, encountered as preconditions and postconditions, if these invariants hold during cycle execution
+    4. Don't use any built-in functions
+    5. Put invariants into begginning of each cycle
+
+    The program:
+    ```
+        from typing import List
+        from nagini_contracts.contracts import *
+
+        def append(a : List[int], b : int) -> List[int]:
+            Requires(Acc(list_pred(a)))
+            Ensures(Acc(list_pred(a)))
+            Ensures(Acc(list_pred(Result())))
+            Ensures(len(Result()) == len(a) + 1)
+            Ensures(Forall(int, lambda i: (Implies(0 <= i and i < len(a), Result()[i] == a[i]))))
+            Ensures(Result()[len(a)] == b)
+            c = [int(0)] * 0 # type : List[int]
+            nw0_ = [int(0)] * (len((a)) + (1)) # type : List[int]
+            c = nw0_
+            d_0_i_ = int(0) # type : int
+            d_0_i_ = 0
+            while (d_0_i_) < (len((a))):
+                (c)[(d_0_i_)] = (a)[d_0_i_]
+                d_0_i_ = (d_0_i_) + (1)
+            (c)[(len((a)))] = b
+            return c
+    ```
+
+Response:
+    {
+        "step1": "Identify loops in the code. There is only one loop: 16 line",
+        "step2": "Start with the 1st loop. Identify lists in the scope of 1st loop: a, c",
+        "step3": "Add access invariants for these lists: Invariant(Acc(list_pred(a))), Invariant(Acc(list_pred(c)))",
+        "step4": "Knowing how changes d_0_i_ variable in the loop, add simple invariant about d_0_i_ variable: Invariant(((0) <= (d_0_i_)) and ((d_0_i_) <= (len((a)))))",
+        "step5": "Add invariant that helps to prove postcondition Ensures(len(Result()) == len(a) + 1): Invariant(len(c) == len(a) + 1)",
+        "step6": "Invariants from steps 3-5 help us to prove Ensures(Forall(int, lambda i: (Implies(0 <= i and i < len(a), Result()[i] == a[i])))) postcondition using the invariant: Invariant(Forall(int, lambda d_1_ii_: Implies(((0) <= (d_1_ii_)) and ((d_1_ii_) < (d_0_i_)), ((c)[d_1_ii_]) == ((a)[d_1_ii_]))))",
+        "step7": "There are no more loops in the program",
+        "code": "from typing import List\\nfrom nagini_contracts.contracts import *\\n\\ndef append(a : List[int], b : int) -> List[int]:\\n    Requires(Acc(list_pred(a)))\\n    Ensures(Acc(list_pred(a)))\\n    Ensures(Acc(list_pred(Result())))\\n    Ensures(len(Result()) == len(a) + 1)\\n    Ensures(Forall(int, lambda i: (Implies(0 <= i and i < len(a), Result()[i] == a[i]))))\\n    Ensures(Result()[len(a)] == b)\\n    c = [int(0)] * 0 # type : List[int]\\n    nw0_ = [int(0)] * (len((a)) + (1)) # type : List[int]\\n    c = nw0_\\n    d_0_i_ = int(0) # type : int\\n    d_0_i_ = 0\\n    while (d_0_i_) < (len((a))):\\n        Invariant(Acc(list_pred(a)))\\n        Invariant(Acc(list_pred(c)))\\n        Invariant(((0) <= (d_0_i_)) and ((d_0_i_) <= (len((a)))))\\n        Invariant(len(c) == len(a) + 1)\\n        Invariant(Forall(int, lambda d_1_ii_: Implies(((0) <= (d_1_ii_)) and ((d_1_ii_) < (d_0_i_)), ((c)[d_1_ii_]) == ((a)[d_1_ii_]))))\\n        (c)[(d_0_i_)] = (a)[d_0_i_]\\n        d_0_i_ = (d_0_i_) + (1)\\n    (c)[(len((a)))] = b\\n    return c"
+    }
+
+Request:
+    Rewrite the following Python program, adding correct Nagini invariants into `while` loops.
+    Do not change the code, only add the invariants.
+    Ensure that the invariants are as comprehensive as they can be.
+    Even if you think some invariant is not totally necessary, better add it than not.
+    Don't add any additional text comments, your response must contain only program with invariants.
+    Provide JSON with described steps and Python code. Python code should not contain any explanations. Your response should contain only JSON.
+    Remember: strings in JSON format cannot contain any new lines.
+
+    Pay attention to important details of Nagini syntax:
+    1. You should use only single inequalities of type `a <= b` or equalities `a == b`
+    2. Use `Acc(list_pred(x))` invariants for variables of type List[] (for example, if x is of type List[int], add `Acc(list_pred(x))` invariants to all cycles in the scope of variable x)
+    3. Try to reuse the invariants, encountered as preconditions and postconditions, if these invariants hold during cycle execution
+    4. Don't use any built-in functions
+
+    The program:
+    {program}
+
+Response:

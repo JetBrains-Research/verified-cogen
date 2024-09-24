@@ -1,0 +1,8 @@
+Given the following Python program, and a set of Nagini invariants, output the program with invariants inserted into the correct place.
+Don't add any additional text comments, your response must contain only program with invariants.
+Do not provide ANY explanations. Don't include markdown backticks. Respond only in Python code, nothing else.
+The program:
+{program}
+–
+The invariants:
+{checks}

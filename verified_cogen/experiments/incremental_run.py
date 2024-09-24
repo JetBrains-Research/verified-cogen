@@ -8,6 +8,7 @@ from verified_cogen.args import get_args
 from verified_cogen.tools import rename_file, ext_glob, extension_from_file_list
 from verified_cogen.runners.invariants import InvariantRunner
 from verified_cogen.runners.languages import register_basic_languages
+from verified_cogen.runners.parsers import register_basic_parsers, ParserDatabase
 from verified_cogen.runners.languages.language import LanguageDatabase
 from verified_cogen.runners.validating import ValidatingRunner
 from verified_cogen.tools.modes import Mode
@@ -25,6 +26,7 @@ def register_output_handler():
 
 def main():
     register_basic_languages()
+    register_basic_parsers()
 
     args = get_args()
     mode = Mode(args.insert_conditions_mode)
@@ -54,6 +56,7 @@ def main():
 
     language = LanguageDatabase().get(extension_from_file_list(files))
     verifier = Verifier(args.shell, args.verifier_command)
+    parser = ParserDatabase().get(args.parser)
 
     for file in files:
         llm = LLM(
@@ -63,7 +66,7 @@ def main():
             args.temperature,
         )
         runner = ValidatingRunner(
-            wrapping=InvariantRunner(llm, logger, verifier),
+            wrapping=InvariantRunner(llm, logger, verifier, parser),
             language=language,
             log_tries=log_tries,
         )

@@ -43,7 +43,7 @@ def insert_invariants(llm: LLM, prg: str, inv: str, mode: Mode):
 
 class InvariantRunner(Runner):
     def rewrite(self, prg: str) -> str:
-        return self.llm.rewrite(prg)
+        return self.parser.parse(self.llm.rewrite(prg))
 
     def produce(self, prg: str) -> str:
         return self.llm.produce(prg)
