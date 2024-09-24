@@ -1,4 +1,5 @@
-Given the following program, for each function, determine if it has a specification. If it does not, is it itself a specification? If it is a specification, what does it specify?
+Now we are finished with the specifications. Let's move onto the loops.
+Given the following program, for each function, determine if it has loops. If it does, try to determine what the loop does in detail.
 ```dafny
 function sum(s: seq<int>) : int {
     if |s| == 0 then 0 else s[0] + sum(s[1..])
