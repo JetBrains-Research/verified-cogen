@@ -41,6 +41,12 @@ class LLM:
             system_prompt if system_prompt else prompts.sys_prompt(self.prompt_dir)
         )
 
+    def add_user_prompt(self, prompt: str):
+        self.user_prompts.append(prompt)
+
+    def add_response(self, response: str):
+        self.responses.append(response)
+
     def _request(
         self, temperature: Optional[float] = None, tries: int = 5
     ) -> ChatResponse:
@@ -73,7 +79,7 @@ class LLM:
             logger.warning("Grazie API is down, retrying...")
             return self._request(temperature, tries - 1)
 
-    def _make_request(self) -> str:
+    def make_request(self) -> str:
         response = self._request().content
         self.responses.append(response)
         return extract_code_from_llm_output(response)
@@ -82,20 +88,20 @@ class LLM:
         self.user_prompts.append(
             prompts.produce_prompt(self.prompt_dir).format(program=prg)
         )
-        return self._make_request()
+        return self.make_request()
 
     def add(self, prg: str, checks: str, function: Optional[str] = None) -> str:
         prompt = prompts.add_prompt(self.prompt_dir).format(program=prg, checks=checks)
         if "{function}" in prompt and function is not None:
             prompt = prompt.replace("{function}", function)
         self.user_prompts.append(prompt)
-        return self._make_request()
+        return self.make_request()
 
     def rewrite(self, prg: str) -> str:
         self.user_prompts.append(
             prompts.rewrite_prompt(self.prompt_dir).replace("{program}", prg)
         )
-        return self._make_request()
+        return self.make_request()
 
     def ask_for_fixed(self, err: str) -> str:
         prompt = (
@@ -104,8 +110,8 @@ class LLM:
             else prompts.ask_for_fixed_prompt(self.prompt_dir)
         )
         self.user_prompts.append(prompt.format(error=err))
-        return self._make_request()
+        return self.make_request()
 
     def ask_for_timeout(self) -> str:
         self.user_prompts.append(prompts.ask_for_timeout_prompt(self.prompt_dir))
-        return self._make_request()
+        return self.make_request()
