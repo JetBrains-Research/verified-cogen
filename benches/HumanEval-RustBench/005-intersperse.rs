@@ -86,7 +86,7 @@ proof fn intersperse_quantified_is_spec(numbers: Seq<u64>, delimiter: u64, inter
     assert(interspersed =~= intersperse_spec(numbers, delimiter)); // assert-line
     // impl-end
 }
-pub fn intersperse(numbers: Vec<u64>, delimiter: u64) -> (result: Vec<u64>)
+fn intersperse(numbers: Vec<u64>, delimiter: u64) -> (result: Vec<u64>)
     // post-conditions-start
     ensures
         result@ == intersperse_spec(numbers@, delimiter),

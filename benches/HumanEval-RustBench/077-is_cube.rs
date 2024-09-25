@@ -93,7 +93,7 @@ fn checked_cube(x: i32) -> (ret: Option<i32>)
 }
 
 #[verifier::external_fn_specification]
-pub fn ex_abs(x: i32) -> (ret: i32)
+fn ex_abs(x: i32) -> (ret: i32)
     requires
         x != i32::MIN,
 

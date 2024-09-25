@@ -3,7 +3,7 @@ use vstd::arithmetic::power::pow;
 use vstd::prelude::*;
 verus! {
 #[verifier::external_fn_specification]
-pub fn ex_ilog(x: u32, base: u32) -> (ret: u32)
+fn ex_ilog(x: u32, base: u32) -> (ret: u32)
     requires
         x > 0,
         base > 1,
@@ -14,7 +14,7 @@ pub fn ex_ilog(x: u32, base: u32) -> (ret: u32)
 }
 
 #[verifier::external_fn_specification]
-pub fn ex_checked_pow(x: u32, exp: u32) -> (ret: Option<u32>)
+fn ex_checked_pow(x: u32, exp: u32) -> (ret: Option<u32>)
     ensures
         ret.is_some() <==> ret.unwrap() == pow(x as int, exp as nat),
         ret.is_none() <==> pow(x as int, exp as nat) > u32::MAX,

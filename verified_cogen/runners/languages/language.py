@@ -42,7 +42,7 @@ class GenericLanguage(Language):
         self.inline_assert_comment = inline_assert_comment
 
     def generate_validators(self, code: str) -> str:
-        methods = self.method_regex.finditer(code)
+        methods = list(self.method_regex.finditer(code))
 
         validators: list[str] = []
 

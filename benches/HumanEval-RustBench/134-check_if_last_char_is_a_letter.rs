@@ -6,7 +6,7 @@ pub spec fn is_alphabetic(c: char) -> (result: bool);
 
 #[verifier::external_fn_specification]
 #[verifier::when_used_as_spec(is_alphabetic)]
-pub fn ex_is_alphabetic(c: char) -> (result: bool)
+fn ex_is_alphabetic(c: char) -> (result: bool)
     ensures
         result <==> (c.is_alphabetic()),
 {
@@ -17,7 +17,7 @@ pub spec fn is_whitespace(c: char) -> (result: bool);
 
 #[verifier::external_fn_specification]
 #[verifier::when_used_as_spec(is_whitespace)]
-pub fn ex_is_whitespace(c: char) -> (result: bool)
+fn ex_is_whitespace(c: char) -> (result: bool)
     ensures
         result <==> (c.is_whitespace()),
 {

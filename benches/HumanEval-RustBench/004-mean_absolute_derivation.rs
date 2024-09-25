@@ -345,7 +345,7 @@ fn compute_absolute_difference(x: i32, y: i32) -> (z: u32)
     }
     // impl-end
 }
-pub fn mean_absolute_deviation(numbers: &[i32]) -> (result: u32)
+fn mean_absolute_deviation(numbers: &[i32]) -> (result: u32)
     // pre-conditions-start
     requires
         numbers.len() > 0,
