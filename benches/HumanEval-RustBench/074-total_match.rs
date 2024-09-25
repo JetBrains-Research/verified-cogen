@@ -25,13 +25,17 @@ spec fn total_str_len(strings: Seq<&str>) -> int {
 }
 
 fn checked_total_str_len(lst: &Vec<&str>) -> (ret: Option<usize>)
+    // post-conditions-start
     ensures
         ret.is_some() <==> total_str_len(lst@) <= usize::MAX,
         ret.is_some() <==> ret.unwrap() == total_str_len(lst@),
+    // post-conditions-end
 {
+    // impl-start
     let ghost lens = Seq::<nat>::empty();
     let mut sum: usize = 0;
     for i in 0..lst.len()
+        // invariants-start
         invariant
             sum == lst@.subrange(0, i as int).map_values(|s: &str| s@.len()).fold_left(
                 0,
@@ -40,8 +44,10 @@ fn checked_total_str_len(lst: &Vec<&str>) -> (ret: Option<usize>)
             spec_sum(lens) == sum,
             lens =~= lst@.map_values(|s: &str| s@.len()).take(i as int),
             lens =~= lst@.take(i as int).map_values(|s: &str| s@.len()),
+        // invariants-end
     {
         let x = lst[i].unicode_len();
+        // assert-start
         proof {
             assert(lens.push(x as nat).drop_last() == lens);
             lens = lens.push(x as nat);
@@ -58,16 +64,19 @@ fn checked_total_str_len(lst: &Vec<&str>) -> (ret: Option<usize>)
                 assert(total_str_len(lst@) > usize::MAX);
             }
         }
+        // assert-end
         sum = sum.checked_add(x)?;
         assert(lst@.take(i + 1).map_values(|s: &str| s@.len()).drop_last() == lst@.take(
             i as int,
-        ).map_values(|s: &str| s@.len()));
+        ).map_values(|s: &str| s@.len())); // assert-line
     }
-    assert(lst@ == lst@.subrange(0, lst.len() as int));
+    assert(lst@ == lst@.subrange(0, lst.len() as int)); // assert-line
     return Some(sum);
+    // impl-end
 }
 
 fn total_match<'a>(lst1: Vec<&'a str>, lst2: Vec<&'a str>) -> (ret: Option<Vec<&'a str>>)
+    // post-conditions-start
     ensures
         ret.is_some() <== total_str_len(lst1@) <= usize::MAX && total_str_len(lst2@) <= usize::MAX,
         ret.is_some() ==> ret.unwrap() == if total_str_len(lst1@) <= total_str_len(lst2@) {
@@ -75,13 +84,16 @@ fn total_match<'a>(lst1: Vec<&'a str>, lst2: Vec<&'a str>) -> (ret: Option<Vec<&
         } else {
             lst2
         },
+    // post-conditions-end
 {
+    // impl-start
     if checked_total_str_len(&lst1)? <= checked_total_str_len(&lst2)? {
         Some(lst1)
     } else {
         Some(lst2)
     }
+    // impl-end
 }
 
-} 
+}
 fn main() {}

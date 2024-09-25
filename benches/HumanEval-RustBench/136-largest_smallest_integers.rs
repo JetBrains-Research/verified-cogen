@@ -3,6 +3,7 @@ use vstd::prelude::*;
 verus! {
 
 fn largest_smallest_integers(arr: &Vec<i32>) -> (res: (Option<i32>, Option<i32>))
+    // post-conditions-start
     ensures
         ({
             let a = res.0;
@@ -16,12 +17,15 @@ fn largest_smallest_integers(arr: &Vec<i32>) -> (res: (Option<i32>, Option<i32>)
             &&& b.is_some() ==> forall|i: int|
                 0 <= i < arr@.len() && arr@[i] > 0 ==> arr@[i] >= b.unwrap()
         }),
+    // post-conditions-end
 {
+    // impl-start
     let mut i: usize = 0;
     let mut a = None;
     let mut b = None;
 
     while i < arr.len()
+        // invariants-start
         invariant
             0 <= i <= arr@.len(),
             a.is_none() ==> forall|j: int| 0 <= j < i ==> arr@[j] >= 0,
@@ -30,6 +34,7 @@ fn largest_smallest_integers(arr: &Vec<i32>) -> (res: (Option<i32>, Option<i32>)
             b.is_none() ==> forall|j: int| 0 <= j < i ==> arr@[j] <= 0,
             b.is_some() ==> arr@.contains(b.unwrap()) && b.unwrap() > 0,
             b.is_some() ==> forall|j: int| 0 <= j < i && arr@[j] > 0 ==> arr@[j] >= b.unwrap(),
+        // invariants-end
     {
         if arr[i] < 0 && (a.is_none() || arr[i] >= a.unwrap()) {
             a = Some(arr[i]);
@@ -40,7 +45,8 @@ fn largest_smallest_integers(arr: &Vec<i32>) -> (res: (Option<i32>, Option<i32>)
         i = i + 1;
     }
     (a, b)
+    // impl-end
 }
 
-} 
+}
 fn main() {}

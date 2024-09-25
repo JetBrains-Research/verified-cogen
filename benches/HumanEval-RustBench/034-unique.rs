@@ -113,15 +113,21 @@ fn sort_seq(s: &Vec<i32>) -> (ret: Vec<i32>)
 }
 
 fn unique_sorted(s: Vec<i32>) -> (result: Vec<i32>)
+    // pre-conditions-start
     requires
         forall|i: int, j: int| 0 <= i < j < s.len() ==> s[i] <= s[j],
+    // pre-conditions-end
+    // post-conditions-start
     ensures
         forall|i: int, j: int| 0 <= i < j < result.len() ==> result[i] < result[j],
         forall|i: int| #![auto] 0 <= i < result.len() ==> s@.contains(result[i]),
         forall|i: int| #![trigger s[i]] 0 <= i < s.len() ==> result@.contains(s[i]),
+    // post-conditions-end
 {
+    // impl-start
     let mut result: Vec<i32> = vec![];
     for i in 0..s.len()
+        // invariants-start
         invariant
             forall|i: int, j: int| 0 <= i < j < s.len() ==> s[i] <= s[j],
             forall|k: int, l: int| 0 <= k < l < result.len() ==> result[k] < result[l],
@@ -129,35 +135,47 @@ fn unique_sorted(s: Vec<i32>) -> (result: Vec<i32>)
                 #![trigger result[k]]
                 0 <= k < result.len() ==> (exists|m: int| 0 <= m < i && result[k] == s[m]),
             forall|m: int| #![trigger s[m]] 0 <= m < i ==> result@.contains(s[m]),
+        // invariants-end
     {
         let ghost pre = result;
         if result.len() == 0 || result[result.len() - 1] != s[i] {
-            assert(result.len() == 0 || result[result.len() - 1] < s[i as int]);
+            assert(result.len() == 0 || result[result.len() - 1] < s[i as int]); // assert-line
             result.push(s[i]);
+            // assert-start
             assert forall|m: int| #![trigger s[m]] 0 <= m < i implies result@.contains(s[m]) by {
                 assert(pre@.contains(s@[m]));
                 lemma_seq_contains_after_push(pre@, s@[i as int], s@[m]);
             };
+            // assert-end
         }
+        // assert-start
         assert(forall|m: int|
             #![trigger result@[m], pre@[m]]
             0 <= m < pre.len() ==> pre@.contains(result@[m]) ==> result@.contains(pre@[m])) by {
             assert(forall|m: int| 0 <= m < pre.len() ==> result@[m] == pre@[m]);
         }
+        // assert-end
+        // assert-start
         assert(result@.contains(s[i as int])) by {
             assert(result[result.len() - 1] == s[i as int]);
         }
+        // assert-end
     }
     result
+    // impl-end
 }
 
 fn unique(s: Vec<i32>) -> (result: Vec<i32>)
+    // post-conditions-start
     ensures
         forall|i: int, j: int| 0 <= i < j < result.len() ==> result[i] < result[j],
         forall|i: int| #![auto] 0 <= i < result.len() ==> s@.contains(result[i]),
         forall|i: int| #![trigger s[i]] 0 <= i < s.len() ==> result@.contains(s[i]),
+    // post-conditions-end
 {
+    // impl-start
     let sorted = sort_seq(&s);
+    // assert-start
     assert(forall|i: int| #![auto] 0 <= i < sorted.len() ==> s@.contains(sorted[i])) by {
         assert(forall|i: int|
             #![auto]
@@ -169,6 +187,8 @@ fn unique(s: Vec<i32>) -> (result: Vec<i32>)
             0 <= i < sorted.len() ==> s@.to_multiset().contains(sorted[i]));
         s@.to_multiset_ensures();
     }
+    // assert-end
+    // assert-start
     assert(forall|i: int| #![trigger s[i]] 0 <= i < s.len() ==> sorted@.contains(s[i])) by {
         assert(forall|i: int| #![auto] 0 <= i < s.len() ==> s@.to_multiset().contains(s[i])) by {
             s@.to_multiset_ensures();
@@ -176,8 +196,10 @@ fn unique(s: Vec<i32>) -> (result: Vec<i32>)
         assert(forall|i: int| #![auto] 0 <= i < s.len() ==> sorted@.to_multiset().contains(s[i]));
         sorted@.to_multiset_ensures();
     }
+    // assert-end
     unique_sorted(sorted)
+    // impl-end
 }
 
-} 
+}
 fn main() {}

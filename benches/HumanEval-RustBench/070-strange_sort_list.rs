@@ -111,6 +111,7 @@ fn sort_seq(s: &Vec<i32>) -> (ret: Vec<i32>)
     sorted
 }
 fn strange_sort_list_helper(s: &Vec<i32>) -> (ret: (Vec<i32>, Vec<i32>))
+    // post-conditions-start
     ensures
         s@.to_multiset() == (ret.0)@.to_multiset(),
         s@.len() == (ret.0)@.len() == (ret.1)@.len(),
@@ -120,11 +121,14 @@ fn strange_sort_list_helper(s: &Vec<i32>) -> (ret: (Vec<i32>, Vec<i32>))
             0 <= i < s@.len() && i % 2 == 1 ==> (ret.1)@.index(i) == (ret.0)@.index(
                 s@.len() - (i - 1) / 2 - 1,
             ),
+    // post-conditions-end
 {
+    // impl-start
     let sorted = sort_seq(s);
     let mut strange = Vec::new();
     let mut i: usize = 0;
     while i < sorted.len()
+        // invariants-start
         invariant
             i <= sorted.len() == s@.len(),
             strange@.len() == i,
@@ -133,6 +137,7 @@ fn strange_sort_list_helper(s: &Vec<i32>) -> (ret: (Vec<i32>, Vec<i32>))
                 0 < j < i && j % 2 == 1 ==> strange@.index(j) == sorted@.index(
                     sorted@.len() - (j / 2) - 1,
                 ),
+        // invariants-end
     {
         if i % 2 == 0 {
             strange.push(sorted[i / 2]);
@@ -143,15 +148,20 @@ fn strange_sort_list_helper(s: &Vec<i32>) -> (ret: (Vec<i32>, Vec<i32>))
         i += 1;
     }
     (sorted, strange)
+    // impl-end
 }
 
 fn strange_sort_list(s: &Vec<i32>) -> (ret: Vec<i32>)
+    // post-conditions-start
     ensures
         s@.len() == ret@.len(),
+    // post-conditions-end
 {
+    // impl-start
     let (_, strange) = strange_sort_list_helper(s);
     strange
+    // impl-end
 }
 
-} 
+}
 fn main() {}

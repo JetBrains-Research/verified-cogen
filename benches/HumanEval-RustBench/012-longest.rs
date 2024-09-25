@@ -3,6 +3,7 @@ use vstd::prelude::*;
 verus! {
 
 fn longest(strings: &Vec<Vec<u8>>) -> (result: Option<&Vec<u8>>)
+    // post-conditions-start
     ensures
         match result {
             None => strings.len() == 0,
@@ -15,7 +16,9 @@ fn longest(strings: &Vec<Vec<u8>>) -> (result: Option<&Vec<u8>>)
                         0 <= j < i ==> strings[j].len() < s.len())))
             },
         },
+    // post-conditions-end
 {
+    // impl-start
     if strings.len() == 0 {
         return None;
     }
@@ -23,12 +26,14 @@ fn longest(strings: &Vec<Vec<u8>>) -> (result: Option<&Vec<u8>>)
     let mut pos = 0;
 
     for i in 1..strings.len()
+        // invariants-start
         invariant
             0 <= pos < i,
             result == &strings[pos as int],
             exists|i: int| 0 <= i < strings.len() && strings[i] == result,
             forall|j: int| #![auto] 0 <= j < i ==> strings[j].len() <= result.len(),
             forall|j: int| #![auto] 0 <= j < pos ==> strings[j].len() < result.len(),
+        // invariants-end
     {
         if result.len() < strings[i].len() {
             result = &strings[i];
@@ -36,7 +41,8 @@ fn longest(strings: &Vec<Vec<u8>>) -> (result: Option<&Vec<u8>>)
         }
     }
     Some(result)
+    // impl-end
 }
 
-} 
+}
 fn main() {}

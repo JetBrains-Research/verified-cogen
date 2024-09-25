@@ -25,16 +25,20 @@ pub fn ex_is_whitespace(c: char) -> (result: bool)
 }
 
 fn check_if_last_char_is_a_letter(txt: &str) -> (result: bool)
+    // post-conditions-start
     ensures
         result <==> (txt@.len() > 0 && txt@.last().is_alphabetic() && (txt@.len() == 1
             || txt@.index(txt@.len() - 2).is_whitespace())),
+    // post-conditions-end
 {
+    // impl-start
     let len = txt.unicode_len();
     if len == 0 {
         return false;
     }
     txt.get_char(len - 1).is_alphabetic() && (len == 1 || txt.get_char(len - 2).is_whitespace())
+    // impl-end
 }
 
-} 
+}
 fn main() {}

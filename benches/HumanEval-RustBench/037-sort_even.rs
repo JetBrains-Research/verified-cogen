@@ -120,6 +120,7 @@ fn sort_pred(l: Vec<i32>, p: Vec<bool>) -> (l_prime: Vec<i32>)
 
 #[verifier::loop_isolation(false)]
 fn sort_even(l: Vec<i32>) -> (result: Vec<i32>)
+    // post-conditions-start
     ensures
         l.len() == result.len(),
         permutes(result@, l@),
@@ -127,20 +128,27 @@ fn sort_even(l: Vec<i32>) -> (result: Vec<i32>)
         forall|i: int, j: int|
             #![auto]
             0 <= i < j < l.len() && i % 2 == 0 && j % 2 == 0 ==> result[i] <= result[j],
+    // post-conditions-end
 {
+    // impl-start
     let mut p: Vec<bool> = vec![];
     for i in 0..l.len()
+        // invariants-start
         invariant
             p.len() == i,
             forall|j: int| 0 <= j < i ==> p[j] == (j % 2 == 0),
+        // invariants-end
     {
         p.push(i % 2 == 0);
     }
+    // assert-start
     assert(forall|i: int, j: int|
         #![auto]
         0 <= i < j < l.len() && i % 2 == 0 && j % 2 == 0 ==> p[i] && p[j]);
+    // assert-end
     sort_pred(l, p)
+    // impl-end
 }
 
-} 
+}
 fn main() {}

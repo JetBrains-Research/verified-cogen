@@ -18,22 +18,29 @@ spec fn xor_char(a: char, b: char) -> (result: char)
 }
 
 fn string_xor(a: &[char], b: &[char]) -> (result: Vec<char>)
+    // pre-conditions-start
     requires
-        a@.len() == b@.len(),  
+        a@.len() == b@.len(),
         forall|i: int| 0 <= i < a@.len() as int ==> is_binary_digit(#[trigger] a[i]),
         forall|i: int| 0 <= i < b@.len() as int ==> is_binary_digit(#[trigger] b[i]),
+    // pre-conditions-end
+    // post-conditions-start
     ensures
         result.len() == a@.len(),
         forall|i: int|
             0 <= i < result.len() as int ==> #[trigger] result[i] == xor_char(a[i], b[i]),
+    // post-conditions-end
 {
+    // impl-start
     let a_len = a.len();
     let mut result = Vec::with_capacity(a_len);
     #[verifier::loop_isolation(false)]
     for pos in 0..a_len
+        // invariants-start
         invariant
             result.len() == pos,
             forall|i: int| 0 <= i < pos ==> #[trigger] result[i] == xor_char(a[i], b[i]),
+        // invariants-end
     {
         if *slice_index_get(a, pos) == *slice_index_get(b, pos) {
             result.push('0');
@@ -42,7 +49,8 @@ fn string_xor(a: &[char], b: &[char]) -> (result: Vec<char>)
         }
     }
     result
+    // impl-end
 }
 
-} 
+}
 fn main() {}
