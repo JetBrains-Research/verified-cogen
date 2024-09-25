@@ -23,3 +23,5 @@ results/*
 /log_tries/
 /log_tries/*
 .direnv
+scripts/processed
+scripts/processed/*
