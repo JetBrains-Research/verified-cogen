@@ -7,8 +7,8 @@ Let's work out how to use it. If applied to the `numbers[..i + 1]`, we get:
 `sum(numbers[..i + 1]) == sum(numbers[..i + 1][..i]) + numbers[i]`. It might be difficult for dafny to prove that `sum(numbers[..i + 1][..i]) == sum(numbers[..i])`, so I'd suggest adding an assertion before calling `sum_prop` to make sure that this is the case, namely `assert numbers[..i + 1][..i] == numbers[..i]`.
 So, to use the `sum_prop`, I'd suggest the following code:
 ```
-assert numbers[..i + 1][..i] == numbers[..i];
-sum_prop(numbers[..i + 1][..i]);
+assert numbers[..i + 1][..i] == numbers[..i]; // assert that taking a slice of a slice is the same as taking a slice of the original array
+sum_prop(numbers[..i + 1]); // use a lemma to prove the invariant
 assert sum(numbers[..i + 1]) == sum(numbers[..i + 1][..i]) + numbers[i];
 ```
 

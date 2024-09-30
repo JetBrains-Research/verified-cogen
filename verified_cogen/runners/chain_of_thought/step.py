@@ -19,11 +19,12 @@ class Substep:
 
 
 class Step:
-    substeps: list[Substep] = []
+    substeps: list[Substep]
     question: str
 
     def __init__(self, dir: pathlib.Path):
-        for substep in (dir / "examples").iterdir():
+        self.substeps = []
+        for substep in sorted((dir / "examples").iterdir()):
             assert substep.is_dir()
             self.substeps.append(
                 Substep(

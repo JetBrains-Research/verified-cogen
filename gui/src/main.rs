@@ -72,21 +72,23 @@ enum FileMode {
     Directory,
 }
 
-#[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Default, Serialize, Deserialize)]
 enum BenchMode {
     #[default]
     Invariants,
     Generic,
     Generate,
     Validating,
+    StepByStep,
 }
 
 impl BenchMode {
     fn llm_generated_path(&self, path: &str) -> PathBuf {
         let name = match self {
-            BenchMode::Invariants | BenchMode::Generic | BenchMode::Validating => {
-                basename(path).to_string()
-            }
+            BenchMode::Invariants
+            | BenchMode::Generic
+            | BenchMode::Validating
+            | BenchMode::StepByStep => basename(path).to_string(),
             BenchMode::Generate => {
                 let base = basename(path);
                 base.chars()
@@ -97,6 +99,27 @@ impl BenchMode {
         };
         APP_DIRS.cache_dir().join("llm-generated").join(name)
     }
+
+    fn name(&self) -> &str {
+        match self {
+            BenchMode::Invariants => "Invariants",
+            BenchMode::Generic => "Generic",
+            BenchMode::Generate => "Generate",
+            BenchMode::Validating => "Validating",
+            BenchMode::StepByStep => "Step by step",
+        }
+    }
+
+    fn all() -> &'static [BenchMode] {
+        const MODES: &[BenchMode] = &[
+            BenchMode::Invariants,
+            BenchMode::Generic,
+            BenchMode::Generate,
+            BenchMode::Validating,
+            BenchMode::StepByStep,
+        ];
+        MODES
+    }
 }
 
 impl Display for BenchMode {
@@ -106,6 +129,7 @@ impl Display for BenchMode {
             BenchMode::Generic => write!(f, "generic"),
             BenchMode::Generate => write!(f, "generate"),
             BenchMode::Validating => write!(f, "validating"),
+            BenchMode::StepByStep => write!(f, "step-by-step"),
         }
     }
 }

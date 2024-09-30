@@ -15,6 +15,7 @@ src_paths = ["verified_cogen"]
 
 [tool.pyright]
 typeCheckingMode = "strict"
+pythonVersion = "3.9"
 
 [[tool.poetry.source]]
 name = "PyPI"
