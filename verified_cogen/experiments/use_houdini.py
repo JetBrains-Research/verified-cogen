@@ -125,7 +125,7 @@ def collect_invariants(args: ProgramArgs, prg: str) -> list[str]:
             temperature=temperature,
         )
 
-        llm.user_prompts.append(
+        llm.add_user_prompt(
             INVARIANTS_JSON_PROMPT.replace("{program}", prg).replace("{function}", func)
         )
         response = llm.make_request()  # type: ignore
@@ -143,7 +143,7 @@ def collect_invariants(args: ProgramArgs, prg: str) -> list[str]:
 def remove_failed_invariants(
     llm: LLM, invariants: list[str], err: str
 ) -> Optional[list[str]]:
-    llm.user_prompts.append(REMOVE_FAILED_INVARIANTS_PROMPT.format(error=err))
+    llm.add_user_prompt(REMOVE_FAILED_INVARIANTS_PROMPT.format(error=err))
     response = llm.make_request()  # type: ignore
     try:
         new_invariants = json.loads(response)

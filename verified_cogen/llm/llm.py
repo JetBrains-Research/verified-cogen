@@ -34,18 +34,36 @@ class LLM:
         self.prompt_dir = prompt_dir
         self.is_gpt = "gpt" in self.profile.name
         self.user_prompts: list[str] = []
+        self.is_user_prompt_temporary: list[bool] = []
         self.responses: list[str] = []
+        self.is_response_temporary: list[bool] = []
         self.had_errors = False
         self.temperature = temperature
         self.system_prompt = (
             system_prompt if system_prompt else prompts.sys_prompt(self.prompt_dir)
         )
 
-    def add_user_prompt(self, prompt: str):
+    def add_user_prompt(self, prompt: str, temporary: bool = False):
         self.user_prompts.append(prompt)
+        self.is_user_prompt_temporary.append(temporary)
 
-    def add_response(self, response: str):
+    def add_response(self, response: str, temporary: bool = False):
         self.responses.append(response)
+        self.is_response_temporary.append(temporary)
+
+    def wipe_temporary(self):
+        self.user_prompts = [
+            prompt
+            for prompt, temporary in zip(
+                self.user_prompts, self.is_user_prompt_temporary
+            )
+            if not temporary
+        ]
+        self.responses = [
+            response
+            for response, temporary in zip(self.responses, self.is_response_temporary)
+            if not temporary
+        ]
 
     def _request(
         self, temperature: Optional[float] = None, tries: int = 5
@@ -81,11 +99,11 @@ class LLM:
 
     def make_request(self) -> str:
         response = self._request().content
-        self.responses.append(response)
+        self.add_response(response)
         return extract_code_from_llm_output(response)
 
     def produce(self, prg: str) -> str:
-        self.user_prompts.append(
+        self.add_user_prompt(
             prompts.produce_prompt(self.prompt_dir).format(program=prg)
         )
         return self.make_request()
@@ -94,11 +112,11 @@ class LLM:
         prompt = prompts.add_prompt(self.prompt_dir).format(program=prg, checks=checks)
         if "{function}" in prompt and function is not None:
             prompt = prompt.replace("{function}", function)
-        self.user_prompts.append(prompt)
+        self.add_user_prompt(prompt, False)
         return self.make_request()
 
     def rewrite(self, prg: str) -> str:
-        self.user_prompts.append(
+        self.add_user_prompt(
             prompts.rewrite_prompt(self.prompt_dir).replace("{program}", prg)
         )
         return self.make_request()
@@ -109,9 +127,9 @@ class LLM:
             if self.had_errors
             else prompts.ask_for_fixed_prompt(self.prompt_dir)
         )
-        self.user_prompts.append(prompt.format(error=err))
+        self.add_user_prompt(prompt.format(error=err))
         return self.make_request()
 
     def ask_for_timeout(self) -> str:
-        self.user_prompts.append(prompts.ask_for_timeout_prompt(self.prompt_dir))
+        self.add_user_prompt(prompts.ask_for_timeout_prompt(self.prompt_dir))
         return self.make_request()
