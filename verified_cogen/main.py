@@ -14,6 +14,7 @@ from verified_cogen.runners.languages import register_basic_languages
 from verified_cogen.runners.languages.language import AnnotationType, LanguageDatabase
 from verified_cogen.runners.step_by_step import StepByStepRunner
 from verified_cogen.runners.validating import ValidatingRunner
+from verified_cogen.runners.step_by_step import StepByStepRunner
 from verified_cogen.tools import (
     ext_glob,
     extension_from_file_list,
@@ -114,6 +115,13 @@ def make_runner_cls(
             return ValidatingRunner(
                 StepByStepRunner(InvariantRunner(llm, logger, verifier, config)),
                 LanguageDatabase().get(extension),
+            )
+        elif bench_type == "step-by-step":
+            return StepByStepRunner(
+                ValidatingRunner(
+                    InvariantRunner(llm, logger, verifier, log_tries),
+                    LanguageDatabase().get(extension),
+                )
             )
         else:
             raise ValueError(f"Unexpected bench_type: {bench_type}")
