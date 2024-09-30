@@ -23,7 +23,7 @@ class Step:
     question: str
 
     def __init__(self, dir: pathlib.Path):
-        for substep in (dir / "examples").iterdir():
+        for substep in sorted((dir / "examples").iterdir()):
             assert substep.is_dir()
             self.substeps.append(
                 Substep(
