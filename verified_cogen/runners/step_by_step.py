@@ -2,7 +2,7 @@ import pathlib
 from typing import Optional
 
 from verified_cogen.runners import Runner
-from verified_cogen.tools import extract_code_from_llm_output, basename
+from verified_cogen.tools import extract_code_from_llm_output
 from verified_cogen.tools.modes import Mode
 from verified_cogen.runners.chain_of_thought import Step
 
@@ -72,21 +72,3 @@ class StepByStepRunner(Runner):
 
     def precheck(self, prg: str, mode: Mode):
         return self.wrapped_runner.precheck(prg, mode)
-
-    def run_on_file(self, mode: Mode, total_tries: int, file: str) -> Optional[int]:
-        name = basename(file)
-        self.logger.info(f"Running on {file}")
-
-        with open(file, "r") as f:
-            prg = self.preprocess(f.read(), mode)
-
-        self.wrapped_runner.starting_prg = prg
-
-        verification_result = self.verify_program(name, 0, prg)
-        if verification_result is not None and verification_result[0]:
-            return 0
-        elif verification_result is None:
-            self.logger.info("Verification timed out")
-        self.precheck(prg, mode)
-        inv_prg = self.postprocess(self.invoke(prg, mode))
-        return self.try_fixing(total_tries, inv_prg, name)
