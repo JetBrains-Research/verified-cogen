@@ -5,7 +5,11 @@ from typing import Optional
 from grazie.api.client.chat.prompt import ChatPrompt
 from grazie.api.client.chat.response import ChatResponse
 from grazie.api.client.endpoints import GrazieApiGatewayUrls
-from grazie.api.client.gateway import AuthType, GrazieApiGatewayClient
+from grazie.api.client.gateway import (
+    AuthType,
+    GrazieApiGatewayClient,
+    RequestFailedException,
+)
 from grazie.api.client.llm_parameters import LLMParameters
 from grazie.api.client.parameters import Parameters
 from grazie.api.client.profiles import Profile
@@ -96,6 +100,9 @@ class LLM:
         except RemoteDisconnected:
             logger.warning("Grazie API is down, retrying...")
             return self._request(temperature, tries - 1)
+        except RequestFailedException as e:
+            self.dump_history()
+            raise e
 
     def make_request(self) -> str:
         response = self._request().content
@@ -133,3 +140,18 @@ class LLM:
     def ask_for_timeout(self) -> str:
         self.add_user_prompt(prompts.ask_for_timeout_prompt(self.prompt_dir))
         return self.make_request()
+
+    def dump_history(self):
+        with open("dump.txt", "w") as f:
+            current_prompt_user = 0
+            current_response = 0
+            while current_prompt_user < len(
+                self.user_prompts
+            ) or current_response < len(self.responses):
+                if current_prompt_user < len(self.user_prompts):
+                    user_prompt = self.user_prompts[current_prompt_user]
+                    f.write(f"User: {user_prompt}\n")
+                    current_prompt_user += 1
+                if current_response < len(self.responses):
+                    f.write(f"LLM: {self.responses[current_response]}\n")
+                    current_response += 1

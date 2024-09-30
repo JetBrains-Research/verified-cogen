@@ -128,7 +128,7 @@ def collect_invariants(args: ProgramArgs, prg: str) -> list[str]:
         llm.add_user_prompt(
             INVARIANTS_JSON_PROMPT.replace("{program}", prg).replace("{function}", func)
         )
-        response = llm.make_request()  # type: ignore
+        response = llm.make_request()
         try:
             invariants = json.loads(response)
             result_invariants.extend(invariants)
@@ -144,7 +144,7 @@ def remove_failed_invariants(
     llm: LLM, invariants: list[str], err: str
 ) -> Optional[list[str]]:
     llm.add_user_prompt(REMOVE_FAILED_INVARIANTS_PROMPT.format(error=err))
-    response = llm.make_request()  # type: ignore
+    response = llm.make_request()
     try:
         new_invariants = json.loads(response)
         log.debug("REMOVED: {}".format(set(invariants).difference(set(new_invariants))))
