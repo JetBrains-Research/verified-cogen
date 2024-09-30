@@ -1,11 +1,10 @@
 import logging
 import pathlib
-import sys
 import json
 
 from verified_cogen.llm.llm import LLM
 from verified_cogen.args import get_args
-from verified_cogen.tools import rename_file, ext_glob, extension_from_file_list
+from verified_cogen.tools import rename_file, ext_glob, extension_from_file_list, register_output_handler
 from verified_cogen.runners.invariants import InvariantRunner
 from verified_cogen.runners.languages import register_basic_languages
 from verified_cogen.runners.languages.language import LanguageDatabase
@@ -14,13 +13,6 @@ from verified_cogen.tools.modes import Mode
 from verified_cogen.tools.verifier import Verifier
 
 logger = logging.getLogger(__name__)
-
-
-def register_output_handler():
-    handler = logging.StreamHandler(sys.stdout)
-    formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
-    handler.setFormatter(formatter)
-    logger.addHandler(handler)
 
 
 def main():
@@ -35,7 +27,7 @@ def main():
     assert args.retries == 0
 
     if args.output_logging:
-        register_output_handler()
+        register_output_handler(logger)
 
     directory = pathlib.Path(args.dir)
     log_tries = pathlib.Path(args.log_tries) if args.log_tries is not None else None

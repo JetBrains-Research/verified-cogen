@@ -17,6 +17,7 @@ from verified_cogen.tools import (
     tabulate_list,
     extension_from_file_list,
     get_cache_dir,
+    register_output_handler,
 )
 from verified_cogen.tools.modes import Mode
 from verified_cogen.tools.verifier import Verifier
@@ -129,6 +130,9 @@ def main():
 
         if args.bench_type == "generic":
             raise ValueError("Regex mode only works with invariants")
+
+    if args.output_logging:
+        register_output_handler(logger)
 
     if args.input is None and args.dir is None:
         args.input = input("Input file: ").strip()
