@@ -60,6 +60,7 @@ def extract_code_from_llm_output(reply: str) -> str:
         return reply.strip()
     return reply
 
+
 def register_output_handler(logger: logging.Logger):
     handler = logging.StreamHandler(sys.stdout)
     formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
