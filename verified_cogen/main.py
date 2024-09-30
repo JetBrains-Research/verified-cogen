@@ -95,20 +95,19 @@ def make_runner_cls(
     bench_type: str, extension: str, log_tries: Optional[pathlib.Path]
 ) -> Callable[[LLM, Logger, Verifier], Runner]:
     def runner_cls(llm: LLM, logger: Logger, verifier: Verifier):
-        match bench_type:
-            case "invariants":
-                return InvariantRunner(llm, logger, verifier, log_tries)
-            case "generic":
-                return GenericRunner(llm, logger, verifier, log_tries)
-            case "generate":
-                return GenerateRunner(llm, logger, verifier, log_tries)
-            case "validating":
-                return ValidatingRunner(
-                    InvariantRunner(llm, logger, verifier, log_tries),
-                    LanguageDatabase().get(extension),
-                )
-            case _:
-                raise ValueError(f"Unexpected bench_type: {bench_type}")
+        if bench_type == "invariants":
+            return InvariantRunner(llm, logger, verifier, log_tries)
+        elif bench_type == "generic":
+            return GenericRunner(llm, logger, verifier, log_tries)
+        elif bench_type == "generate":
+            return GenerateRunner(llm, logger, verifier, log_tries)
+        elif bench_type == "validating":
+            return ValidatingRunner(
+                InvariantRunner(llm, logger, verifier, log_tries),
+                LanguageDatabase().get(extension),
+            )
+        else:
+            raise ValueError(f"Unexpected bench_type: {bench_type}")
 
     return runner_cls
 
