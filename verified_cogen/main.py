@@ -117,11 +117,9 @@ def make_runner_cls(
                 LanguageDatabase().get(extension),
             )
         elif bench_type == "step-by-step":
-            return StepByStepRunner(
-                ValidatingRunner(
-                    InvariantRunner(llm, logger, verifier, log_tries),
-                    LanguageDatabase().get(extension),
-                )
+            return ValidatingRunner(
+                StepByStepRunner(InvariantRunner(llm, logger, verifier, log_tries)),
+                LanguageDatabase().get(extension),
             )
         else:
             raise ValueError(f"Unexpected bench_type: {bench_type}")
