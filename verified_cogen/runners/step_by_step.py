@@ -32,7 +32,7 @@ class StepByStepRunner(Runner):
         for step in sorted((pathlib.Path(self.llm.prompt_dir) / "steps").iterdir()):
             assert step.is_dir()
             steps.append(Step(step))
-        for iter, step in enumerate(steps):
+        for it, step in enumerate(steps):
             for substep in step.substeps:
                 self.llm.add_user_prompt(
                     substep.question, self.config.remove_old_examples
@@ -42,7 +42,7 @@ class StepByStepRunner(Runner):
             _ = self.llm.make_request()
             if self.config.remove_old_examples:
                 self.llm.wipe_temporary()
-            self.logger.info(f"Step {iter + 1} done")
+            self.logger.info(f"Step {it + 1} done")
 
         rewrite_step = Step(pathlib.Path(self.llm.prompt_dir) / "rewrite")
         for substep in rewrite_step.substeps:
