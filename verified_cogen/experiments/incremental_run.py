@@ -10,12 +10,10 @@ from verified_cogen.tools import (
     extension_from_file_list,
     register_output_handler,
 )
-from verified_cogen.runners.invariants import InvariantRunner
 from verified_cogen.runners.languages import register_basic_languages
-from verified_cogen.runners.languages.language import LanguageDatabase
-from verified_cogen.runners.validating import ValidatingRunner
 from verified_cogen.tools.modes import Mode
 from verified_cogen.tools.verifier import Verifier
+from verified_cogen.main import make_runner_cls
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +25,6 @@ def main():
     mode = Mode(args.insert_conditions_mode)
     assert mode != Mode.REGEX
     assert args.dir is not None
-    assert args.bench_type == "validating", args.bench_type
     assert args.runs == 1
     assert args.retries == 0
 
@@ -49,7 +46,6 @@ def main():
     assert len(files) > 0, "No files found in the directory"
     files.sort()
 
-    language = LanguageDatabase().get(extension_from_file_list(files))
     verifier = Verifier(args.shell, args.verifier_command)
 
     for file in files:
@@ -59,11 +55,9 @@ def main():
             args.prompts_directory,
             args.temperature,
         )
-        runner = ValidatingRunner(
-            wrapping=InvariantRunner(llm, logger, verifier),
-            language=language,
-            log_tries=log_tries,
-        )
+        runner = make_runner_cls(
+            args.bench_type, extension_from_file_list([file]), log_tries
+        )(llm, logger, verifier)
         display_name = rename_file(file)
         marker_name = str(file.relative_to(directory))
         if marker_name in results and isinstance(results[marker_name], int):

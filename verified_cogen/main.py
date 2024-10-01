@@ -72,6 +72,8 @@ def run_once(
         if tries is not None:
             cnt[name] = tries
 
+        llm.dump_history()
+
     if is_once:
         if args.output_style == "full":
             success_zero_tries_tabbed = tabulate_list(success_zero_tries)
