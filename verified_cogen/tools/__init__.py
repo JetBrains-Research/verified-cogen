@@ -1,5 +1,7 @@
+import logging
 import pathlib
 import re
+import sys
 from typing import Optional
 
 import appdirs  # type: ignore
@@ -57,3 +59,10 @@ def extract_code_from_llm_output(reply: str) -> str:
         reply = reply[:i]
         return reply.strip()
     return reply
+
+
+def register_output_handler(logger: logging.Logger):
+    handler = logging.StreamHandler(sys.stdout)
+    formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)

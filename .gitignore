@@ -18,8 +18,9 @@ run.sh
 **/.pytest_cache
 run_nagini.py
 /tmp
-results
 results/*
+!results/tries_HumanEval-Dafny_1.json
+!results/tries_HumanEval-RustBench_1.json
 /log_tries/
 /log_tries/*
 .direnv

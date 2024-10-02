@@ -5,7 +5,7 @@ from verified_cogen.runners.languages.language import GenericLanguage
 
 DAFNY_VALIDATOR_TEMPLATE = """\
 method {method_name}_valid({parameters}) returns ({returns}){specs}\
-{ var ret := {method_name}({param_names}); return ret; }
+{ var {return_values} := {method_name}({param_names}); return {return_values}; }
 """
 
 
@@ -25,3 +25,13 @@ class DafnyLanguage(GenericLanguage):
             "// assert-line",
             "//",
         )
+
+    def _validators_from(
+        self, method_name: str, parameters: str, returns: str, specs: str
+    ) -> str:
+        result = super()._validators_from(method_name, parameters, returns, specs)
+        result = result.replace(
+            "{return_values}",
+            ", ".join(f"ret{i}" for i in range(len(returns.split(",")))),
+        )
+        return result

@@ -9,6 +9,7 @@ from verified_cogen.runners.invariants import InvariantRunner
 from verified_cogen.runners.languages import register_basic_languages
 from verified_cogen.runners.languages.language import LanguageDatabase
 from verified_cogen.runners.validating import ValidatingRunner
+from verified_cogen.runners.step_by_step import StepByStepRunner
 from verified_cogen.tools import (
     ext_glob,
     pprint_stat,
@@ -16,6 +17,7 @@ from verified_cogen.tools import (
     tabulate_list,
     extension_from_file_list,
     get_cache_dir,
+    register_output_handler,
 )
 from verified_cogen.tools.modes import Mode
 from verified_cogen.tools.verifier import Verifier
@@ -42,15 +44,15 @@ def run_once(
 
     for file in files:
         llm = LLM(
-            args.grazie_token,  # type: ignore
-            args.llm_profile,  # type: ignore
-            args.prompts_directory,  # type: ignore
-            args.temperature,  # type: ignore
+            args.grazie_token,
+            args.llm_profile,
+            args.prompts_directory,
+            args.temperature,
         )
 
         runner = runner_cls(llm, logger, verifier)
 
-        retries = args.retries + 1  # type: ignore
+        retries = args.retries + 1
         tries = None
         while retries > 0 and tries is None:
             tries = runner.run_on_file(mode, args.tries, str(file))
@@ -69,6 +71,8 @@ def run_once(
 
         if tries is not None:
             cnt[name] = tries
+
+        llm.dump_history(Path(get_cache_dir()) / "history" / f"{name}.txt")
 
     if is_once:
         if args.output_style == "full":
@@ -95,20 +99,24 @@ def make_runner_cls(
     bench_type: str, extension: str, log_tries: Optional[pathlib.Path]
 ) -> Callable[[LLM, Logger, Verifier], Runner]:
     def runner_cls(llm: LLM, logger: Logger, verifier: Verifier):
-        match bench_type:
-            case "invariants":
-                return InvariantRunner(llm, logger, verifier, log_tries)
-            case "generic":
-                return GenericRunner(llm, logger, verifier, log_tries)
-            case "generate":
-                return GenerateRunner(llm, logger, verifier, log_tries)
-            case "validating":
-                return ValidatingRunner(
-                    InvariantRunner(llm, logger, verifier, log_tries),
-                    LanguageDatabase().get(extension),
-                )
-            case _:
-                raise ValueError(f"Unexpected bench_type: {bench_type}")
+        if bench_type == "invariants":
+            return InvariantRunner(llm, logger, verifier, log_tries)
+        elif bench_type == "generic":
+            return GenericRunner(llm, logger, verifier, log_tries)
+        elif bench_type == "generate":
+            return GenerateRunner(llm, logger, verifier, log_tries)
+        elif bench_type == "validating":
+            return ValidatingRunner(
+                InvariantRunner(llm, logger, verifier, log_tries),
+                LanguageDatabase().get(extension),
+            )
+        elif bench_type == "step-by-step":
+            return ValidatingRunner(
+                StepByStepRunner(InvariantRunner(llm, logger, verifier, log_tries)),
+                LanguageDatabase().get(extension),
+            )
+        else:
+            raise ValueError(f"Unexpected bench_type: {bench_type}")
 
     return runner_cls
 
@@ -124,6 +132,9 @@ def main():
 
         if args.bench_type == "generic":
             raise ValueError("Regex mode only works with invariants")
+
+    if args.output_logging:
+        register_output_handler(logger)
 
     if args.input is None and args.dir is None:
         args.input = input("Input file: ").strip()
@@ -200,3 +211,5 @@ def main():
             print("Verified with modification on try", tries)
         else:
             print("Failed to verify")
+
+        llm.dump_history(Path("dump.txt"))

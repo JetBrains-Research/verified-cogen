@@ -1,0 +1,14 @@
+During the previous steps, we've found that the `sum_loop` function has a loop that goes over the elements of the array `numbers` and adds them to the `s` variable, which is equal to the `Sum(numbers, 0, i)` for all `i`, such that `0 <= i and i <= len(numbers)`. Also we need list access to numbers. This means that during the execution of the loop the following invariant holds:
+1. `Acc(list_pred(numbers))`
+2. `0 <= i and i <= len(numbers)`
+3. `s == Sum(numbers, 0, i)`
+
+The third invariant might be a bit difficult to prove, as it adds the last element of the array to the sum, while, as I've said before, the `Sum` function is defined as `Sum(a, 0, i + 1) == Sum(a, 0, i) + a[i]`. However, as we've seen, it's possible to use additional invariants and assertions to prove this invariants holds.
+Let's work out how to use it. One of the ways to prove it is to add the following invariants and assertions:
+```
+Invariant(Forall(int, lambda d_1_p_:
+    (Implies(0 <= d_1_p_ and d_1_p_ < len(numbers), Sum(numbers, 0, d_1_p_ + 1) == Sum(numbers, 0, d_1_p_) + numbers[d_1_p_]), [[Sum(numbers, 0, d_1_p_ + 1)]])))
+Assert(Sum(numbers, 0, i + 1) == Sum(numbers, 0, i) + numbers[i])
+```
+
+In conclusion, we can say that two invariants hold and the third one could be proved using additional invariants and assertions.

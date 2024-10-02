@@ -1,0 +1,39 @@
+Now we are finished with the specifications. Let's move onto the loops.
+Given the following program, for each function, determine if it has loops. If it does, try to determine what the loop does in detail. Go through all your thinking and reasoning process step by step.
+```verus
+spec fn sum(s: Seq<u32>) -> int 
+    decreases s.len()
+{
+    if s.len() == 0 { 0 } else { s[0] + sum(s.subrange(1, s.len() as int)) }
+}
+
+proof fn sum_prop(s: Seq<u32>)
+    requires s.len() > 0,
+    ensures sum(s) == sum(s.subrange(0, s.len() - 1)) + s[s.len() - 1],
+    decreases s.len(),
+{
+    if s.len() > 1 {
+        sum_prop(s.subrange(1, s.len() as int));
+        assert (s.subrange(0, s.len() - 1).drop_first() == s.subrange(1, s.len() as int).drop_last());
+        assert(s[0] + sum(s.subrange(0, s.len() - 1).drop_first()) + s[s.len() - 1] == sum(s));
+    } else {
+        assert (sum(s) == sum(s.subrange(0, s.len() - 1)) + s[s.len() - 1]) by {
+            assert (sum(s) == s[0] + sum(s.subrange(1, s.len() as int)));
+        }
+    }
+}
+
+fn sum_loop(numbers: &Vec<u32>) -> (s: Option<u32>)
+    ensures s.is_some() ==> s.unwrap() == sum(numbers@),
+{
+    let mut s: u32 = 0;
+    let mut i = 0;
+    while i < numbers.len()
+    {
+        s = s.checked_add(numbers[i])?;
+
+        i += 1;
+    }
+    Some(s)
+}
+```

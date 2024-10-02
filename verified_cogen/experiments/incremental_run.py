@@ -1,26 +1,22 @@
 import logging
 import pathlib
-import sys
 import json
 
+from pathlib import Path
 from verified_cogen.llm.llm import LLM
 from verified_cogen.args import get_args
-from verified_cogen.tools import rename_file, ext_glob, extension_from_file_list
-from verified_cogen.runners.invariants import InvariantRunner
+from verified_cogen.tools import (
+    rename_file,
+    ext_glob,
+    extension_from_file_list,
+    register_output_handler,
+)
 from verified_cogen.runners.languages import register_basic_languages
-from verified_cogen.runners.languages.language import LanguageDatabase
-from verified_cogen.runners.validating import ValidatingRunner
 from verified_cogen.tools.modes import Mode
 from verified_cogen.tools.verifier import Verifier
+from verified_cogen.main import make_runner_cls
 
 logger = logging.getLogger(__name__)
-
-
-def register_output_handler():
-    handler = logging.StreamHandler(sys.stdout)
-    formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
-    handler.setFormatter(formatter)
-    logger.addHandler(handler)
 
 
 def main():
@@ -30,12 +26,11 @@ def main():
     mode = Mode(args.insert_conditions_mode)
     assert mode != Mode.REGEX
     assert args.dir is not None
-    assert args.bench_type == "validating", args.bench_type
     assert args.runs == 1
     assert args.retries == 0
 
     if args.output_logging:
-        register_output_handler()
+        register_output_handler(logger)
 
     directory = pathlib.Path(args.dir)
     log_tries = pathlib.Path(args.log_tries) if args.log_tries is not None else None
@@ -52,7 +47,6 @@ def main():
     assert len(files) > 0, "No files found in the directory"
     files.sort()
 
-    language = LanguageDatabase().get(extension_from_file_list(files))
     verifier = Verifier(args.shell, args.verifier_command)
 
     for file in files:
@@ -62,11 +56,9 @@ def main():
             args.prompts_directory,
             args.temperature,
         )
-        runner = ValidatingRunner(
-            wrapping=InvariantRunner(llm, logger, verifier),
-            language=language,
-            log_tries=log_tries,
-        )
+        runner = make_runner_cls(
+            args.bench_type, extension_from_file_list([file]), log_tries
+        )(llm, logger, verifier)
         display_name = rename_file(file)
         marker_name = str(file.relative_to(directory))
         if marker_name in results and isinstance(results[marker_name], int):
@@ -87,6 +79,8 @@ def main():
             logger.info(f"Failed to verify {display_name}")
         with open(json_results, "w") as f:
             json.dump(results, f, indent=2)
+
+        llm.dump_history(Path("history") / f"{file.stem}.txt")
 
 
 if __name__ == "__main__":

@@ -1,0 +1,7 @@
+Let's go function by function. The first function, `Sum` has @Pure annotation. This means that this function can be probably used in specifications. We can see that the aruguments to this function are a sequence of integers and two indices. We can see that the function returns an integer. We can conclude that the function does some accumulation of integers from the subsequence [l;r) of the given sequence. Looking at the body, we can see that the function takes the first element of the subsequence and adds it to the accumulated result of evaluating the `sum` function on the rest of the subsequence. This means the function is a specification for the sum of the elements of the subsequence.
+
+Finally, we have the `sum_loop` function. This function has a specification, as indicated by the `Requires` and `Ensures` clauses. The specification states that the returned value should be equal to the sum of the input sequence `numbers`, as computed by the `Sum` function, as seen by the `Result() == Sum(numbers, 0, len(numbers))` clause.
+
+In summary:
+1. The `sum` function is used in a specification for computing the sum of a sequence of integers.
+2. The `sum_loop` function has a specification that ensures it correctly computes the sum of a sequence of integers, matching the result of the `Sum` function.

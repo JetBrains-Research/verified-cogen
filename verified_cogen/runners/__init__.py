@@ -15,6 +15,7 @@ class Runner:
     logger: Logger
     verifier: Verifier
     log_tries: Optional[pathlib.Path]
+    starting_prg: Optional[str] = None
 
     def __init__(
         self,
@@ -55,6 +56,9 @@ class Runner:
 
     def preprocess(self, prg: str, mode: Mode) -> str:
         return prg
+
+    def postprocess(self, inv_prg: str) -> str:
+        return inv_prg
 
     def invoke(self, prg: str, mode: Mode) -> str:
         self.logger.info("Invoking LLM")
@@ -97,7 +101,7 @@ class Runner:
                 self.logger.info("Verification timed out")
                 tries -= 1
                 if tries > 0:
-                    inv_prg = self.ask_for_timeout()
+                    inv_prg = self.postprocess(self.ask_for_timeout())
             else:
                 verified_inv, out_inv, err_inv = verification_result
                 if verified_inv:
@@ -109,7 +113,9 @@ class Runner:
                     tries -= 1
                     if tries > 0:
                         self.logger.info(f"Retrying with {tries} tries left...")
-                        inv_prg = self.ask_for_fixed(out_inv + err_inv)
+                        inv_prg = self.postprocess(
+                            self.ask_for_fixed(out_inv + err_inv)
+                        )
         return None
 
     def run_on_file(
@@ -124,11 +130,13 @@ class Runner:
         with open(file, "r") as f:
             prg = self.preprocess(f.read(), mode)
 
+        self.starting_prg = prg
+
         verification_result = self.verify_program(name, 0, prg)
         if verification_result is not None and verification_result[0]:
             return 0
         elif verification_result is None:
             self.logger.info("Verification timed out")
         self.precheck(prg, mode)
-        inv_prg = self.invoke(prg, mode)
+        inv_prg = self.postprocess(self.invoke(prg, mode))
         return self.try_fixing(total_tries, inv_prg, name)

@@ -37,27 +37,16 @@ impl AppState {
                 self.settings.file_mode = FileMode::Directory;
             }
             ui.add_space(2.0);
-            if !self.settings.incremental_run {
-                ui.horizontal(|ui| {
-                    ui.label("Bench mode: ");
-                    ui.radio_value(
-                        &mut self.settings.bench_type,
-                        BenchMode::Invariants,
-                        "Invariants",
-                    );
-                    ui.radio_value(&mut self.settings.bench_type, BenchMode::Generic, "Generic");
-                    ui.radio_value(
-                        &mut self.settings.bench_type,
-                        BenchMode::Generate,
-                        "Generate",
-                    );
-                    ui.radio_value(
-                        &mut self.settings.bench_type,
-                        BenchMode::Validating,
-                        "Validating",
-                    );
-                });
-            }
+            ui.horizontal(|ui| {
+                ui.label("Bench mode:");
+                egui::ComboBox::from_id_source("bench-mode-select")
+                    .selected_text(format!("{}", self.settings.bench_type.name()))
+                    .show_ui(ui, |ui| {
+                        for mode in BenchMode::all() {
+                            ui.selectable_value(&mut self.settings.bench_type, *mode, mode.name());
+                        }
+                    });
+            });
 
             ui.separator();
             ui.horizontal(|ui| {
