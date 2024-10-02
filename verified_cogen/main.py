@@ -211,3 +211,5 @@ def main():
             print("Verified with modification on try", tries)
         else:
             print("Failed to verify")
+
+        llm.dump_history()

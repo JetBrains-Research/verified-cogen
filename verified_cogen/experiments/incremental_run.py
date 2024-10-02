@@ -79,6 +79,8 @@ def main():
         with open(json_results, "w") as f:
             json.dump(results, f, indent=2)
 
+        llm.dump_history()
+
 
 if __name__ == "__main__":
     main()

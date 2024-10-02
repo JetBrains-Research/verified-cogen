@@ -150,8 +150,8 @@ class LLM:
             ) or current_response < len(self.responses):
                 if current_prompt_user < len(self.user_prompts):
                     user_prompt = self.user_prompts[current_prompt_user]
-                    f.write(f"User: {user_prompt}\n")
+                    f.write(f"User: {user_prompt}\n\n")
                     current_prompt_user += 1
                 if current_response < len(self.responses):
-                    f.write(f"LLM: {self.responses[current_response]}\n")
+                    f.write(f"LLM: {self.responses[current_response]}\n\n")
                     current_response += 1

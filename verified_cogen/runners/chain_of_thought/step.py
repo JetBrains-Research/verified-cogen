@@ -19,14 +19,14 @@ class Substep:
 
 
 class Step:
-    substeps: list[Substep]
+    examples: list[Substep]
     question: str
 
     def __init__(self, dir: pathlib.Path):
-        self.substeps = []
+        self.examples = []
         for substep in sorted((dir / "examples").iterdir()):
             assert substep.is_dir()
-            self.substeps.append(
+            self.examples.append(
                 Substep(
                     (substep / "question.txt").read_text(),
                     (substep / "answer.txt").read_text(),
@@ -36,10 +36,10 @@ class Step:
         self.question = (dir / "question.txt").read_text()
 
     def __repr__(self) -> str:
-        return f"Step(question={self.question}, substeps={self.substeps})"
+        return f"Step(question={self.question}, substeps={self.examples})"
 
     def __str__(self) -> str:
         result = ""
-        for substep in self.substeps:
+        for substep in self.examples:
             result += f"===== QUESTION_EXAMPLE =====\n{substep.question}\n===== ANSWER =====\n{substep.answer}\n"
         return result + f"===== QUESTION =====\n{self.question}\n"

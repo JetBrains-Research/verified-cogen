@@ -41,6 +41,28 @@ class GenericLanguage(Language):
         self.assert_invariant_patterns = assert_invariants_pattern
         self.inline_assert_comment = inline_assert_comment
 
+    def _validators_from(
+        self,
+        method_name: str,
+        parameters: str,
+        returns: str,
+        specs: str,
+    ) -> str:
+        return (
+            self.validator_template.replace("{method_name}", method_name)
+            .replace("{parameters}", parameters or "")
+            .replace("{returns}", returns or "")
+            .replace("{specs}", specs or "\n")
+            .replace(
+                "{param_names}",
+                ", ".join(
+                    param.split(":")[0].strip()
+                    for param in parameters.split(",")
+                    if param.strip()
+                ),
+            )
+        )
+
     def generate_validators(self, code: str) -> str:
         methods = list(self.method_regex.finditer(code))
 
@@ -55,18 +77,7 @@ class GenericLanguage(Language):
             )
 
             validators.append(
-                self.validator_template.replace("{method_name}", method_name)
-                .replace("{parameters}", parameters or "")
-                .replace("{returns}", returns or "")
-                .replace("{specs}", specs or "\n")
-                .replace(
-                    "{param_names}",
-                    ", ".join(
-                        param.split(":")[0].strip()
-                        for param in parameters.split(",")
-                        if param.strip()
-                    ),
-                )
+                self._validators_from(method_name, parameters, returns, specs)
             )
 
         return "\n".join(validators)
