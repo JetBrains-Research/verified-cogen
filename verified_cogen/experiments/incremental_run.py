@@ -10,7 +10,6 @@ from verified_cogen.tools import (
     ext_glob,
     extension_from_file_list,
     register_output_handler,
-    get_cache_dir,
 )
 from verified_cogen.runners.languages import register_basic_languages
 from verified_cogen.tools.modes import Mode
