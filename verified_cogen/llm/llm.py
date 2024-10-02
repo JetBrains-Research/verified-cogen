@@ -1,5 +1,6 @@
 import logging
 from http.client import RemoteDisconnected
+from pathlib import Path
 from typing import Optional
 
 from grazie.api.client.chat.prompt import ChatPrompt
@@ -101,7 +102,7 @@ class LLM:
             logger.warning("Grazie API is down, retrying...")
             return self._request(temperature, tries - 1)
         except RequestFailedException as e:
-            self.dump_history()
+            self.dump_history(Path("err_dump.txt"))
             raise e
 
     def make_request(self) -> str:
@@ -141,8 +142,8 @@ class LLM:
         self.add_user_prompt(prompts.ask_for_timeout_prompt(self.prompt_dir))
         return self.make_request()
 
-    def dump_history(self):
-        with open("dump.txt", "w") as f:
+    def dump_history(self, file: Path):
+        with open(file, "w") as f:
             current_prompt_user = 0
             current_response = 0
             while current_prompt_user < len(

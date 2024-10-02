@@ -72,7 +72,7 @@ def run_once(
         if tries is not None:
             cnt[name] = tries
 
-        llm.dump_history()
+        llm.dump_history(Path(get_cache_dir()) / "history" / f"{name}.txt")
 
     if is_once:
         if args.output_style == "full":
@@ -212,4 +212,4 @@ def main():
         else:
             print("Failed to verify")
 
-        llm.dump_history()
+        llm.dump_history(Path("dump.txt"))

@@ -2,6 +2,7 @@ import logging
 import pathlib
 import json
 
+from pathlib import Path
 from verified_cogen.llm.llm import LLM
 from verified_cogen.args import get_args
 from verified_cogen.tools import (
@@ -9,6 +10,7 @@ from verified_cogen.tools import (
     ext_glob,
     extension_from_file_list,
     register_output_handler,
+    get_cache_dir,
 )
 from verified_cogen.runners.languages import register_basic_languages
 from verified_cogen.tools.modes import Mode
@@ -79,7 +81,7 @@ def main():
         with open(json_results, "w") as f:
             json.dump(results, f, indent=2)
 
-        llm.dump_history()
+        llm.dump_history(Path("history") / f"{file.stem}.txt")
 
 
 if __name__ == "__main__":
