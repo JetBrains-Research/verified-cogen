@@ -77,7 +77,11 @@ def main():
         )(llm, logger, verifier)
         display_name = rename_file(file)
         marker_name = str(file.relative_to(directory))
-        if marker_name in results and isinstance(results[marker_name], int):
+        if (
+            marker_name in results
+            and isinstance(results[marker_name], int)
+            and results[marker_name] != -1
+        ):
             logger.info(f"Skipping: {display_name} as it has already been verified")
             continue
         elif (
