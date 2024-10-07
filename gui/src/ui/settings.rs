@@ -46,6 +46,9 @@ impl AppState {
                             ui.selectable_value(&mut self.settings.bench_type, *mode, mode.name());
                         }
                     });
+                if self.settings.incremental_run {
+                    ui.checkbox(&mut self.settings.ignore_failed, "Ignore failed");
+                }
             });
 
             ui.separator();

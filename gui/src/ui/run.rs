@@ -1,4 +1,4 @@
-use std::{fs::File, io::Read, path::PathBuf, sync::Arc};
+use std::{collections::HashMap, fs::File, io::Read, path::PathBuf, sync::Arc};
 
 use eframe::egui::{TextEdit, Ui};
 
@@ -117,10 +117,13 @@ impl AppState {
                                     .expect("failed read");
 
                                 if let Ok(mut results) = run_results.write() {
-                                    *results = Some(
-                                        serde_json::from_str(&results_contents)
-                                            .expect("results must contain a valid json"),
-                                    );
+                                    *results = Some({
+                                        let result: HashMap<String, f64> =
+                                            serde_json::from_str(&results_contents)
+                                                .expect("results must contain a valid json");
+
+                                        result.into_iter().filter(|(_, v)| *v != -1.0).collect()
+                                    });
                                     file_count.store(
                                         cnt.expect("should be dir"),
                                         std::sync::atomic::Ordering::SeqCst,

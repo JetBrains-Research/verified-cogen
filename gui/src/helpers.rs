@@ -70,7 +70,12 @@ fn add_common_arguments<'a>(
         .args(["--bench-type", &settings.bench_type.to_string()])
         .args(["--tries", &make_tries(&settings.tries)])
         .args(["--retries", &make_retries(&settings.retries)])
-        .args(["--verifier-timeout", &make_timeout(&settings.timeout)])
+        .args(["--verifier-timeout", &make_timeout(&settings.timeout)]);
+
+    if settings.ignore_failed {
+        cmd.arg("--ignore-failed");
+    }
+    cmd
 }
 
 fn parse_output(output: Output) -> (String, String) {

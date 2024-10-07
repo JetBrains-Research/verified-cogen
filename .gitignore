@@ -19,8 +19,7 @@ run.sh
 run_nagini.py
 /tmp
 results/*
-!results/tries_HumanEval-Dafny_1.json
-!results/tries_HumanEval-RustBench_1.json
+!results/archive
 /log_tries/
 /log_tries/*
 .direnv

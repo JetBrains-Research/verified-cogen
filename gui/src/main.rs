@@ -208,6 +208,7 @@ struct Settings {
     do_filter: bool,
     filter_by_ext: String,
     incremental_run: bool,
+    ignore_failed: bool,
 }
 
 impl Default for Settings {
@@ -226,6 +227,7 @@ impl Default for Settings {
             runs: String::from("1"),
             timeout: String::from("60"),
             incremental_run: false,
+            ignore_failed: false,
             do_filter: false,
             filter_by_ext: String::new(),
         }
