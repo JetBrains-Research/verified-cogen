@@ -11,7 +11,7 @@ file_cnt = len(list(bench.glob("*.dfy")))
 with open(path) as f:
     data = json.load(f)
 
-tries = data.values()
+tries = [value for value in data.values() if value != -1]
 max_tries = max(tries)
 cnt = [0] * (max_tries + 1)
 for t in tries:
