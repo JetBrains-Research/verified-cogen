@@ -15,6 +15,7 @@ from verified_cogen.tools import (
 )
 from verified_cogen.tools.modes import Mode
 from verified_cogen.tools.verifier import Verifier
+from verified_cogen.runners.languages import AnnotationType
 
 
 class IncrementalRunArgs(ProgramArgs):
@@ -30,13 +31,17 @@ logger = logging.getLogger(__name__)
 
 
 def main():
-    register_basic_languages()
-
     parser = get_default_parser()
     parser.add_argument(
         "--ignore-failed", help="Ignore failed files", action="store_true"
     )
     args = IncrementalRunArgs(parser.parse_args())
+
+    all_removed = [AnnotationType.INVARIANTS, AnnotationType.ASSERTS]
+    if args.remove_conditions:
+        all_removed += [AnnotationType.PRE_CONDITIONS, AnnotationType.POST_CONDITIONS]
+    register_basic_languages(with_removed=all_removed)
+
     mode = Mode(args.insert_conditions_mode)
     assert mode != Mode.REGEX
     assert args.dir is not None
