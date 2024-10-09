@@ -128,9 +128,10 @@ class Runner:
         self.logger.info(f"Running on {file}")
 
         with open(file, "r") as f:
-            prg = self.preprocess(f.read(), mode)
+            prg = f.read()
 
         self.starting_prg = prg
+        prg = self.preprocess(prg, mode)
 
         verification_result = self.verify_program(name, 0, self.postprocess(prg))
         if verification_result is not None and verification_result[0]:
