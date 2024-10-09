@@ -142,7 +142,7 @@ def main():
         args.input = input("Input file: ").strip()
     log_tries = pathlib.Path(args.log_tries) if args.log_tries is not None else None
 
-    verifier = Verifier(args.shell, args.verifier_command, args.verifier_timeout)
+    verifier = Verifier(args.verifier_command, args.verifier_timeout)
     if args.dir is not None:
         files = sorted(list(pathlib.Path(args.dir).glob(ext_glob(args.filter_by_ext))))
         runner_cls = make_runner_cls(

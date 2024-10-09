@@ -68,7 +68,7 @@ def main():
     assert len(files) > 0, "No files found in the directory"
     files.sort()
 
-    verifier = Verifier(args.shell, args.verifier_command)
+    verifier = Verifier(args.verifier_command)
 
     for file in files:
         llm = LLM(

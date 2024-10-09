@@ -1,7 +1,6 @@
 import argparse
 import json
 import logging
-import os
 from typing import Optional, no_type_check
 
 from verified_cogen.llm import LLM
@@ -230,7 +229,7 @@ def main():
     log.info("Collected {} invariants".format(len(invariants)))
     log.debug("Invariants: {}".format(json.dumps(invariants, indent=4)))
 
-    verifier = Verifier(os.environ["SHELL"], args.verifier_command)
+    verifier = Verifier(args.verifier_command)
     result = houdini(args, verifier, prg, invariants)
     if result is not None:
         log.info("Vefication successful")
