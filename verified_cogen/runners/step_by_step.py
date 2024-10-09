@@ -2,9 +2,9 @@ import pathlib
 from typing import Optional
 
 from verified_cogen.runners import Runner
+from verified_cogen.runners.chain_of_thought.step import Step, Substep
 from verified_cogen.tools import extract_code_from_llm_output
 from verified_cogen.tools.modes import Mode
-from verified_cogen.runners.chain_of_thought.step import Substep, Step
 
 
 class StepByStepConfig:
@@ -36,16 +36,19 @@ class StepByStepRunner(Runner):
         )
 
     def rewrite_step_by_step(self, prg: str) -> str:
+        def add_examples(step: Step):
+            for sub_step in step.examples:
+                self.llm.add_user_prompt(
+                    sub_step.question, self.config.remove_old_examples
+                )
+                self.llm.add_response(sub_step.answer, self.config.remove_old_examples)
+
         steps: list[Step] = []
         for step in sorted((pathlib.Path(self.llm.prompt_dir) / "steps").iterdir()):
             assert step.is_dir()
             steps.append(Step(step))
         for it, step in enumerate(steps):
-            for substep in step.examples:
-                self.llm.add_user_prompt(
-                    substep.question, self.config.remove_old_examples
-                )
-                self.llm.add_response(substep.answer, self.config.remove_old_examples)
+            add_examples(step)
             self.llm.add_user_prompt(step.question.replace("{program}", prg))
             _ = self.llm.make_request()
             if self.config.remove_old_examples:
@@ -53,9 +56,7 @@ class StepByStepRunner(Runner):
             self.logger.info(f"Step {it + 1} done")
 
         rewrite_step = Step(pathlib.Path(self.llm.prompt_dir) / "rewrite")
-        for substep in rewrite_step.examples:
-            self.llm.add_user_prompt(substep.question, self.config.remove_old_examples)
-            self.llm.add_response(substep.answer, self.config.remove_old_examples)
+        add_examples(rewrite_step)
         self.llm.add_user_prompt(rewrite_step.question.replace("{program}", prg))
         response = self.llm.make_request()
         if self.config.remove_old_examples:
@@ -79,9 +80,9 @@ class StepByStepRunner(Runner):
         )
 
         for example in examples:
-            for substep in example:
-                self.llm.add_user_prompt(substep.question)
-                self.llm.add_response(substep.answer)
+            for sub_step in example:
+                self.llm.add_user_prompt(sub_step.question)
+                self.llm.add_response(sub_step.answer)
 
         for it, step in enumerate(steps):
             self.llm.add_user_prompt(step.question.replace("{program}", prg))

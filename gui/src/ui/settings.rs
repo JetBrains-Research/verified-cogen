@@ -49,6 +49,8 @@ impl AppState {
                 if self.settings.incremental_run {
                     ui.checkbox(&mut self.settings.ignore_failed, "Ignore failed");
                 }
+
+                ui.checkbox(&mut self.settings.remove_conditions, "Remove conditions");
             });
 
             ui.separator();

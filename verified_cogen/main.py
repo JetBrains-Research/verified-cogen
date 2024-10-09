@@ -1,30 +1,30 @@
 import logging
 import pathlib
+from logging import Logger
+from pathlib import Path
+from typing import Callable, Optional
 
 from verified_cogen.args import ProgramArgs, get_args
 from verified_cogen.llm import LLM
+from verified_cogen.runners import Runner
 from verified_cogen.runners.generate import GenerateRunner
 from verified_cogen.runners.generic import GenericRunner
 from verified_cogen.runners.invariants import InvariantRunner
 from verified_cogen.runners.languages import register_basic_languages
-from verified_cogen.runners.languages.language import LanguageDatabase
-from verified_cogen.runners.validating import ValidatingRunner
+from verified_cogen.runners.languages.language import AnnotationType, LanguageDatabase
 from verified_cogen.runners.step_by_step import StepByStepRunner
+from verified_cogen.runners.validating import ValidatingRunner
 from verified_cogen.tools import (
     ext_glob,
-    pprint_stat,
-    rename_file,
-    tabulate_list,
     extension_from_file_list,
     get_cache_dir,
+    pprint_stat,
     register_output_handler,
+    rename_file,
+    tabulate_list,
 )
 from verified_cogen.tools.modes import Mode
 from verified_cogen.tools.verifier import Verifier
-from pathlib import Path
-from typing import Callable, Optional
-from verified_cogen.runners import Runner
-from logging import Logger
 
 logger = logging.getLogger(__name__)
 
@@ -122,9 +122,11 @@ def make_runner_cls(
 
 
 def main():
-    register_basic_languages()
-
     args = get_args()
+    all_removed = [AnnotationType.INVARIANTS, AnnotationType.ASSERTS]
+    if args.remove_conditions:
+        all_removed += [AnnotationType.PRE_CONDITIONS, AnnotationType.POST_CONDITIONS]
+    register_basic_languages(with_removed=all_removed)
     mode = Mode(args.insert_conditions_mode)
     if mode == Mode.REGEX:
         if "dafny" not in args.verifier_command:

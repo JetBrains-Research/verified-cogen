@@ -1,7 +1,13 @@
 from textwrap import dedent
 from verified_cogen.runners.languages import LanguageDatabase, register_basic_languages
+from verified_cogen.runners.languages.language import AnnotationType
 
-register_basic_languages()
+register_basic_languages(
+    with_removed=[
+        AnnotationType.INVARIANTS,
+        AnnotationType.ASSERTS,
+    ]
+)
 
 
 def test_nagini_generate():
@@ -64,7 +70,7 @@ def test_remove_line():
             Assert(a == 1) # assert-line
         """
     )
-    assert nagini_lang.remove_asserts_and_invariants(code) == dedent(
+    assert nagini_lang.remove_conditions(code) == dedent(
         """\
         def main():"""
     )
@@ -82,7 +88,7 @@ def test_remove_multiline_assert():
             )
             # assert-end"""
     )
-    assert nagini_lang.remove_asserts_and_invariants(code) == dedent(
+    assert nagini_lang.remove_conditions(code) == dedent(
         """\
         def main():"""
     )
@@ -100,7 +106,7 @@ def test_remove_invariants():
                 Invariant(true)
                 # invariants-end"""
     )
-    assert nagini_lang.remove_asserts_and_invariants(code) == dedent(
+    assert nagini_lang.remove_conditions(code) == dedent(
         """\
         def main():
             while True:"""
@@ -145,7 +151,7 @@ def test_remove_all():
                 d_2_i_ = (d_2_i_) + (1)
             return result"""
     )
-    assert nagini_lang.remove_asserts_and_invariants(code) == dedent(
+    assert nagini_lang.remove_conditions(code) == dedent(
         """\
         def is_prime(k : int) -> bool:
             # pre-conditions-start

@@ -1,8 +1,8 @@
 import argparse
 import os
+from typing import Optional, no_type_check
 
 from verified_cogen.tools.modes import VALID_MODES
-from typing import no_type_check, Optional
 
 
 class ProgramArgs:
@@ -24,6 +24,7 @@ class ProgramArgs:
     filter_by_ext: Optional[str]
     log_tries: Optional[str]
     output_logging: bool
+    remove_conditions: bool
 
     @no_type_check
     def __init__(self, args):
@@ -45,6 +46,7 @@ class ProgramArgs:
         self.filter_by_ext = args.filter_by_ext
         self.log_tries = args.log_tries
         self.output_logging = args.output_logging
+        self.remove_conditions = args.remove_conditions
 
 
 def get_default_parser():
@@ -99,6 +101,12 @@ def get_default_parser():
     )
     parser.add_argument(
         "--output-logging", help="Print logs to standard output", default=False
+    )
+    parser.add_argument(
+        "--remove-conditions",
+        help="Remove conditions from the program",
+        default=False,
+        action="store_true",
     )
     return parser
 

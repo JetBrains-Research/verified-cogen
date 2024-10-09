@@ -47,7 +47,7 @@ fn main() -> eframe::Result {
         "Verified codegen",
         options,
         Box::new(|cc| {
-            let settings = should_restore()
+            let mut settings: Settings = should_restore()
                 .then(|| {
                     cc.storage.and_then(|storage| {
                         let settings = storage.get_string("settings_json")?;
@@ -56,6 +56,9 @@ fn main() -> eframe::Result {
                 })
                 .flatten()
                 .unwrap_or_default();
+            if let Ok(token) = std::env::var("GRAZIE_JWT_TOKEN") {
+                settings.grazie_token = token;
+            }
             let state = AppState {
                 settings,
                 ..Default::default()
@@ -209,6 +212,7 @@ struct Settings {
     filter_by_ext: String,
     incremental_run: bool,
     ignore_failed: bool,
+    remove_conditions: bool,
 }
 
 impl Default for Settings {
@@ -226,10 +230,11 @@ impl Default for Settings {
             file_mode: FileMode::SingleFile,
             runs: String::from("1"),
             timeout: String::from("60"),
-            incremental_run: false,
-            ignore_failed: false,
             do_filter: false,
             filter_by_ext: String::new(),
+            incremental_run: false,
+            ignore_failed: false,
+            remove_conditions: false,
         }
     }
 }

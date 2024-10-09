@@ -132,7 +132,7 @@ class Runner:
 
         self.starting_prg = prg
 
-        verification_result = self.verify_program(name, 0, prg)
+        verification_result = self.verify_program(name, 0, self.postprocess(prg))
         if verification_result is not None and verification_result[0]:
             return 0
         elif verification_result is None:
