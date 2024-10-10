@@ -1,0 +1,4 @@
+The following errors occurred during verification:
+{error}
+
+Please fix the error by adding, removing or modifying the invariants and/or assertions and return the fixed program.

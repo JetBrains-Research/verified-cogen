@@ -25,3 +25,4 @@ results/*
 .direnv
 scripts/processed
 scripts/processed/*
+*dump.txt

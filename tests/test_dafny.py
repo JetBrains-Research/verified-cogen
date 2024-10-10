@@ -1,7 +1,13 @@
 from textwrap import dedent
 from verified_cogen.runners.languages import LanguageDatabase, register_basic_languages
+from verified_cogen.runners.languages.language import AnnotationType
 
-register_basic_languages()
+register_basic_languages(
+    with_removed=[
+        AnnotationType.INVARIANTS,
+        AnnotationType.ASSERTS,
+    ]
+)
 
 
 def test_dafny_generate():
@@ -59,7 +65,7 @@ def test_remove_line():
             assert a == 1; // assert-line
         }"""
     )
-    assert dafny_lang.remove_asserts_and_invariants(code) == dedent(
+    assert dafny_lang.remove_conditions(code) == dedent(
         """\
         method main() {
         }"""
@@ -79,7 +85,7 @@ def test_remove_multiline_assert():
             // assert-end
         }"""
     )
-    assert dafny_lang.remove_asserts_and_invariants(code) == dedent(
+    assert dafny_lang.remove_conditions(code) == dedent(
         """\
         method main() {
         }"""
@@ -101,7 +107,7 @@ def test_remove_invariants():
             }
         }"""
     )
-    assert dafny_lang.remove_asserts_and_invariants(code) == dedent(
+    assert dafny_lang.remove_conditions(code) == dedent(
         """\
         method main() {
             while true
@@ -143,7 +149,7 @@ def test_remove_all():
           }
         }"""
     )
-    assert dafny_lang.remove_asserts_and_invariants(code) == dedent(
+    assert dafny_lang.remove_conditions(code) == dedent(
         """\
         method is_prime(k: int) returns (result: bool)
           requires k >= 2

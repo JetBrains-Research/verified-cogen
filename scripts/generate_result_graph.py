@@ -27,4 +27,4 @@ ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, p: f"{x}%"))  # type: i
 ax.plot(cnt)  # type: ignore
 
 # %%
-f"{cnt[-1] * 100}% of the files were successfully verified"
+f"{cnt[-1]}% of the files were successfully verified"

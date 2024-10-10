@@ -1,7 +1,13 @@
 from textwrap import dedent
 from verified_cogen.runners.languages import LanguageDatabase, register_basic_languages
+from verified_cogen.runners.languages.language import AnnotationType
 
-register_basic_languages()
+register_basic_languages(
+    with_removed=[
+        AnnotationType.INVARIANTS,
+        AnnotationType.ASSERTS,
+    ]
+)
 
 
 def test_verus_generate():
@@ -77,7 +83,7 @@ def test_remove_line():
             assert a == 1; // assert-line
         }"""
     )
-    assert verus_lang.remove_asserts_and_invariants(code) == dedent(
+    assert verus_lang.remove_conditions(code) == dedent(
         """\
         fn main() {
         }"""
@@ -97,7 +103,7 @@ def test_remove_multiline_assert():
             // assert-end
         }"""
     )
-    assert verus_lang.remove_asserts_and_invariants(code) == dedent(
+    assert verus_lang.remove_conditions(code) == dedent(
         """\
         fn main() {
         }"""
@@ -119,7 +125,7 @@ def test_remove_invariants():
             }
         }"""
     )
-    assert verus_lang.remove_asserts_and_invariants(code) == dedent(
+    assert verus_lang.remove_conditions(code) == dedent(
         """\
         fn main() {
             while true
@@ -163,7 +169,7 @@ def test_remove_all():
             result
         }"""
     )
-    assert verus_lang.remove_asserts_and_invariants(code) == dedent(
+    assert verus_lang.remove_conditions(code) == dedent(
         """\
         fn is_prime(num: u32) -> (result: bool)
             requires

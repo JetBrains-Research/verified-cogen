@@ -8,17 +8,14 @@ log = logging.getLogger(__name__)
 
 
 class Verifier:
-    def __init__(self, shell: str, verifier_cmd: str, timeout: int = 60):
-        self.shell = shell
+    def __init__(self, verifier_cmd: str, timeout: int = 60):
         self.verifier_cmd = verifier_cmd
         self.timeout = timeout
 
     def verify(self, file_path: Path) -> Optional[tuple[bool, str, str]]:
         try:
             res = subprocess.run(
-                '{} -i -l -c "{} "{}""; exit'.format(
-                    self.shell, self.verifier_cmd, file_path
-                ),
+                '{} "{}"'.format(self.verifier_cmd, file_path),
                 capture_output=True,
                 shell=True,
                 timeout=self.timeout,

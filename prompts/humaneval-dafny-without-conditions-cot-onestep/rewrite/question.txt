@@ -1,0 +1,6 @@
+Read the following program. It does not contain any preconditions, postconditions, invariants, or assertions. Rewrite the program to add those in a way that makes it verify.
+Do not change the code, only add invariants, assertions and conditions. Don't remove any helper functions, they are there to help you.
+Explain all your reasoning in detail before answering.
+Put the answer in <answer></answer> tags without markdown backticks.
+The program:
+{program}

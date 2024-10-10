@@ -72,8 +72,11 @@ fn add_common_arguments<'a>(
         .args(["--retries", &make_retries(&settings.retries)])
         .args(["--verifier-timeout", &make_timeout(&settings.timeout)]);
 
-    if settings.ignore_failed {
+    if settings.incremental_run && settings.ignore_failed {
         cmd.arg("--ignore-failed");
+    }
+    if settings.remove_conditions {
+        cmd.arg("--remove-conditions");
     }
     cmd
 }

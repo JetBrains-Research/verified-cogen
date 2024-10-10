@@ -1,8 +1,8 @@
 import argparse
 import os
+from typing import Optional, no_type_check
 
 from verified_cogen.tools.modes import VALID_MODES
-from typing import no_type_check, Optional
 
 
 class ProgramArgs:
@@ -12,7 +12,6 @@ class ProgramArgs:
     insert_conditions_mode: str
     bench_type: str
     temperature: int
-    shell: str
     verifier_command: str
     verifier_timeout: int
     prompts_directory: str
@@ -24,6 +23,8 @@ class ProgramArgs:
     filter_by_ext: Optional[str]
     log_tries: Optional[str]
     output_logging: bool
+    remove_conditions: bool
+    remove_implementations: bool
 
     @no_type_check
     def __init__(self, args):
@@ -33,7 +34,6 @@ class ProgramArgs:
         self.insert_conditions_mode = args.insert_conditions_mode
         self.bench_type = args.bench_type
         self.temperature = args.temperature
-        self.shell = args.shell
         self.verifier_command = args.verifier_command
         self.verifier_timeout = args.verifier_timeout
         self.prompts_directory = args.prompts_directory
@@ -45,6 +45,8 @@ class ProgramArgs:
         self.filter_by_ext = args.filter_by_ext
         self.log_tries = args.log_tries
         self.output_logging = args.output_logging
+        self.remove_conditions = args.remove_conditions
+        self.remove_implementations = args.remove_implementations
 
 
 def get_default_parser():
@@ -65,7 +67,6 @@ def get_default_parser():
         default="invariants",
     )
     parser.add_argument("--temperature", help="model temperature", default=0, type=int)
-    parser.add_argument("--shell", help="shell", default=os.getenv("SHELL"))
     parser.add_argument(
         "--verifier-command",
         help="command to run (cmd [file_path]) to verify a file",
@@ -99,6 +100,18 @@ def get_default_parser():
     )
     parser.add_argument(
         "--output-logging", help="Print logs to standard output", default=False
+    )
+    parser.add_argument(
+        "--remove-conditions",
+        help="Remove conditions from the program",
+        default=False,
+        action="store_true",
+    )
+    parser.add_argument(
+        "--remove-implementations",
+        help="Remove implementations from the program",
+        default=False,
+        action="store_true",
     )
     return parser
 

@@ -1,0 +1,31 @@
+Read the following program. It does not contain any preconditions, postconditions, invariants, or assertions. Rewrite the program to add those in a way that makes it verify.
+Do not change the code, only add invariants, assertions and conditions. Don't remove any helper functions, they are there to help you.
+Explain all your reasoning in detail before answering.
+Put the answer in <answer></answer> tags without markdown backticks.
+The program:
+
+```dafny
+function sum(s: seq<int>) : int {
+    if |s| == 0 then 0 else s[0] + sum(s[1..])
+}
+
+lemma sum_prop(s: seq<int>)
+    requires |s| > 0
+    ensures sum(s) == sum(s[..|s| - 1]) + s[ |s| - 1 ]
+{
+    if (|s| > 1) {
+        assert (s[1..][..|s[1..]| - 1]) == s[1..|s| - 1];
+    }
+}
+method sum_loop(numbers: seq<int>) returns (s: int)
+{
+    s := 0;
+    var i := 0;
+    while (i < |numbers|)
+    {
+        s := s + numbers[i];
+
+        i := i + 1;
+    }
+}
+```
