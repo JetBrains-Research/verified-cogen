@@ -18,6 +18,7 @@ class DafnyLanguage(GenericLanguage):
             AnnotationType.ASSERTS: r" *// assert-start.*?// assert-end\n",
             AnnotationType.PRE_CONDITIONS: r" *// pre-conditions-start.*?// pre-conditions-end\n",
             AnnotationType.POST_CONDITIONS: r" *// post-conditions-start.*?// post-conditions-end\n",
+            AnnotationType.IMPLS: r" *// impl-start.*?// impl-end\n",
         }
         super().__init__(
             re.compile(
@@ -41,3 +42,18 @@ class DafnyLanguage(GenericLanguage):
             ", ".join(f"ret{i}" for i in range(len(returns.split(",")))),
         )
         return result
+
+    def separate_validator_errors(self, errors: str) -> tuple[str, str]:
+        lines = errors.split("\n")
+        lines = [
+            line for line in lines if "Dafny program verifier finished" not in line
+        ]
+        line_with_ret0 = next(
+            (i for i, line in enumerate(lines) if "ret0" in line), None
+        )
+        if line_with_ret0 is None:
+            return "\n".join(lines), ""
+        else:
+            non_verifier_errors = "\n".join(lines[: line_with_ret0 - 2]).strip()
+            verifier_errors = "\n".join(lines[line_with_ret0 - 2 :]).strip()
+            return non_verifier_errors, verifier_errors

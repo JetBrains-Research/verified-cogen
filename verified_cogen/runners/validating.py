@@ -5,7 +5,6 @@ from verified_cogen.llm.llm import LLM
 from verified_cogen.runners import Runner
 from verified_cogen.runners.languages.language import Language
 from verified_cogen.tools.modes import Mode
-from verified_cogen.tools.dafny_separate import dafny_separate
 
 
 class ValidatingRunner(Runner):
@@ -64,7 +63,7 @@ class ValidatingRunner(Runner):
     def ask_for_fixed(self, err: str) -> str:
         assert self.starting_prg is not None
 
-        result, validator = dafny_separate(err)
+        result, validator = self.language.separate_validator_errors(err)
         if validator:
             self.summarizer_llm.add_user_prompt(
                 "Here are the errors you need to summarize:\n" + validator,

@@ -33,3 +33,8 @@ class NaginiLanguage(GenericLanguage):
             "# assert-line",
             "#",
         )
+
+    def separate_validator_errors(self, errors: str) -> tuple[str, str]:
+        raise NotImplementedError(
+            "Separating validator errors is not implemented for Verus yet"
+        )

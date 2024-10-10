@@ -36,3 +36,8 @@ class VerusLanguage(GenericLanguage):
     def generate_validators(self, code: str) -> str:
         result = super().generate_validators(code)
         return "verus!{{\n{}}}".format(result)
+
+    def separate_validator_errors(self, errors: str) -> tuple[str, str]:
+        raise NotImplementedError(
+            "Separating validator errors is not implemented for Verus yet"
+        )

@@ -8,6 +8,7 @@ class AnnotationType(Enum):
     ASSERTS = "asserts"
     PRE_CONDITIONS = "pre-conditions"
     POST_CONDITIONS = "post-conditions"
+    IMPLS = "impls"
 
 
 class Language:
@@ -21,6 +22,9 @@ class Language:
 
     @abstractmethod
     def remove_conditions(self, code: str) -> str: ...
+
+    @abstractmethod
+    def separate_validator_errors(self, errors: str) -> tuple[str, str]: ...
 
 
 class GenericLanguage(Language):

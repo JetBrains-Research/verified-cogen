@@ -24,6 +24,7 @@ class ProgramArgs:
     log_tries: Optional[str]
     output_logging: bool
     remove_conditions: bool
+    remove_implementations: bool
 
     @no_type_check
     def __init__(self, args):
@@ -45,6 +46,7 @@ class ProgramArgs:
         self.log_tries = args.log_tries
         self.output_logging = args.output_logging
         self.remove_conditions = args.remove_conditions
+        self.remove_implementations = args.remove_implementations
 
 
 def get_default_parser():
@@ -102,6 +104,12 @@ def get_default_parser():
     parser.add_argument(
         "--remove-conditions",
         help="Remove conditions from the program",
+        default=False,
+        action="store_true",
+    )
+    parser.add_argument(
+        "--remove-implementations",
+        help="Remove implementations from the program",
         default=False,
         action="store_true",
     )
