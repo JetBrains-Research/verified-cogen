@@ -91,8 +91,9 @@ class GenericLanguage(Language):
     def remove_conditions(self, code: str) -> str:
         import re
 
-        combined_pattern = "|".join(self.check_patterns)
-        cleaned_code = re.sub(combined_pattern, "", code, flags=re.DOTALL)
+        cleaned_code = code
+        for pattern in self.check_patterns:
+            cleaned_code = re.sub(pattern, "", cleaned_code, flags=re.DOTALL)
         cleaned_code = re.sub(r"\n\s*\n", "\n", cleaned_code)
         lines = cleaned_code.split("\n")
         lines = [line for line in lines if self.inline_assert_comment not in line]

@@ -51,6 +51,10 @@ impl AppState {
                 }
 
                 ui.checkbox(&mut self.settings.remove_conditions, "Remove conditions");
+                ui.checkbox(
+                    &mut self.settings.remove_implementations,
+                    "Remove implementations",
+                );
             });
 
             ui.separator();

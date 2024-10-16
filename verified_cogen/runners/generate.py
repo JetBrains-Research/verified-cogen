@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 
 class GenerateRunner(Runner):
-    def rewrite(self, prg: str) -> str:
+    def rewrite(self, prg: str, text_description: Optional[str] = None) -> str:
         return self.llm.rewrite(prg)
 
     def produce(self, prg: str) -> str:

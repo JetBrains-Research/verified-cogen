@@ -213,6 +213,7 @@ struct Settings {
     incremental_run: bool,
     ignore_failed: bool,
     remove_conditions: bool,
+    remove_implementations: bool,
 }
 
 impl Default for Settings {
@@ -235,6 +236,7 @@ impl Default for Settings {
             incremental_run: false,
             ignore_failed: false,
             remove_conditions: false,
+            remove_implementations: false,
         }
     }
 }

@@ -28,14 +28,22 @@ class StepByStepRunner(Runner):
     def preprocess(self, prg: str, mode: Mode) -> str:
         return self.wrapped_runner.preprocess(prg, mode)
 
-    def rewrite(self, prg: str) -> str:
+    def rewrite(self, prg: str, text_description: Optional[str] = None) -> str:
         return (
-            self.rewrite_full_examples(prg)
+            self.rewrite_full_examples(prg, text_description)
             if self.config.full_examples
-            else self.rewrite_step_by_step(prg)
+            else self.rewrite_step_by_step(prg, text_description)
         )
 
-    def rewrite_step_by_step(self, prg: str) -> str:
+    def _make_rewrite_prompt(
+        self, template: str, program: str, text_description: Optional[str]
+    ) -> str:
+        result = template.replace("{program}", program)
+        if text_description is not None and "{text_description}" in result:
+            result = result.replace("{text_description}", text_description)
+        return result
+
+    def rewrite_step_by_step(self, prg: str, text_description: Optional[str]) -> str:
         def add_examples(step: Step):
             for sub_step in step.examples:
                 self.llm.add_user_prompt(
@@ -49,7 +57,9 @@ class StepByStepRunner(Runner):
             steps.append(Step(step))
         for it, step in enumerate(steps):
             add_examples(step)
-            self.llm.add_user_prompt(step.question.replace("{program}", prg))
+            self.llm.add_user_prompt(
+                self._make_rewrite_prompt(step.question, prg, text_description)
+            )
             _ = self.llm.make_request()
             if self.config.remove_old_examples:
                 self.llm.wipe_temporary()
@@ -64,7 +74,7 @@ class StepByStepRunner(Runner):
 
         return extract_code_from_llm_output(response)
 
-    def rewrite_full_examples(self, prg: str) -> str:
+    def rewrite_full_examples(self, prg: str, text_description: Optional[str]) -> str:
         steps: list[Step] = []
         for step in sorted((pathlib.Path(self.llm.prompt_dir) / "steps").iterdir()):
             assert step.is_dir()
@@ -85,7 +95,9 @@ class StepByStepRunner(Runner):
                 self.llm.add_response(sub_step.answer)
 
         for it, step in enumerate(steps):
-            self.llm.add_user_prompt(step.question.replace("{program}", prg))
+            self.llm.add_user_prompt(
+                self._make_rewrite_prompt(step.question, prg, text_description)
+            )
             _ = self.llm.make_request()
             self.logger.info(f"Step {it + 1} done")
 

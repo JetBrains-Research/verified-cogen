@@ -78,6 +78,9 @@ fn add_common_arguments<'a>(
     if settings.remove_conditions {
         cmd.arg("--remove-conditions");
     }
+    if settings.remove_implementations {
+        cmd.arg("--remove-implementations");
+    }
     cmd
 }
 

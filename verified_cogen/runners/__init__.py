@@ -1,4 +1,5 @@
 import pathlib
+from pathlib import Path
 from logging import Logger
 from typing import Optional
 
@@ -16,6 +17,7 @@ class Runner:
     verifier: Verifier
     log_tries: Optional[pathlib.Path]
     starting_prg: Optional[str] = None
+    include_text_description: bool = False
 
     def __init__(
         self,
@@ -23,6 +25,7 @@ class Runner:
         logger: Logger,
         verifier: Verifier,
         log_tries: Optional[pathlib.Path] = None,
+        include_text_description: bool = False,
     ):
         self.llm = llm
         self.logger = logger
@@ -30,8 +33,9 @@ class Runner:
         self.log_tries = log_tries
         if self.log_tries is not None:
             self.log_tries.mkdir(exist_ok=True, parents=True)
+        self.include_text_description = include_text_description
 
-    def rewrite(self, prg: str) -> str:
+    def rewrite(self, prg: str, text_description: Optional[str] = None) -> str:
         """Rewrite the program with additional checks in one step."""
         ...
 
@@ -60,10 +64,12 @@ class Runner:
     def postprocess(self, inv_prg: str) -> str:
         return inv_prg
 
-    def invoke(self, prg: str, mode: Mode) -> str:
+    def invoke(
+        self, prg: str, mode: Mode, text_description: Optional[str] = None
+    ) -> str:
         self.logger.info("Invoking LLM")
         if mode == Mode.LLM_SINGLE_STEP:
-            inv_prg = self.rewrite(prg)
+            inv_prg = self.rewrite(prg, text_description)
         elif mode == Mode.LLM or mode == Mode.REGEX:
             checks = self.produce(prg)
             inv_prg = self.insert(prg, checks, mode)
@@ -127,8 +133,19 @@ class Runner:
         name = basename(file)
         self.logger.info(f"Running on {file}")
 
-        with open(file, "r") as f:
+        file_path = Path(file)
+        with file_path.open() as f:
             prg = f.read()
+
+        text_description = None
+        if self.include_text_description:
+            text_description_file = (
+                file_path.parent / "text-descriptions" / f"{file_path.stem}.txt"
+            )
+            try:
+                text_description = text_description_file.read_text()
+            except FileExistsError:
+                text_description = None
 
         self.starting_prg = prg
         prg = self.preprocess(prg, mode)
@@ -139,5 +156,5 @@ class Runner:
         elif verification_result is None:
             self.logger.info("Verification timed out")
         self.precheck(prg, mode)
-        inv_prg = self.postprocess(self.invoke(prg, mode))
+        inv_prg = self.postprocess(self.invoke(prg, mode, text_description))
         return self.try_fixing(total_tries, inv_prg, name)

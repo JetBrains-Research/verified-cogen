@@ -1,4 +1,5 @@
 import logging
+from typing_extensions import Optional
 
 from verified_cogen.runners import Runner
 from verified_cogen.tools.modes import Mode
@@ -7,7 +8,7 @@ logger = logging.getLogger(__name__)
 
 
 class GenericRunner(Runner):
-    def rewrite(self, prg: str) -> str:
+    def rewrite(self, prg: str, text_description: Optional[str] = None) -> str:
         return self.llm.rewrite(prg)
 
     def produce(self, prg: str) -> str:

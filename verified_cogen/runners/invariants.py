@@ -1,6 +1,7 @@
 import logging
 import re
 import textwrap
+from typing_extensions import Optional
 
 from verified_cogen.llm import LLM
 from verified_cogen.runners import Runner
@@ -42,7 +43,7 @@ def insert_invariants(llm: LLM, prg: str, inv: str, mode: Mode):
 
 
 class InvariantRunner(Runner):
-    def rewrite(self, prg: str) -> str:
+    def rewrite(self, prg: str, text_description: Optional[str] = None) -> str:
         return self.llm.rewrite(prg)
 
     def produce(self, prg: str) -> str:

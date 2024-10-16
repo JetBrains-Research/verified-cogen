@@ -99,7 +99,8 @@ def get_default_parser():
         "--log-tries", help="Save output of every try to given dir", required=False
     )
     parser.add_argument(
-        "--output-logging", help="Print logs to standard output", default=False
+        "--output-logging", help="Print logs to standard output", default=False,
+        action="store_true"
     )
     parser.add_argument(
         "--remove-conditions",
