@@ -2,9 +2,9 @@ import pathlib
 from typing import Optional
 
 from verified_cogen.runners import Runner
+from verified_cogen.runners.chain_of_thought.step import Step, Substep
 from verified_cogen.tools import extract_code_from_llm_output
 from verified_cogen.tools.modes import Mode
-from verified_cogen.runners.chain_of_thought.step import Substep, Step
 
 
 class StepByStepConfig:
@@ -18,52 +18,67 @@ class StepByStepConfig:
 
 class StepByStepRunner(Runner):
     wrapped_runner: Runner
-    config: StepByStepConfig
+    _config: StepByStepConfig
 
     def __init__(self, wrapping: Runner, config: Optional[StepByStepConfig] = None):
-        super().__init__(wrapping.llm, wrapping.logger, wrapping.verifier)
+        super().__init__(
+            wrapping.llm, wrapping.logger, wrapping.verifier, wrapping.config
+        )
         self.wrapped_runner = wrapping
-        self.config = StepByStepConfig.default() if config is None else config
+        self._config = StepByStepConfig.default() if config is None else config
 
     def preprocess(self, prg: str, mode: Mode) -> str:
         return self.wrapped_runner.preprocess(prg, mode)
 
-    def rewrite(self, prg: str) -> str:
+    def rewrite(self, prg: str, text_description: Optional[str] = None) -> str:
         return (
-            self.rewrite_full_examples(prg)
-            if self.config.full_examples
-            else self.rewrite_step_by_step(prg)
+            self.rewrite_full_examples(prg, text_description)
+            if self._config.full_examples
+            else self.rewrite_step_by_step(prg, text_description)
         )
 
-    def rewrite_step_by_step(self, prg: str) -> str:
+    def _make_rewrite_prompt(
+        self, template: str, program: str, text_description: Optional[str]
+    ) -> str:
+        result = template.replace("{program}", program)
+        if text_description is not None and "{text_description}" in result:
+            result = result.replace("{text_description}", text_description)
+        return result
+
+    def rewrite_step_by_step(self, prg: str, text_description: Optional[str]) -> str:
+        def add_examples(step: Step):
+            for sub_step in step.examples:
+                self.llm.add_user_prompt(
+                    sub_step.question, self._config.remove_old_examples
+                )
+                self.llm.add_response(sub_step.answer, self._config.remove_old_examples)
+
         steps: list[Step] = []
         for step in sorted((pathlib.Path(self.llm.prompt_dir) / "steps").iterdir()):
             assert step.is_dir()
             steps.append(Step(step))
         for it, step in enumerate(steps):
-            for substep in step.examples:
-                self.llm.add_user_prompt(
-                    substep.question, self.config.remove_old_examples
-                )
-                self.llm.add_response(substep.answer, self.config.remove_old_examples)
-            self.llm.add_user_prompt(step.question.replace("{program}", prg))
+            add_examples(step)
+            self.llm.add_user_prompt(
+                self._make_rewrite_prompt(step.question, prg, text_description)
+            )
             _ = self.llm.make_request()
-            if self.config.remove_old_examples:
+            if self._config.remove_old_examples:
                 self.llm.wipe_temporary()
             self.logger.info(f"Step {it + 1} done")
 
         rewrite_step = Step(pathlib.Path(self.llm.prompt_dir) / "rewrite")
-        for substep in rewrite_step.examples:
-            self.llm.add_user_prompt(substep.question, self.config.remove_old_examples)
-            self.llm.add_response(substep.answer, self.config.remove_old_examples)
-        self.llm.add_user_prompt(rewrite_step.question.replace("{program}", prg))
+        add_examples(rewrite_step)
+        self.llm.add_user_prompt(
+            self._make_rewrite_prompt(rewrite_step.question, prg, text_description)
+        )
         response = self.llm.make_request()
-        if self.config.remove_old_examples:
+        if self._config.remove_old_examples:
             self.llm.wipe_temporary()
 
         return extract_code_from_llm_output(response)
 
-    def rewrite_full_examples(self, prg: str) -> str:
+    def rewrite_full_examples(self, prg: str, text_description: Optional[str]) -> str:
         steps: list[Step] = []
         for step in sorted((pathlib.Path(self.llm.prompt_dir) / "steps").iterdir()):
             assert step.is_dir()
@@ -79,16 +94,20 @@ class StepByStepRunner(Runner):
         )
 
         for example in examples:
-            for substep in example:
-                self.llm.add_user_prompt(substep.question)
-                self.llm.add_response(substep.answer)
+            for sub_step in example:
+                self.llm.add_user_prompt(sub_step.question)
+                self.llm.add_response(sub_step.answer)
 
         for it, step in enumerate(steps):
-            self.llm.add_user_prompt(step.question.replace("{program}", prg))
+            self.llm.add_user_prompt(
+                self._make_rewrite_prompt(step.question, prg, text_description)
+            )
             _ = self.llm.make_request()
             self.logger.info(f"Step {it + 1} done")
 
-        self.llm.add_user_prompt(rewrite_step.question.replace("{program}", prg))
+        self.llm.add_user_prompt(
+            self._make_rewrite_prompt(rewrite_step.question, prg, text_description)
+        )
         response = self.llm.make_request()
 
         return extract_code_from_llm_output(response)

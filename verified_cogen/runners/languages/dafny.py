@@ -1,7 +1,7 @@
 import re
 from typing import Pattern
 
-from verified_cogen.runners.languages.language import GenericLanguage
+from verified_cogen.runners.languages.language import AnnotationType, GenericLanguage
 
 DAFNY_VALIDATOR_TEMPLATE = """\
 method {method_name}_valid({parameters}) returns ({returns}){specs}\
@@ -12,15 +12,22 @@ method {method_name}_valid({parameters}) returns ({returns}){specs}\
 class DafnyLanguage(GenericLanguage):
     method_regex: Pattern[str]
 
-    def __init__(self):  # type: ignore
+    def __init__(self, remove_annotations: list[AnnotationType]):  # type: ignore
+        annotation_by_type = {
+            AnnotationType.INVARIANTS: r" *// invariants-start.*?// invariants-end\n",
+            AnnotationType.ASSERTS: r" *// assert-start.*?// assert-end\n",
+            AnnotationType.PRE_CONDITIONS: r" *// pre-conditions-start.*?// pre-conditions-end\n",
+            AnnotationType.POST_CONDITIONS: r" *// post-conditions-start.*?// post-conditions-end\n",
+            AnnotationType.IMPLS: r" *// impl-start.*?// impl-end\n",
+        }
         super().__init__(
             re.compile(
                 r"method\s+(\w+)\s*\((.*?)\)\s*returns\s*\((.*?)\)(.*?)\{", re.DOTALL
             ),
             DAFNY_VALIDATOR_TEMPLATE,
             [
-                r" *// assert-start.*?// assert-end\n",
-                r" *// invariants-start.*?// invariants-end\n",
+                annotation_by_type[annotation_type]
+                for annotation_type in remove_annotations
             ],
             "// assert-line",
             "//",
@@ -35,3 +42,18 @@ class DafnyLanguage(GenericLanguage):
             ", ".join(f"ret{i}" for i in range(len(returns.split(",")))),
         )
         return result
+
+    def separate_validator_errors(self, errors: str) -> tuple[str, str]:
+        lines = errors.split("\n")
+        lines = [
+            line for line in lines if "Dafny program verifier finished" not in line
+        ]
+        line_with_ret0 = next(
+            (i for i, line in enumerate(lines) if "ret0" in line), None
+        )
+        if line_with_ret0 is None:
+            return "\n".join(lines), ""
+        else:
+            non_verifier_errors = "\n".join(lines[: line_with_ret0 - 2]).strip()
+            verifier_errors = "\n".join(lines[line_with_ret0 - 2 :]).strip()
+            return non_verifier_errors, verifier_errors

@@ -1,0 +1,4 @@
+Rewrite the following dafny with implementations of some functions missing. While rewriting it, ensure that it verifies. Include invariants and assertions. Don't remove any helper functions, they are there to help you. Prefer loops to recursion.
+Explain all your reasoning in detail before answering. Put the answer in <answer></answer> tags without markdown backticks.
+The program:
+{program}

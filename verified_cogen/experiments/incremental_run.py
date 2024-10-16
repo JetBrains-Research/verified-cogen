@@ -1,20 +1,21 @@
+import json
 import logging
 import pathlib
-import json
 from typing import no_type_check
 
+from verified_cogen.args import ProgramArgs, get_default_parser
 from verified_cogen.llm.llm import LLM
+from verified_cogen.main import make_runner_cls
+from verified_cogen.runners import RunnerConfig
+from verified_cogen.runners.languages import AnnotationType, register_basic_languages
 from verified_cogen.tools import (
-    rename_file,
     ext_glob,
     extension_from_file_list,
     register_output_handler,
+    rename_file,
 )
-from verified_cogen.runners.languages import register_basic_languages
 from verified_cogen.tools.modes import Mode
 from verified_cogen.tools.verifier import Verifier
-from verified_cogen.main import make_runner_cls
-from verified_cogen.args import get_default_parser, ProgramArgs
 
 
 class IncrementalRunArgs(ProgramArgs):
@@ -30,13 +31,20 @@ logger = logging.getLogger(__name__)
 
 
 def main():
-    register_basic_languages()
-
     parser = get_default_parser()
     parser.add_argument(
         "--ignore-failed", help="Ignore failed files", action="store_true"
     )
     args = IncrementalRunArgs(parser.parse_args())
+
+    all_removed = [AnnotationType.INVARIANTS, AnnotationType.ASSERTS]
+    if args.remove_conditions:
+        all_removed += [AnnotationType.PRE_CONDITIONS, AnnotationType.POST_CONDITIONS]
+    if args.remove_implementations:
+        all_removed += [AnnotationType.IMPLS]
+
+    register_basic_languages(with_removed=all_removed)
+
     mode = Mode(args.insert_conditions_mode)
     assert mode != Mode.REGEX
     assert args.dir is not None
@@ -63,8 +71,11 @@ def main():
     assert len(files) > 0, "No files found in the directory"
     files.sort()
 
-    verifier = Verifier(args.shell, args.verifier_command)
+    verifier = Verifier(args.verifier_command)
 
+    config = RunnerConfig(
+        log_tries=log_tries, include_text_descriptions=args.include_text_descriptions
+    )
     for file in files:
         llm = LLM(
             args.grazie_token,
@@ -73,7 +84,7 @@ def main():
             args.temperature,
         )
         runner = make_runner_cls(
-            args.bench_type, extension_from_file_list([file]), log_tries
+            args.bench_type, extension_from_file_list([file]), config
         )(llm, logger, verifier)
         display_name = rename_file(file)
         marker_name = str(file.relative_to(directory))

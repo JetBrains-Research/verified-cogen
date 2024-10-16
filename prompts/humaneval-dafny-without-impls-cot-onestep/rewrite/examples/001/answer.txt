@@ -1,0 +1,71 @@
+Let's go over the provided program step by step.
+First, we'll identify what each function does and what its input and output are.
+
+1. The function `sum` takes a `seq<int>` as input and returns an `int` as output. Looking at it's body, we see that it takes the first element of the sequence, adds it to the sum of the rest of the elements, and returns the result.
+
+2. The lemma `sum_prop` states that given that length of a sequence is greater than 0, the sum of the sequence is equal to the sum of first `|s| - 1` elements plus the last element.
+
+3. The method `sum_loop` takes a `seq<int>` as input and returns an `int` as output. It's return value should be equal to the sum of numbers, so it should calculate a sum of numbers. It is missing an implementation. As I was instructed, I'm going to write an implementation using a loop. Let's start by declaring an accumulator `s := 0`. Now we are going to go over the elements of the number sequence provided:
+```
+for i := 0 to |numbers| {
+    s := s + numbers[i];
+}
+```
+
+Now, let's try to prove the `sum_loop` method. We need to use the `sum_prop` lemma to prove that `s == sum(numbers[0..i])`. To do this, we'll need to prove that adding `numbers[i]` to `sum(numbers[0..i])` results in `sum(numbers[0..i + 1])`. That's exactly what `sum_prop(numbers[0..i + 1])` does. For dafny to be able to ensure that, we'll need to prove that `numbers[0..i + 1][..i] == numbers[0..i]`. This is an automatic proof that dafny can do, so we don't need to add any extra proof steps, let's just add an assertion:
+```
+assert numbers[0..i + 1][..i] == numbers[0..i];
+```
+
+Finally, we'll add the `s == sum(numbers[0..i])` invariant to the while loop:
+```
+while (i < |numbers|)
+    invariant 0 <= i <= |numbers|
+    invariant s = sum(numbers[0..i])
+```
+
+Now, we can use the `sum_prop` lemma to prove that `s == sum(numbers[0..i])`:
+
+```
+assert numbers[0..i + 1][..i] == numbers[0..i];
+sum_prop(numbers[0..i + 1]);
+assert sum(numbers[0..i + 1]) == sum(numbers[0..i]) + numbers[i];
+```
+
+Finally, for dafny to understand that `sum(numbers) == sum(numbers[..|numbers|)` we are going to add a simple assertion:
+```
+assert numbers == numbers[..|numbers|];
+```
+
+Now, the proof is complete:
+
+<answer>
+function sum(s: seq<int>) : int {
+    if |s| == 0 then 0 else s[0] + sum(s[1..])
+}
+
+lemma sum_prop(s: seq<int>)
+    requires |s| > 0
+    ensures sum(s) == sum(s[..|s| - 1]) + s[ |s| - 1 ]
+{
+    if (|s| > 1) {
+        assert (s[1..][..|s[1..]| - 1]) == s[1..|s| - 1];
+    }
+}
+method sum_loop(numbers: seq<int>) returns (s: int)
+    ensures s == sum(numbers)
+{
+    s := 0;
+    var i := 0;
+    for i := 0 to |numbers|
+        invariant s == sum(numbers[0..i])
+    {
+        s := s + numbers[i];
+
+        assert numbers[0..i + 1][..i] == numbers[0..i];
+        sum_prop(numbers[0..i + 1]);
+        assert sum(numbers[0..i + 1]) == sum(numbers[0..i]) + numbers[i];
+    }
+    assert numbers == numbers[..|numbers|];
+}
+</answer>

@@ -1,15 +1,18 @@
 from abc import abstractmethod
-from typing import Pattern, Any
+from enum import Enum
+from typing import Any, Pattern
+
+
+class AnnotationType(Enum):
+    INVARIANTS = "invariants"
+    ASSERTS = "asserts"
+    PRE_CONDITIONS = "pre-conditions"
+    POST_CONDITIONS = "post-conditions"
+    IMPLS = "impls"
 
 
 class Language:
-    _instance = None
     simple_comment: str
-
-    def __new__(cls, *args: list[Any], **kwargs: dict[str, Any]):
-        if not isinstance(cls._instance, cls):
-            cls._instance = super().__new__(cls, *args, **kwargs)
-        return cls._instance
 
     @abstractmethod
     def __init__(self, *args: list[Any], **kwargs: dict[str, Any]): ...
@@ -18,27 +21,30 @@ class Language:
     def generate_validators(self, code: str) -> str: ...
 
     @abstractmethod
-    def remove_asserts_and_invariants(self, code: str) -> str: ...
+    def remove_conditions(self, code: str) -> str: ...
+
+    @abstractmethod
+    def separate_validator_errors(self, errors: str) -> tuple[str, str]: ...
 
 
 class GenericLanguage(Language):
     method_regex: Pattern[str]
     validator_template: str
-    assert_invariant_patterns: list[str]
+    check_patterns: list[str]
     inline_assert_comment: str
 
     def __init__(  # type: ignore
         self,
         method_regex: Pattern[str],
         validator_template: str,
-        assert_invariants_pattern: list[str],
+        check_patterns: list[str],
         inline_assert_comment: str,
         simple_comment: str,
     ):
         self.simple_comment = simple_comment
         self.method_regex = method_regex
         self.validator_template = validator_template
-        self.assert_invariant_patterns = assert_invariants_pattern
+        self.check_patterns = check_patterns
         self.inline_assert_comment = inline_assert_comment
 
     def _validators_from(
@@ -82,11 +88,12 @@ class GenericLanguage(Language):
 
         return "\n".join(validators)
 
-    def remove_asserts_and_invariants(self, code: str) -> str:
+    def remove_conditions(self, code: str) -> str:
         import re
 
-        combined_pattern = "|".join(self.assert_invariant_patterns)
-        cleaned_code = re.sub(combined_pattern, "", code, flags=re.DOTALL)
+        cleaned_code = code
+        for pattern in self.check_patterns:
+            cleaned_code = re.sub(pattern, "", cleaned_code, flags=re.DOTALL)
         cleaned_code = re.sub(r"\n\s*\n", "\n", cleaned_code)
         lines = cleaned_code.split("\n")
         lines = [line for line in lines if self.inline_assert_comment not in line]
