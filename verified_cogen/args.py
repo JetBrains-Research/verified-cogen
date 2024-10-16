@@ -25,6 +25,7 @@ class ProgramArgs:
     output_logging: bool
     remove_conditions: bool
     remove_implementations: bool
+    include_text_descriptions: bool
 
     @no_type_check
     def __init__(self, args):
@@ -47,6 +48,7 @@ class ProgramArgs:
         self.output_logging = args.output_logging
         self.remove_conditions = args.remove_conditions
         self.remove_implementations = args.remove_implementations
+        self.include_text_descriptions = args.include_text_descriptions
 
 
 def get_default_parser():
@@ -99,8 +101,10 @@ def get_default_parser():
         "--log-tries", help="Save output of every try to given dir", required=False
     )
     parser.add_argument(
-        "--output-logging", help="Print logs to standard output", default=False,
-        action="store_true"
+        "--output-logging",
+        help="Print logs to standard output",
+        default=False,
+        action="store_true",
     )
     parser.add_argument(
         "--remove-conditions",
@@ -111,6 +115,12 @@ def get_default_parser():
     parser.add_argument(
         "--remove-implementations",
         help="Remove implementations from the program",
+        default=False,
+        action="store_true",
+    )
+    parser.add_argument(
+        "--include-text-descriptions",
+        help="Add text descriptions to the rewrite prompt (only works with step-by-step)",
         default=False,
         action="store_true",
     )

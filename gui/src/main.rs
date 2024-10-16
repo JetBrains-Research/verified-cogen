@@ -55,7 +55,7 @@ fn main() -> eframe::Result {
                     })
                 })
                 .flatten()
-                .unwrap_or_default();
+                .unwrap_or_else(Settings::from_env);
             if let Ok(token) = std::env::var("GRAZIE_JWT_TOKEN") {
                 settings.grazie_token = token;
             }
@@ -155,11 +155,12 @@ struct AppState {
     log: Arc<RwLock<Option<String>>>,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize, Default)]
 enum LLMProfile {
     GPT4o,
     GPT4Turbo,
     Claude3Opus,
+    #[default]
     Claude35Sonnet,
 }
 
@@ -194,7 +195,7 @@ impl Display for LLMProfile {
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 struct Settings {
     grazie_token: String,
     llm_profile: LLMProfile,
@@ -214,29 +215,22 @@ struct Settings {
     ignore_failed: bool,
     remove_conditions: bool,
     remove_implementations: bool,
+    include_text_descriptions: bool,
 }
 
-impl Default for Settings {
-    fn default() -> Self {
+impl Settings {
+    fn from_env() -> Self {
         Self {
             grazie_token: std::env::var("GRAZIE_JWT_TOKEN").unwrap_or_default(),
-            llm_profile: LLMProfile::GPT4o,
             verifier_command: std::env::var("VERIFIER_COMMAND").unwrap_or_default(),
             generate_command: String::from("verified-cogen"),
             use_poetry: std::env::var("USE_POETRY").unwrap_or_default() == "1",
             prompts_directory: std::env::var("PROMPTS_DIRECTORY").unwrap_or_default(),
             tries: String::from("1"),
             retries: String::from("0"),
-            bench_type: BenchMode::Invariants,
-            file_mode: FileMode::SingleFile,
             runs: String::from("1"),
             timeout: String::from("60"),
-            do_filter: false,
-            filter_by_ext: String::new(),
-            incremental_run: false,
-            ignore_failed: false,
-            remove_conditions: false,
-            remove_implementations: false,
+            ..Settings::default()
         }
     }
 }

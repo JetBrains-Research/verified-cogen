@@ -81,6 +81,9 @@ fn add_common_arguments<'a>(
     if settings.remove_implementations {
         cmd.arg("--remove-implementations");
     }
+    if settings.include_text_descriptions {
+        cmd.arg("--include-text-descriptions");
+    }
     cmd
 }
 

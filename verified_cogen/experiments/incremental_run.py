@@ -6,7 +6,8 @@ from typing import no_type_check
 from verified_cogen.args import ProgramArgs, get_default_parser
 from verified_cogen.llm.llm import LLM
 from verified_cogen.main import make_runner_cls
-from verified_cogen.runners.languages import register_basic_languages
+from verified_cogen.runners import RunnerConfig
+from verified_cogen.runners.languages import AnnotationType, register_basic_languages
 from verified_cogen.tools import (
     ext_glob,
     extension_from_file_list,
@@ -15,7 +16,6 @@ from verified_cogen.tools import (
 )
 from verified_cogen.tools.modes import Mode
 from verified_cogen.tools.verifier import Verifier
-from verified_cogen.runners.languages import AnnotationType
 
 
 class IncrementalRunArgs(ProgramArgs):
@@ -73,6 +73,9 @@ def main():
 
     verifier = Verifier(args.verifier_command)
 
+    config = RunnerConfig(
+        log_tries=log_tries, include_text_descriptions=args.include_text_descriptions
+    )
     for file in files:
         llm = LLM(
             args.grazie_token,
@@ -81,7 +84,7 @@ def main():
             args.temperature,
         )
         runner = make_runner_cls(
-            args.bench_type, extension_from_file_list([file]), log_tries
+            args.bench_type, extension_from_file_list([file]), config
         )(llm, logger, verifier)
         display_name = rename_file(file)
         marker_name = str(file.relative_to(directory))

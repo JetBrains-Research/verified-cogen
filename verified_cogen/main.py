@@ -2,11 +2,11 @@ import logging
 import pathlib
 from logging import Logger
 from pathlib import Path
-from typing import Callable, Optional
+from typing import Callable
 
 from verified_cogen.args import ProgramArgs, get_args
 from verified_cogen.llm import LLM
-from verified_cogen.runners import Runner
+from verified_cogen.runners import Runner, RunnerConfig
 from verified_cogen.runners.generate import GenerateRunner
 from verified_cogen.runners.generic import GenericRunner
 from verified_cogen.runners.invariants import InvariantRunner
@@ -96,23 +96,23 @@ def run_once(
 
 
 def make_runner_cls(
-    bench_type: str, extension: str, log_tries: Optional[pathlib.Path]
+    bench_type: str, extension: str, config: RunnerConfig
 ) -> Callable[[LLM, Logger, Verifier], Runner]:
     def runner_cls(llm: LLM, logger: Logger, verifier: Verifier):
         if bench_type == "invariants":
-            return InvariantRunner(llm, logger, verifier, log_tries)
+            return InvariantRunner(llm, logger, verifier, config)
         elif bench_type == "generic":
-            return GenericRunner(llm, logger, verifier, log_tries)
+            return GenericRunner(llm, logger, verifier, config)
         elif bench_type == "generate":
-            return GenerateRunner(llm, logger, verifier, log_tries)
+            return GenerateRunner(llm, logger, verifier, config)
         elif bench_type == "validating":
             return ValidatingRunner(
-                InvariantRunner(llm, logger, verifier, log_tries),
+                InvariantRunner(llm, logger, verifier, config),
                 LanguageDatabase().get(extension),
             )
         elif bench_type == "step-by-step":
             return ValidatingRunner(
-                StepByStepRunner(InvariantRunner(llm, logger, verifier, log_tries)),
+                StepByStepRunner(InvariantRunner(llm, logger, verifier, config)),
                 LanguageDatabase().get(extension),
             )
         else:
@@ -145,10 +145,13 @@ def main():
     log_tries = pathlib.Path(args.log_tries) if args.log_tries is not None else None
 
     verifier = Verifier(args.verifier_command, args.verifier_timeout)
+    config = RunnerConfig(
+        log_tries=log_tries, include_text_descriptions=args.include_text_descriptions
+    )
     if args.dir is not None:
         files = sorted(list(pathlib.Path(args.dir).glob(ext_glob(args.filter_by_ext))))
         runner_cls = make_runner_cls(
-            args.bench_type, extension_from_file_list(files), log_tries
+            args.bench_type, extension_from_file_list(files), config
         )
         runner = runner_cls(
             LLM(
@@ -205,9 +208,9 @@ def main():
             args.prompts_directory,
             args.temperature,
         )
-        runner = make_runner_cls(
-            args.bench_type, Path(args.input).suffix[1:], log_tries
-        )(llm, logger, verifier)
+        runner = make_runner_cls(args.bench_type, Path(args.input).suffix[1:], config)(
+            llm, logger, verifier
+        )
         tries = runner.run_on_file(mode, args.tries, args.input)
         if tries == 0:
             print("Verified without modification")

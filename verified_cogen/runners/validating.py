@@ -1,4 +1,3 @@
-import pathlib
 from typing import Optional
 
 from verified_cogen.llm.llm import LLM
@@ -16,9 +15,10 @@ class ValidatingRunner(Runner):
         self,
         wrapping: Runner,
         language: Language,
-        log_tries: Optional[pathlib.Path] = None,
     ):
-        super().__init__(wrapping.llm, wrapping.logger, wrapping.verifier, log_tries)
+        super().__init__(
+            wrapping.llm, wrapping.logger, wrapping.verifier, wrapping.config
+        )
         token = wrapping.llm.grazie._grazie_jwt_token  # type: ignore
         self.summarizer_llm = LLM(
             grazie_token=token,
@@ -46,8 +46,8 @@ class ValidatingRunner(Runner):
             self.starting_prg, self.wrapped_runner.postprocess(inv_prg)
         )
 
-    def rewrite(self, prg: str) -> str:
-        return self.wrapped_runner.rewrite(prg)
+    def rewrite(self, prg: str, text_description: Optional[str] = None) -> str:
+        return self.wrapped_runner.rewrite(prg, text_description)
 
     def produce(self, prg: str) -> str:
         return self.wrapped_runner.produce(prg)
