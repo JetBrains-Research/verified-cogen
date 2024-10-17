@@ -41,15 +41,17 @@ class DafnyLanguage(GenericLanguage):
         #                                          ^^^ - is a variable
         # method sorted_even_valid(a: seq<int>) returns (sorted_even: seq<int>)
         #                                                ^^^ - is the above function, invalid name
-        renamed_returns = [(f"ret{i}", r.split(":")) for i, r in enumerate(returns.split(","))]
+        renamed_returns = [
+            (f"ret{i}", r.split(":")) for i, r in enumerate(returns.split(","))
+        ]
         modified_specs = specs
-        for n, (r, t) in renamed_returns:
+        for n, (r, _) in renamed_returns:
             modified_specs = modified_specs.replace(r, n)
         result = super()._validators_from(
             method_name,
             parameters,
             ", ".join(f"{n}:{t[1]}" for n, t in renamed_returns),
-            modified_specs
+            modified_specs,
         )
         result = result.replace(
             "{return_values}",
