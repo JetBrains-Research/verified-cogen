@@ -5,7 +5,7 @@ from verified_cogen.runners.languages.language import AnnotationType, GenericLan
 
 DAFNY_VALIDATOR_TEMPLATE = """\
 method {method_name}_valid({parameters}) returns ({returns}){specs}\
-{ var {return_values} := {method_name}({param_names}); return {return_values}; }
+{ {return_values} := {method_name}({param_names}); }
 """
 
 
@@ -36,10 +36,24 @@ class DafnyLanguage(GenericLanguage):
     def _validators_from(
         self, method_name: str, parameters: str, returns: str, specs: str
     ) -> str:
-        result = super()._validators_from(method_name, parameters, returns, specs)
+        # Rename return values to neutral names to avoid collisions in cases like 037-sort_even
+        # method sorted_even(a: seq<int>) returns (sorted_even: seq<int>)
+        #                                          ^^^ - is a variable
+        # method sorted_even_valid(a: seq<int>) returns (sorted_even: seq<int>)
+        #                                                ^^^ - is the above function, invalid name
+        renamed_returns = [(f"ret{i}", r.split(":")) for i, r in enumerate(returns.split(","))]
+        modified_specs = specs
+        for n, (r, t) in renamed_returns:
+            modified_specs = modified_specs.replace(r, n)
+        result = super()._validators_from(
+            method_name,
+            parameters,
+            ", ".join(f"{n}:{t[1]}" for n, t in renamed_returns),
+            modified_specs
+        )
         result = result.replace(
             "{return_values}",
-            ", ".join(f"ret{i}" for i in range(len(returns.split(",")))),
+            ", ".join(n for n, _ in renamed_returns),
         )
         return result
 
