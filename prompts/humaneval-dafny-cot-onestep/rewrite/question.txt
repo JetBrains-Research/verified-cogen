@@ -1,0 +1,5 @@
+Rewrite the following dafny program, adding correct invariants into the loops and adding assertions in nessesary places.
+Do not change the code, only add invariants and assertions. Don't remove any helper functions, they are there to help you.
+Explain all your reasoning in detail before answering. Put the answer in <answer></answer> tags without markdown backticks.
+The program:
+{program}

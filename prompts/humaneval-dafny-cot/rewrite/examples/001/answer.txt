@@ -1,0 +1,83 @@
+During the previous steps, we've found that the `sum_loop` function has a loop that goes over the elements of the array `numbers` and adds them to the `s` variable, which is equal to the `sum(numbers[..i])` for all `i`, such that `0 <= i <= |numbers|`. This means that during the execution of the loop the following invariant holds:
+1. `0 <= i <= |numbers|`
+2. `s == sum(numbers[..i])`
+
+Let's put them in:
+```dafny
+method sum_loop(numbers: seq<int>) returns (s: int)
+    ensures s == sum(numbers)
+{
+    s := 0;
+    var i := 0;
+    while (i < |numbers|)
+        invariant 0 <= i <= |numbers|
+        invariant s == sum(numbers[..i])
+    {
+        s := s + numbers[i];
+
+        i := i + 1;
+    }
+}
+```
+
+We've also worked out how to prove the second invariant. For that we need to prove to the verifier that `sum(numbers[..i + 1]) == sum(numbers[..i]) + numbers[i]`. For that we need to use the `sum_prop` function, as follows:
+```dafny
+assert numbers[..i + 1][..i] == numbers[..i]; // assert that taking a slice of a slice is the same as taking a slice of the original array
+sum_prop(numbers[..i + 1]); // use a lemma to prove the invariant
+assert sum(numbers[..i + 1]) == sum(numbers[..i + 1][..i]) + numbers[i];
+```
+Let's add these lines to the code:
+```dafny
+method sum_loop(numbers: seq<int>) returns (s: int)
+    ensures s == sum(numbers)
+{
+    s := 0;
+    var i := 0;
+    while (i < |numbers|)
+        invariant 0 <= i <= |numbers|
+        invariant s == sum(numbers[..i])
+    {
+        s := s + numbers[i];
+
+        assert numbers[..i + 1][..i] == numbers[..i]; // assert that taking a slice of a slice is the same as taking a slice of the original array
+        sum_prop(numbers[..i + 1]); // use a lemma to prove the invariant
+        assert sum(numbers[..i + 1]) == sum(numbers[..i + 1][..i]) + numbers[i];
+
+        i := i + 1;
+    }
+}
+```
+
+Other than that, we didn't find any other invariants or patterns that hold during the execution of the program. Therefore, the resulting program is (notice the lack of backticks):
+<answer>
+function sum(s: seq<int>) : int {
+    if |s| == 0 then 0 else s[0] + sum(s[1..])
+}
+
+lemma sum_prop(s: seq<int>)
+    requires |s| > 0
+    ensures sum(s) == sum(s[..|s| - 1]) + s[ |s| - 1 ]
+{
+    if (|s| > 1) {
+        assert (s[1..][..|s[1..]| - 1]) == s[1..|s| - 1];
+    }
+}
+method sum_loop(numbers: seq<int>) returns (s: int)
+    ensures s == sum(numbers)
+{
+    s := 0;
+    var i := 0;
+    while (i < |numbers|)
+        invariant 0 <= i <= |numbers|
+        invariant s == sum(numbers[..i])
+    {
+        s := s + numbers[i];
+
+        assert numbers[..i + 1][..i] == numbers[..i]; // assert that taking a slice of a slice is the same as taking a slice of the original array
+        sum_prop(numbers[..i + 1]); // use a lemma to prove the invariant
+        assert sum(numbers[..i + 1]) == sum(numbers[..i + 1][..i]) + numbers[i];
+
+        i := i + 1;
+    }
+}
+</answer>

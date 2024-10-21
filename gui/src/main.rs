@@ -47,7 +47,7 @@ fn main() -> eframe::Result {
         "Verified codegen",
         options,
         Box::new(|cc| {
-            let settings = should_restore()
+            let mut settings: Settings = should_restore()
                 .then(|| {
                     cc.storage.and_then(|storage| {
                         let settings = storage.get_string("settings_json")?;
@@ -55,7 +55,10 @@ fn main() -> eframe::Result {
                     })
                 })
                 .flatten()
-                .unwrap_or_default();
+                .unwrap_or_else(Settings::from_env);
+            if let Ok(token) = std::env::var("GRAZIE_JWT_TOKEN") {
+                settings.grazie_token = token;
+            }
             let state = AppState {
                 settings,
                 ..Default::default()
@@ -72,21 +75,23 @@ enum FileMode {
     Directory,
 }
 
-#[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Default, Serialize, Deserialize)]
 enum BenchMode {
     #[default]
     Invariants,
     Generic,
     Generate,
     Validating,
+    StepByStep,
 }
 
 impl BenchMode {
     fn llm_generated_path(&self, path: &str) -> PathBuf {
         let name = match self {
-            BenchMode::Invariants | BenchMode::Generic | BenchMode::Validating => {
-                basename(path).to_string()
-            }
+            BenchMode::Invariants
+            | BenchMode::Generic
+            | BenchMode::Validating
+            | BenchMode::StepByStep => basename(path).to_string(),
             BenchMode::Generate => {
                 let base = basename(path);
                 base.chars()
@@ -97,6 +102,27 @@ impl BenchMode {
         };
         APP_DIRS.cache_dir().join("llm-generated").join(name)
     }
+
+    fn name(&self) -> &str {
+        match self {
+            BenchMode::Invariants => "Invariants",
+            BenchMode::Generic => "Generic",
+            BenchMode::Generate => "Generate",
+            BenchMode::Validating => "Validating",
+            BenchMode::StepByStep => "Step by step",
+        }
+    }
+
+    fn all() -> &'static [BenchMode] {
+        const MODES: &[BenchMode] = &[
+            BenchMode::Invariants,
+            BenchMode::Generic,
+            BenchMode::Generate,
+            BenchMode::Validating,
+            BenchMode::StepByStep,
+        ];
+        MODES
+    }
 }
 
 impl Display for BenchMode {
@@ -106,6 +132,7 @@ impl Display for BenchMode {
             BenchMode::Generic => write!(f, "generic"),
             BenchMode::Generate => write!(f, "generate"),
             BenchMode::Validating => write!(f, "validating"),
+            BenchMode::StepByStep => write!(f, "step-by-step"),
         }
     }
 }
@@ -128,11 +155,12 @@ struct AppState {
     log: Arc<RwLock<Option<String>>>,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize, Default)]
 enum LLMProfile {
     GPT4o,
     GPT4Turbo,
     Claude3Opus,
+    #[default]
     Claude35Sonnet,
 }
 
@@ -167,7 +195,7 @@ impl Display for LLMProfile {
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 struct Settings {
     grazie_token: String,
     llm_profile: LLMProfile,
@@ -184,26 +212,25 @@ struct Settings {
     do_filter: bool,
     filter_by_ext: String,
     incremental_run: bool,
+    ignore_failed: bool,
+    remove_conditions: bool,
+    remove_implementations: bool,
+    include_text_descriptions: bool,
 }
 
-impl Default for Settings {
-    fn default() -> Self {
+impl Settings {
+    fn from_env() -> Self {
         Self {
             grazie_token: std::env::var("GRAZIE_JWT_TOKEN").unwrap_or_default(),
-            llm_profile: LLMProfile::GPT4o,
             verifier_command: std::env::var("VERIFIER_COMMAND").unwrap_or_default(),
             generate_command: String::from("verified-cogen"),
             use_poetry: std::env::var("USE_POETRY").unwrap_or_default() == "1",
             prompts_directory: std::env::var("PROMPTS_DIRECTORY").unwrap_or_default(),
             tries: String::from("1"),
             retries: String::from("0"),
-            bench_type: BenchMode::Invariants,
-            file_mode: FileMode::SingleFile,
             runs: String::from("1"),
             timeout: String::from("60"),
-            incremental_run: false,
-            do_filter: false,
-            filter_by_ext: String::new(),
+            ..Settings::default()
         }
     }
 }

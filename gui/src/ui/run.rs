@@ -1,4 +1,4 @@
-use std::{fs::File, io::Read, path::PathBuf, sync::Arc};
+use std::{collections::HashMap, fs::File, io::Read, path::PathBuf, sync::Arc};
 
 use eframe::egui::{TextEdit, Ui};
 
@@ -111,20 +111,26 @@ impl AppState {
                                     false => APP_DIRS.cache_dir().join("total_cnt.json"),
                                 };
 
-                                File::open(results_path)
-                                    .expect("results are not where they should be")
-                                    .read_to_string(&mut results_contents)
-                                    .expect("failed read");
+                                if File::open(results_path)
+                                    .ok()
+                                    .and_then(|mut file| {
+                                        file.read_to_string(&mut results_contents).ok()
+                                    })
+                                    .is_some()
+                                {
+                                    if let Ok(mut results) = run_results.write() {
+                                        *results = Some({
+                                            let result: HashMap<String, f64> =
+                                                serde_json::from_str(&results_contents)
+                                                    .expect("results must contain a valid json");
 
-                                if let Ok(mut results) = run_results.write() {
-                                    *results = Some(
-                                        serde_json::from_str(&results_contents)
-                                            .expect("results must contain a valid json"),
-                                    );
-                                    file_count.store(
-                                        cnt.expect("should be dir"),
-                                        std::sync::atomic::Ordering::SeqCst,
-                                    );
+                                            result.into_iter().filter(|(_, v)| *v != -1.0).collect()
+                                        });
+                                        file_count.store(
+                                            cnt.expect("should be dir"),
+                                            std::sync::atomic::Ordering::SeqCst,
+                                        );
+                                    }
                                 }
                             }
                         }

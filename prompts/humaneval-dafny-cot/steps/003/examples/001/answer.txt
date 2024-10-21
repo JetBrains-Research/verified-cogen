@@ -1,0 +1,15 @@
+As we've seen, the loop in the `sum_loop` function goes over the elements of the array `numbers` and adds them to the `s` variable, which is equal to the `sum(numbers[..i])` for all `i`, such that `0 <= i <= |numbers|`. This means that during the execution of the loop the following invariant holds:
+1. `0 <= i <= |numbers|`
+2. `s == sum(numbers[..i])`
+
+The second invariant might be a bit difficult to prove, as it adds the last element of the array to the sum, while, as I've said before, the `sum` function is defined as `sum(a) == a[0] + sum(a[1..])`. However, as we've seen, it's possible to use the `sum_prop` function to prove that this invariant holds.
+Let's work out how to use it. If applied to the `numbers[..i + 1]`, we get:
+`sum(numbers[..i + 1]) == sum(numbers[..i + 1][..i]) + numbers[i]`. It might be difficult for dafny to prove that `sum(numbers[..i + 1][..i]) == sum(numbers[..i])`, so I'd suggest adding an assertion before calling `sum_prop` to make sure that this is the case, namely `assert numbers[..i + 1][..i] == numbers[..i]`.
+So, to use the `sum_prop`, I'd suggest the following code:
+```
+assert numbers[..i + 1][..i] == numbers[..i]; // assert that taking a slice of a slice is the same as taking a slice of the original array
+sum_prop(numbers[..i + 1]); // use a lemma to prove the invariant
+assert sum(numbers[..i + 1]) == sum(numbers[..i + 1][..i]) + numbers[i];
+```
+
+In conclusion, we can say that two invariants hold and the second one could be proved using the `sum_prop` function.

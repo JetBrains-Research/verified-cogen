@@ -1,43 +1,62 @@
+import json
 import logging
 import pathlib
-import sys
-import json
+from typing import no_type_check
 
+from verified_cogen.args import ProgramArgs, get_default_parser
 from verified_cogen.llm.llm import LLM
-from verified_cogen.args import get_args
-from verified_cogen.tools import rename_file, ext_glob, extension_from_file_list
-from verified_cogen.runners.invariants import InvariantRunner
-from verified_cogen.runners.languages import register_basic_languages
-from verified_cogen.runners.languages.language import LanguageDatabase
-from verified_cogen.runners.validating import ValidatingRunner
+from verified_cogen.main import make_runner_cls
+from verified_cogen.runners import RunnerConfig
+from verified_cogen.runners.languages import AnnotationType, register_basic_languages
+from verified_cogen.tools import (
+    ext_glob,
+    extension_from_file_list,
+    register_output_handler,
+    rename_file,
+)
 from verified_cogen.tools.modes import Mode
 from verified_cogen.tools.verifier import Verifier
+
+
+class IncrementalRunArgs(ProgramArgs):
+    ignore_failed: bool
+
+    @no_type_check
+    def __init__(self, args):
+        super().__init__(args)
+        self.ignore_failed = args.ignore_failed
+
 
 logger = logging.getLogger(__name__)
 
 
-def register_output_handler():
-    handler = logging.StreamHandler(sys.stdout)
-    formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
-    handler.setFormatter(formatter)
-    logger.addHandler(handler)
-
-
 def main():
-    register_basic_languages()
+    parser = get_default_parser()
+    parser.add_argument(
+        "--ignore-failed", help="Ignore failed files", action="store_true"
+    )
+    args = IncrementalRunArgs(parser.parse_args())
 
-    args = get_args()
+    all_removed = [AnnotationType.INVARIANTS, AnnotationType.ASSERTS]
+    if args.remove_conditions:
+        all_removed += [AnnotationType.PRE_CONDITIONS, AnnotationType.POST_CONDITIONS]
+    if args.remove_implementations:
+        all_removed += [AnnotationType.IMPLS]
+
+    register_basic_languages(with_removed=all_removed)
+
     mode = Mode(args.insert_conditions_mode)
     assert mode != Mode.REGEX
     assert args.dir is not None
-    assert args.bench_type == "validating", args.bench_type
     assert args.runs == 1
     assert args.retries == 0
 
     if args.output_logging:
-        register_output_handler()
+        register_output_handler(logger)
 
     directory = pathlib.Path(args.dir)
+    history_dir = pathlib.Path("results") / f"history_{directory.name}"
+    history_dir.mkdir(exist_ok=True)
     log_tries = pathlib.Path(args.log_tries) if args.log_tries is not None else None
     results_directory = pathlib.Path("results")
     results_directory.mkdir(exist_ok=True)
@@ -52,9 +71,11 @@ def main():
     assert len(files) > 0, "No files found in the directory"
     files.sort()
 
-    language = LanguageDatabase().get(extension_from_file_list(files))
-    verifier = Verifier(args.shell, args.verifier_command)
+    verifier = Verifier(args.verifier_command)
 
+    config = RunnerConfig(
+        log_tries=log_tries, include_text_descriptions=args.include_text_descriptions
+    )
     for file in files:
         llm = LLM(
             args.grazie_token,
@@ -62,15 +83,24 @@ def main():
             args.prompts_directory,
             args.temperature,
         )
-        runner = ValidatingRunner(
-            wrapping=InvariantRunner(llm, logger, verifier),
-            language=language,
-            log_tries=log_tries,
-        )
+        runner = make_runner_cls(
+            args.bench_type, extension_from_file_list([file]), config
+        )(llm, logger, verifier)
         display_name = rename_file(file)
         marker_name = str(file.relative_to(directory))
-        if marker_name in results and isinstance(results[marker_name], int):
+        if (
+            marker_name in results
+            and isinstance(results[marker_name], int)
+            and results[marker_name] != -1
+        ):
             logger.info(f"Skipping: {display_name} as it has already been verified")
+            continue
+        elif (
+            marker_name in results and results[marker_name] == -1 and args.ignore_failed
+        ):
+            logger.info(
+                f"Skipping: {display_name} as it failed previously and ignore_failed is set"
+            )
             continue
         logger.info(f"Processing: {display_name}")
         try:
@@ -84,9 +114,12 @@ def main():
             results[marker_name] = tries
             logger.info(f"Verified {display_name} in {tries} tries")
         else:
+            results[marker_name] = -1
             logger.info(f"Failed to verify {display_name}")
         with open(json_results, "w") as f:
             json.dump(results, f, indent=2)
+
+        llm.dump_history(history_dir / f"{file.stem}.txt")
 
 
 if __name__ == "__main__":

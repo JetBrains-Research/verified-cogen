@@ -1,0 +1,28 @@
+It's time to rewrite the program to contain the invariants and assertions that we've found. Work on the following program and go step by step through the reasoning process. After that, output the rewritten program in the `<answer>` tag without backticks.
+
+```dafny
+function sum(s: seq<int>) : int {
+    if |s| == 0 then 0 else s[0] + sum(s[1..])
+}
+
+lemma sum_prop(s: seq<int>)
+    requires |s| > 0
+    ensures sum(s) == sum(s[..|s| - 1]) + s[ |s| - 1 ]
+{
+    if (|s| > 1) {
+        assert (s[1..][..|s[1..]| - 1]) == s[1..|s| - 1];
+    }
+}
+method sum_loop(numbers: seq<int>) returns (s: int)
+    ensures s == sum(numbers)
+{
+    s := 0;
+    var i := 0;
+    while (i < |numbers|)
+    {
+        s := s + numbers[i];
+
+        i := i + 1;
+    }
+}
+```

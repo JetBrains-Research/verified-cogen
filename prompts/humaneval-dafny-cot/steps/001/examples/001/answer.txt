@@ -1,0 +1,10 @@
+Let's go function by function. The first function, `sum` does not have a specification, as can be seen by the absence of either a `requires` or `ensures` clause. This means that this function is probably a specification itself. Let's consider, what it can be step by step. We can see that the aruguments to this function are a sequence of integers. We can see that the function returns an integer. We can conclude that the function does some accumulation of integers from the sequence. Looking at the body, we can see that the function takes the first element of the sequence and adds it to the accumulated result of evaluating the `sum` function on the rest of the sequence. This means the function is a specification for the sum of the elements of the sequence.
+
+Next, we have the `sum_prop` lemma. Considering it's specification, we can see that it requires a non-empty sequence of integers, as seen by the `requires |s| > 0` clause. Looking at the ensures clause, we can see that the lemma ensures that the sum of the sequence (as computed by the `sum` function) is equal to the sum of the elements of the sequence without the last element, plus that last element. This is important to prove, because the sum function drops the first element and thus it is not obvious for the prover that the last element can be dropped in the same way.
+
+Finally, we have the `sum_loop` method. This method has a specification, as indicated by the `ensures` clause. The specification states that the returned value `s` should be equal to the sum of the input sequence `numbers`, as computed by the `sum` function, as seen by the `ensures s == sum(numbers)` clause.
+
+In summary:
+1. The `sum` function is itself a specification for computing the sum of a sequence of integers.
+2. The `sum_prop` lemma has a specification that proves a property about the `sum` function.
+3. The `sum_loop` method has a specification that ensures it correctly computes the sum of a sequence of integers, matching the result of the `sum` function.

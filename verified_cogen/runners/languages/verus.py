@@ -1,7 +1,7 @@
 import re
 from typing import Pattern
 
-from verified_cogen.runners.languages.language import GenericLanguage
+from verified_cogen.runners.languages.language import AnnotationType, GenericLanguage
 
 VERUS_VALIDATOR_TEMPLATE = """\
 fn {method_name}_valid({parameters}) -> ({returns}){specs}\
@@ -12,7 +12,14 @@ fn {method_name}_valid({parameters}) -> ({returns}){specs}\
 class VerusLanguage(GenericLanguage):
     method_regex: Pattern[str]
 
-    def __init__(self):  # type: ignore
+    def __init__(self, remove_annotations: list[AnnotationType]):  # type: ignore
+        annotation_by_type = {
+            AnnotationType.INVARIANTS: r" *// invariants-start.*?// invariants-end\n",
+            AnnotationType.ASSERTS: r" *// assert-start.*?// assert-end\n",
+            AnnotationType.PRE_CONDITIONS: r" *// pre-conditions-start.*?// pre-conditions-end\n",
+            AnnotationType.POST_CONDITIONS: r" *// post-conditions-start.*?// post-conditions-end\n",
+            AnnotationType.IMPLS: r" *// impl-start.*?// impl-end\n",
+        }
         super().__init__(
             re.compile(
                 r"^\s*fn\s+(\w+)\s*\((.*?)\)\s*->\s*\((.*?)\)(.*?)\{",
@@ -20,8 +27,8 @@ class VerusLanguage(GenericLanguage):
             ),
             VERUS_VALIDATOR_TEMPLATE,
             [
-                r" *// assert-start.*?// assert-end\n",
-                r" *// invariants-start.*?// invariants-end\n",
+                annotation_by_type[annotation_type]
+                for annotation_type in remove_annotations
             ],
             "// assert-line",
             "//",
@@ -30,3 +37,8 @@ class VerusLanguage(GenericLanguage):
     def generate_validators(self, code: str) -> str:
         result = super().generate_validators(code)
         return "verus!{{\n{}}}".format(result)
+
+    def separate_validator_errors(self, errors: str) -> tuple[str, str]:
+        raise NotImplementedError(
+            "Separating validator errors is not implemented for Verus yet"
+        )

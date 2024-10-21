@@ -37,27 +37,38 @@ impl AppState {
                 self.settings.file_mode = FileMode::Directory;
             }
             ui.add_space(2.0);
-            if !self.settings.incremental_run {
-                ui.horizontal(|ui| {
-                    ui.label("Bench mode: ");
-                    ui.radio_value(
-                        &mut self.settings.bench_type,
-                        BenchMode::Invariants,
-                        "Invariants",
-                    );
-                    ui.radio_value(&mut self.settings.bench_type, BenchMode::Generic, "Generic");
-                    ui.radio_value(
-                        &mut self.settings.bench_type,
-                        BenchMode::Generate,
-                        "Generate",
-                    );
-                    ui.radio_value(
-                        &mut self.settings.bench_type,
-                        BenchMode::Validating,
-                        "Validating",
-                    );
+            ui.columns(2, |cols| {
+                let [left_ui, right_ui] = cols else {
+                    panic!("should have 2 columns")
+                };
+                left_ui.label("Bench mode:");
+                left_ui.horizontal(|ui| {
+                    egui::ComboBox::from_id_source("bench-mode-select")
+                        .selected_text(format!("{}", self.settings.bench_type.name()))
+                        .show_ui(ui, |ui| {
+                            for mode in BenchMode::all() {
+                                ui.selectable_value(
+                                    &mut self.settings.bench_type,
+                                    *mode,
+                                    mode.name(),
+                                );
+                            }
+                        });
+                    if self.settings.incremental_run {
+                        ui.checkbox(&mut self.settings.ignore_failed, "Ignore failed");
+                    }
                 });
-            }
+
+                right_ui.checkbox(&mut self.settings.remove_conditions, "Remove conditions");
+                right_ui.checkbox(
+                    &mut self.settings.remove_implementations,
+                    "Remove implementations",
+                );
+                right_ui.checkbox(
+                    &mut self.settings.include_text_descriptions,
+                    "Include text descriptions",
+                );
+            });
 
             ui.separator();
             ui.horizontal(|ui| {

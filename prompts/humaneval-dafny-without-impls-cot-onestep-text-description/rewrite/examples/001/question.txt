@@ -1,0 +1,29 @@
+Rewrite the following dafny with implementations of some functions missing. While rewriting it, ensure that it verifies. Include invariants and assertions. Don't remove any helper functions, they are there to help you. Prefer loops to recursion.
+To help you, here's a text description given to a person who wrote this program:
+
+You have to write 1 function in dafny, using the given helper functions
+The description is as follows:
+function `sum_loop`: Find the sum of the given sequence of numbers. Use loops in
+your answer.
+
+Explain all your reasoning in detail before answering. Put the answer in <answer></answer> tags without markdown backticks.
+The program:
+
+```dafny
+function sum(s: seq<int>) : int {
+    if |s| == 0 then 0 else s[0] + sum(s[1..])
+}
+
+lemma sum_prop(s: seq<int>)
+    requires |s| > 0
+    ensures sum(s) == sum(s[..|s| - 1]) + s[ |s| - 1 ]
+{
+    if (|s| > 1) {
+        assert (s[1..][..|s[1..]| - 1]) == s[1..|s| - 1];
+    }
+}
+method sum_loop(numbers: seq<int>) returns (s: int)
+    ensures s == sum(numbers)
+{
+}
+```

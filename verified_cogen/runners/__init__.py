@@ -1,5 +1,6 @@
 import pathlib
 from logging import Logger
+from pathlib import Path
 from typing import Optional
 
 from verified_cogen.llm import LLM
@@ -10,27 +11,37 @@ from verified_cogen.tools.verifier import Verifier
 LLM_GENERATED_DIR = pathlib.Path(get_cache_dir()) / "llm-generated"
 
 
+class RunnerConfig:
+    log_tries: Optional[pathlib.Path] = None
+    include_text_descriptions: bool = False
+
+    def __init__(
+        self,
+        log_tries: Optional[pathlib.Path] = None,
+        include_text_descriptions: bool = False,
+    ):
+        self.log_tries = log_tries
+        self.include_text_descriptions = include_text_descriptions
+
+
 class Runner:
     llm: LLM
     logger: Logger
     verifier: Verifier
-    log_tries: Optional[pathlib.Path]
+    starting_prg: Optional[str] = None
+    config: RunnerConfig
 
     def __init__(
-        self,
-        llm: LLM,
-        logger: Logger,
-        verifier: Verifier,
-        log_tries: Optional[pathlib.Path] = None,
+        self, llm: LLM, logger: Logger, verifier: Verifier, config: RunnerConfig
     ):
         self.llm = llm
         self.logger = logger
         self.verifier = verifier
-        self.log_tries = log_tries
-        if self.log_tries is not None:
-            self.log_tries.mkdir(exist_ok=True, parents=True)
+        self.config = config
+        if self.config.log_tries is not None:
+            self.config.log_tries.mkdir(exist_ok=True, parents=True)
 
-    def rewrite(self, prg: str) -> str:
+    def rewrite(self, prg: str, text_description: Optional[str] = None) -> str:
         """Rewrite the program with additional checks in one step."""
         ...
 
@@ -56,10 +67,15 @@ class Runner:
     def preprocess(self, prg: str, mode: Mode) -> str:
         return prg
 
-    def invoke(self, prg: str, mode: Mode) -> str:
+    def postprocess(self, inv_prg: str) -> str:
+        return inv_prg
+
+    def invoke(
+        self, prg: str, mode: Mode, text_description: Optional[str] = None
+    ) -> str:
         self.logger.info("Invoking LLM")
         if mode == Mode.LLM_SINGLE_STEP:
-            inv_prg = self.rewrite(prg)
+            inv_prg = self.rewrite(prg, text_description)
         elif mode == Mode.LLM or mode == Mode.REGEX:
             checks = self.produce(prg)
             inv_prg = self.insert(prg, checks, mode)
@@ -69,9 +85,9 @@ class Runner:
         return inv_prg
 
     def _verification_file(self, name: str, try_n: int) -> pathlib.Path:
-        if self.log_tries is not None:
+        if self.config.log_tries is not None:
             base, extension = name.rsplit(".", 1)
-            return self.log_tries / f"{base}.{try_n}.{extension}"
+            return self.config.log_tries / f"{base}.{try_n}.{extension}"
         else:
             return LLM_GENERATED_DIR / name
 
@@ -97,7 +113,7 @@ class Runner:
                 self.logger.info("Verification timed out")
                 tries -= 1
                 if tries > 0:
-                    inv_prg = self.ask_for_timeout()
+                    inv_prg = self.postprocess(self.ask_for_timeout())
             else:
                 verified_inv, out_inv, err_inv = verification_result
                 if verified_inv:
@@ -109,7 +125,9 @@ class Runner:
                     tries -= 1
                     if tries > 0:
                         self.logger.info(f"Retrying with {tries} tries left...")
-                        inv_prg = self.ask_for_fixed(out_inv + err_inv)
+                        inv_prg = self.postprocess(
+                            self.ask_for_fixed(out_inv + err_inv)
+                        )
         return None
 
     def run_on_file(
@@ -121,14 +139,26 @@ class Runner:
         name = basename(file)
         self.logger.info(f"Running on {file}")
 
-        with open(file, "r") as f:
-            prg = self.preprocess(f.read(), mode)
+        file_path = Path(file)
+        with file_path.open() as f:
+            prg = f.read()
 
-        verification_result = self.verify_program(name, 0, prg)
+        text_description = None
+        if self.config.include_text_descriptions:
+            text_description_file = (
+                file_path.parent / "text-descriptions" / f"{file_path.stem}.txt"
+            )
+            text_description = text_description_file.read_text()
+            self.logger.info(f"Text description: {text_description}")
+
+        self.starting_prg = prg
+        prg = self.preprocess(prg, mode)
+
+        verification_result = self.verify_program(name, 0, self.postprocess(prg))
         if verification_result is not None and verification_result[0]:
             return 0
         elif verification_result is None:
             self.logger.info("Verification timed out")
         self.precheck(prg, mode)
-        inv_prg = self.invoke(prg, mode)
+        inv_prg = self.postprocess(self.invoke(prg, mode, text_description))
         return self.try_fixing(total_tries, inv_prg, name)

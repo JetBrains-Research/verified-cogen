@@ -18,10 +18,11 @@ run.sh
 **/.pytest_cache
 run_nagini.py
 /tmp
-results
 results/*
+!results/archive
 /log_tries/
 /log_tries/*
 .direnv
 scripts/processed
 scripts/processed/*
+*dump.txt
