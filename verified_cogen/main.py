@@ -13,6 +13,7 @@ from verified_cogen.runners.invariants import InvariantRunner
 from verified_cogen.runners.languages import register_basic_languages
 from verified_cogen.runners.languages.language import AnnotationType, LanguageDatabase
 from verified_cogen.runners.step_by_step import StepByStepRunner
+from verified_cogen.runners.step_by_step_flush import StepByStepFlushRunner
 from verified_cogen.runners.validating import ValidatingRunner
 from verified_cogen.tools import (
     ext_glob,
@@ -113,6 +114,11 @@ def make_runner_cls(
         elif bench_type == "step-by-step":
             return ValidatingRunner(
                 StepByStepRunner(InvariantRunner(llm, logger, verifier, config)),
+                LanguageDatabase().get(extension),
+            )
+        elif bench_type == "step-by-step-flush":
+            return ValidatingRunner(
+                StepByStepFlushRunner(InvariantRunner(llm, logger, verifier, config)),
                 LanguageDatabase().get(extension),
             )
         else:
