@@ -38,6 +38,8 @@ class NaginiLanguage(GenericLanguage):
     def separate_validator_errors(self, errors: str) -> tuple[str, str]:
         lines = errors.split("\n")
         lines = [
-            line for line in lines if "Verification successful" not in line and "Verification took" not in line
+            line
+            for line in lines
+            if "Verification successful" not in line and "Verification took" not in line
         ]
         return "\n".join(lines), ""

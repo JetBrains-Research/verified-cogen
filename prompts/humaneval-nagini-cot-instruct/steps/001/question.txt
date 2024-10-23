@@ -34,4 +34,7 @@ anywhere else you should not use `Acc()` or `list_pred()`:
 5. Nagini contains `Forall` and `Exists` constructs that can be used in invariants. First argument of Forall/Exists is typically a type (i.e `int`),
 second argument is a lambda. `Forall(type, lambda x : a)` denotes that assertion `a` is true for every element `x` of type `type`.
 
+6. In Nagini `Implies(e1, a2)` plays role of implication. `Implies(e1, a2)` denotes that assertion a2 holds if boolean expression e1 is true.
+You can use it inside invariants and asserts.
+
 Respond with 'understood' to this message. Remember this knowledge to solve the task that will be given further

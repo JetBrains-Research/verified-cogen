@@ -38,7 +38,9 @@ class ValidatingRunner(Runner):
         return val_prg
 
     def preprocess(self, prg: str, mode: Mode) -> str:
-        return self.language.remove_conditions(prg)
+        res_prg = self.language.remove_conditions(prg)
+        self.wrapped_runner.starting_prg = res_prg
+        return res_prg
 
     def postprocess(self, inv_prg: str) -> str:
         assert self.starting_prg is not None
