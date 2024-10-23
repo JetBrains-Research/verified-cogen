@@ -66,3 +66,16 @@ def register_output_handler(logger: logging.Logger):
     formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
     handler.setFormatter(formatter)
     logger.addHandler(handler)
+
+
+def compare_errors(error1: str, error2: str):
+    pattern = r"\(.*?\.py"
+    pattern_time = r"Verification took \d+\.\d+ seconds\."
+
+    cleaned_error1 = re.sub(pattern, "(", error1).strip()
+    cleaned_error1 = re.sub(pattern_time, "", cleaned_error1).strip()
+
+    cleaned_error2 = re.sub(pattern, "(", error2).strip()
+    cleaned_error2 = re.sub(pattern_time, "", cleaned_error2).strip()
+
+    return cleaned_error1 == cleaned_error2

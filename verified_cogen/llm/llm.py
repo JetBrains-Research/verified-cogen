@@ -56,6 +56,12 @@ class LLM:
         self.responses.append(response)
         self.is_response_temporary.append(temporary)
 
+    def wipe_all(self):
+        self.user_prompts = []
+        self.is_user_prompt_temporary = []
+        self.responses = []
+        self.is_response_temporary = []
+
     def wipe_temporary(self):
         self.user_prompts = [
             prompt

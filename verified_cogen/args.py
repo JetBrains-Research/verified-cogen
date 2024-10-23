@@ -65,7 +65,7 @@ def get_default_parser():
     )
     parser.add_argument(
         "--bench-type",
-        help="benchmark type, available: {invariants, generic, generate, validating, step-by-step}",
+        help="benchmark type, available: {invariants, generic, generate, validating, step-by-step, step-by-step-flush}",
         default="invariants",
     )
     parser.add_argument("--temperature", help="model temperature", default=0, type=int)
