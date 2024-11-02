@@ -1,5 +1,5 @@
 # %%
-with open('log_tries/logs3.txt', 'r') as file:
+with open('log_tries/logs9.txt', 'r') as file:
     # Read the file and split the contents into lines
     lines = file.readlines()
 
@@ -16,6 +16,7 @@ dict_erros = {
     "Loop invariant might not be preserved." : 0,
     "Loop invariant might not hold on entry." : 0,
     "Assert might fail." : 0,
+    "Verification timed out" : 0,
 }
 
 explanations = {
@@ -27,12 +28,13 @@ explanations = {
     "Loop invariant might not be preserved." : "Loop invariant might not be preserved",
     "Loop invariant might not hold on entry." : "Loop invariant might not hold on entry",
     "Assert might fail." : "Assert might fail",
+    "Verification timed out" : "Verification timed out",
 }
 
 dict_erros_numbered = {}
 
 for (key, value) in dict_erros.items():
-    for j in range(1, 11):
+    for j in range(1, 6):
         dict_erros_numbered[(key, j)] = 0
 
 print(dict_erros_numbered)
@@ -40,11 +42,11 @@ print(dict_erros_numbered)
 # The 'lines' variable will now be a list of lines from the file
 idx_line = 0
 for line in lines:
-    if "Verification failed:" in line:
+    if "Verification failed:" in line or "Verification timed out" in line:
         idx_line += 1
-    if "verified with" in line:
+    if "Verified" in line or "Failed to verify" in line:
         idx_line = 0
-    if idx_line == 11:
+    if idx_line == 6:
         idx_line = 1
     for (key, value) in dict_erros.items():
         if key in line:
@@ -80,7 +82,7 @@ for error_type, data in error_data.items():
 # Step 3: Customize the plot
 plt.xlabel('Try')
 
-tries_range = range(1, 11)  # Assuming the "tries" are from 1 to 5
+tries_range = range(1, 6)  # Assuming the "tries" are from 1 to 5
 plt.xticks(tries_range)
 
 plt.ylabel('Number of Occurrences')
