@@ -11,7 +11,7 @@ class ProgramArgs:
     runs: int
     insert_conditions_mode: str
     bench_type: str
-    temperature: int
+    temperature: float
     verifier_command: str
     verifier_timeout: int
     prompts_directory: str
@@ -68,7 +68,12 @@ def get_default_parser():
         help="benchmark type, available: {invariants, generic, generate, validating, step-by-step, step-by-step-flush}",
         default="invariants",
     )
-    parser.add_argument("--temperature", help="model temperature", default=0, type=int)
+    parser.add_argument(
+        "--temperature",
+        help="model temperature",
+        default=0,
+        type=float,
+    )
     parser.add_argument(
         "--verifier-command",
         help="command to run (cmd [file_path]) to verify a file",

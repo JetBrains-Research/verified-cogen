@@ -25,7 +25,9 @@ class InvariantsWithRewriting(InvariantRunner):
         prg, prompt = self.rewriter.rewrite(inv_prg)
 
         if prompt != "":
-            self.logger.info("Manual rewriting results: ")
+            self.logger.info("Manually rewrite:")
+            self.logger.info(inv_prg)
+            self.logger.info("Manual rewriting results:")
             self.logger.info(prompt)
             self.llm.add_user_prompt(prompt)
 

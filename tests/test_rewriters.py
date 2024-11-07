@@ -381,3 +381,35 @@ Next, we run verifier on this program. Using the following verdict, you should p
 
     prg, prompt = NaginiRewriterFixingAST(NaginiRewriterFixing(NaginiRewriter())).rewrite(code)
     assert prompt == error
+
+def test_rewriter6():
+    code = dedent(
+        """\
+        Invariant(0 <= k and k < d_1_i_ ==> s[k] != s[len(s) - 1 - k] ==> c > smallest__change__fun(s, 0, k))
+        """
+    )
+
+    prg, prompt = NaginiRewriterFixing(NaginiRewriter()).rewrite(code)
+
+    assert prompt != ""
+    assert prg == dedent(
+        """\
+        Invariant(Implies(0 <= k and k < d_1_i_ ,Implies( s[k] != s[len(s) - 1 - k] , c > smallest__change__fun(s, 0, k))))
+        """
+    )
+
+def test_rewriter7():
+    code = dedent(
+        """\
+        Invariant(Forall(int, lambda i: Forall(int, lambda j: Implies(0 <= i and i < j and j < len(result), result[i] < result[j]))))
+        """
+    )
+
+    prg, prompt = NaginiRewriterFixingAST(NaginiRewriterFixing(NaginiRewriter())).rewrite(code)
+
+    assert prompt == ""
+    assert prg == dedent(
+        """\
+        Invariant(Forall(int, lambda i: Forall(int, lambda j: Implies(0 <= i and i < j and j < len(result), result[i] < result[j]))))
+        """
+    )
