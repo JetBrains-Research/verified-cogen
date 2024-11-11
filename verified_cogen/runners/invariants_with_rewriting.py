@@ -1,4 +1,5 @@
 from logging import Logger
+from typing import Optional
 
 from verified_cogen.llm import LLM
 from verified_cogen.runners import RunnerConfig
@@ -10,7 +11,7 @@ from verified_cogen.tools.verifier import Verifier
 
 class InvariantsWithRewriting(InvariantRunner):
     rewriter: Rewriter
-    previous_prg: str = None
+    previous_prg: Optional[str] = None
 
     def __init__(
         self,
