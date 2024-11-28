@@ -1,5 +1,6 @@
 from typing import Optional
 
+from verified_cogen.llm import prompts
 from verified_cogen.llm.llm import LLM
 from verified_cogen.runners import Runner
 from verified_cogen.runners.languages.language import Language
@@ -10,6 +11,7 @@ class ValidatingRunner(Runner):
     wrapped_runner: Runner
     language: Language
     summarizer_llm: LLM
+    pure_non_helpers: [str] = []
 
     def __init__(
         self,
@@ -38,18 +40,48 @@ class ValidatingRunner(Runner):
         return val_prg
 
     def preprocess(self, prg: str, mode: Mode) -> str:
+        if self.config.remove_implementations:
+            self.pure_non_helpers = self.language.find_pure_non_helpers(prg)
+            self.logger.info(
+                "found pure_non_helpers: " + ",".join(self.pure_non_helpers)
+            )
         res_prg = self.language.remove_conditions(prg)
         self.wrapped_runner.starting_prg = res_prg
         return res_prg
 
     def postprocess(self, inv_prg: str) -> str:
         assert self.starting_prg is not None
+        invalid_helpers: [str] = []
+        try:
+            invalid_helpers, inv_prg = self.language.check_helpers(
+                inv_prg, self.pure_non_helpers
+            )
+            self.logger.info("invalid_helpers: " + ",".join(invalid_helpers))
+        except Exception:
+            self.logger.info("pass")
+            pass
+        if invalid_helpers:
+            self.llm.add_user_prompt(
+                prompts.invalid_helpers_prompt(self.llm.prompt_dir)
+                .replace("{invalid_helpers}", ",".join(invalid_helpers))
+                .replace("{program}", inv_prg)
+                .replace("{helpers}", ",".join(self.pure_non_helpers))
+            )
         return self._add_validators(
             self.starting_prg, self.wrapped_runner.postprocess(inv_prg)
         )
 
-    def rewrite(self, prg: str, text_description: Optional[str] = None) -> str:
-        return self.wrapped_runner.rewrite(prg, text_description)
+    def rewrite(
+        self,
+        prg: str,
+        text_description: Optional[str] = None,
+        additional_prompt: str = "",
+    ) -> str:
+        if self.config.remove_implementations and self.pure_non_helpers:
+            additional_prompt += prompts.helpers_prompt(self.llm.prompt_dir).replace(
+                "{helpers}", ",".join(self.pure_non_helpers)
+            )
+        return self.wrapped_runner.rewrite(prg, text_description, additional_prompt)
 
     def produce(self, prg: str) -> str:
         return self.wrapped_runner.produce(prg)
@@ -74,7 +106,7 @@ class ValidatingRunner(Runner):
             self.summarizer_llm.user_prompts = []
             self.summarizer_llm.responses = []
             result += (
-                "Also, hidden validation errors occured, here is the summary:\n"
+                "Also, hidden validation errors occurred, here is the summary:\n"
                 + validator_summary
             )
         return self.wrapped_runner.ask_for_fixed(result)

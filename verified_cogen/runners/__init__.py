@@ -14,14 +14,17 @@ LLM_GENERATED_DIR = pathlib.Path(get_cache_dir()) / "llm-generated"
 class RunnerConfig:
     log_tries: Optional[pathlib.Path] = None
     include_text_descriptions: bool = False
+    remove_implementations: bool = False
 
     def __init__(
         self,
         log_tries: Optional[pathlib.Path] = None,
         include_text_descriptions: bool = False,
+        remove_implementations: bool = False,
     ):
         self.log_tries = log_tries
         self.include_text_descriptions = include_text_descriptions
+        self.remove_implementations = remove_implementations
 
 
 class Runner:
@@ -41,7 +44,12 @@ class Runner:
         if self.config.log_tries is not None:
             self.config.log_tries.mkdir(exist_ok=True, parents=True)
 
-    def rewrite(self, prg: str, text_description: Optional[str] = None) -> str:
+    def rewrite(
+        self,
+        prg: str,
+        text_description: Optional[str] = None,
+        additional_prompt: str = "",
+    ) -> str:
         """Rewrite the program with additional checks in one step."""
         ...
 

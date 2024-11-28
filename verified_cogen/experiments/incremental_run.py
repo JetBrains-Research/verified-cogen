@@ -74,7 +74,9 @@ def main():
     verifier = Verifier(args.verifier_command)
 
     config = RunnerConfig(
-        log_tries=log_tries, include_text_descriptions=args.include_text_descriptions
+        log_tries=log_tries,
+        include_text_descriptions=args.include_text_descriptions,
+        remove_implementations=args.remove_implementations,
     )
     for file in files:
         llm = LLM(
