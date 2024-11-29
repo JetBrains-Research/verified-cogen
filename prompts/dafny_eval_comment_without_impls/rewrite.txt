@@ -1,0 +1,6 @@
+Given a Dafny program with function signature, preconditions and postconditions, but with some implementations and annotations missing.
+Please return a complete Dafny program with all functions implemented, and annotated using the strongest possible annotations (loop invariants, assert statements, etc.).
+Use extensive comments in the code, but don't explain anything outside of it.
+Please use exactly the same function signature, preconditions, and postconditions. Do not ever modify the given lines.
+Below is the program:
+{program}

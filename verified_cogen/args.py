@@ -1,6 +1,6 @@
 import argparse
 import os
-from typing import Optional, no_type_check
+from typing import Optional, no_type_check, List
 
 from verified_cogen.tools.modes import VALID_MODES
 
@@ -11,7 +11,7 @@ class ProgramArgs:
     runs: int
     insert_conditions_mode: str
     bench_type: str
-    temperature: int
+    temperature: float
     verifier_command: str
     verifier_timeout: int
     prompts_directory: str
@@ -26,6 +26,7 @@ class ProgramArgs:
     remove_conditions: bool
     remove_implementations: bool
     include_text_descriptions: bool
+    manual_rewriters: List[str]
 
     @no_type_check
     def __init__(self, args):
@@ -49,6 +50,7 @@ class ProgramArgs:
         self.remove_conditions = args.remove_conditions
         self.remove_implementations = args.remove_implementations
         self.include_text_descriptions = args.include_text_descriptions
+        self.manual_rewriters = args.manual_rewriters
 
 
 def get_default_parser():
@@ -68,7 +70,12 @@ def get_default_parser():
         help="benchmark type, available: {invariants, generic, generate, validating, step-by-step, step-by-step-flush}",
         default="invariants",
     )
-    parser.add_argument("--temperature", help="model temperature", default=0, type=int)
+    parser.add_argument(
+        "--temperature",
+        help="model temperature",
+        default=0,
+        type=float,
+    )
     parser.add_argument(
         "--verifier-command",
         help="command to run (cmd [file_path]) to verify a file",
@@ -123,6 +130,12 @@ def get_default_parser():
         help="Add text descriptions to the rewrite prompt (only works with step-by-step)",
         default=False,
         action="store_true",
+    )
+    parser.add_argument(
+        "--manual-rewriters",
+        help="Manual rewriters for additional program modifications",
+        default=[],
+        nargs="+",
     )
     return parser
 

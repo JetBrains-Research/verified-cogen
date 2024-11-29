@@ -12,8 +12,13 @@ logger = logging.getLogger(__name__)
 
 
 class GenerateRunner(Runner):
-    def rewrite(self, prg: str, text_description: Optional[str] = None) -> str:
-        return self.llm.rewrite(prg)
+    def rewrite(
+        self,
+        prg: str,
+        text_description: Optional[str] = None,
+        additional_prompt: str = "",
+    ) -> str:
+        return self.llm.rewrite(prg, text_description, additional_prompt)
 
     def produce(self, prg: str) -> str:
         raise ValueError("Produce not supported for generate")

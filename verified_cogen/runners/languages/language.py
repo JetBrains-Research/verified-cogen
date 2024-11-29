@@ -1,6 +1,6 @@
 from abc import abstractmethod
 from enum import Enum
-from typing import Any, Pattern
+from typing import Any, Pattern, List, Tuple
 
 
 class AnnotationType(Enum):
@@ -25,6 +25,14 @@ class Language:
 
     @abstractmethod
     def separate_validator_errors(self, errors: str) -> tuple[str, str]: ...
+
+    @abstractmethod
+    def check_helpers(
+        self, code: str, pure_non_helpers: List[str]
+    ) -> Tuple[List[str], str]: ...
+
+    @abstractmethod
+    def find_pure_non_helpers(self, code: str) -> List[str]: ...
 
 
 class GenericLanguage(Language):
@@ -98,6 +106,14 @@ class GenericLanguage(Language):
         lines = cleaned_code.split("\n")
         lines = [line for line in lines if self.inline_assert_comment not in line]
         return "\n".join(lines).strip()
+
+    def check_helpers(
+        self, code: str, pure_non_helpers: List[str]
+    ) -> Tuple[List[str], str]:
+        return [], code
+
+    def find_pure_non_helpers(self, code: str) -> List[str]:
+        return []
 
 
 class LanguageDatabase:

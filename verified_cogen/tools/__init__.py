@@ -79,3 +79,27 @@ def compare_errors(error1: str, error2: str):
     cleaned_error2 = re.sub(pattern_time, "", cleaned_error2).strip()
 
     return cleaned_error1 == cleaned_error2
+
+
+def rewrite_error(prg: str, error: str) -> str:
+    lines = error.splitlines()
+    res_error = ""
+    for line in lines:
+        res_error += line + "\n"
+        position = line.find(".py@")
+        if position != -1:
+            position += 3
+            pos_end = line.find(".", position)
+            num_st = int(line[position + 1 : pos_end]) - 1
+            num_end = num_st + 1
+            position = line.find("--", position)
+
+            if position != -1:
+                position += 1
+                pos_end = line.find(".", position)
+                num_end = int(line[position + 1 : pos_end])
+
+            res_error += "Error occurred on the following line(s)\n"
+            ln = "\n".join(prg.splitlines()[num_st:num_end])
+            res_error += ln + "\n"
+    return res_error

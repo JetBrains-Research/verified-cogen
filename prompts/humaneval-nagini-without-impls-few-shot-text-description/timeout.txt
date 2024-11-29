@@ -1,4 +1,3 @@
 The verifier timed out during the verification.
 This usually means that the provided invariants were too broad or were difficult to check.
-You SHOULD NOT modify anything except invariants and asserts.
 Could you please try to improve the invariants and try again?

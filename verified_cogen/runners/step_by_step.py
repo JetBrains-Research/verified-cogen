@@ -30,7 +30,12 @@ class StepByStepRunner(Runner):
     def preprocess(self, prg: str, mode: Mode) -> str:
         return self.wrapped_runner.preprocess(prg, mode)
 
-    def rewrite(self, prg: str, text_description: Optional[str] = None) -> str:
+    def rewrite(
+        self,
+        prg: str,
+        text_description: Optional[str] = None,
+        additional_prompt: str = "",
+    ) -> str:
         return (
             self.rewrite_full_examples(prg, text_description)
             if self._config.full_examples

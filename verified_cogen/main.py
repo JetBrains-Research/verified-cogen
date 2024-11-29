@@ -2,18 +2,24 @@ import logging
 import pathlib
 from logging import Logger
 from pathlib import Path
-from typing import Callable
+from typing import Callable, List, Optional
 
 from verified_cogen.args import ProgramArgs, get_args
 from verified_cogen.llm import LLM
 from verified_cogen.runners import Runner, RunnerConfig
+from verified_cogen.runners.flush import FlushRunner
 from verified_cogen.runners.generate import GenerateRunner
 from verified_cogen.runners.generic import GenericRunner
 from verified_cogen.runners.invariants import InvariantRunner
 from verified_cogen.runners.languages import register_basic_languages
 from verified_cogen.runners.languages.language import AnnotationType, LanguageDatabase
+from verified_cogen.runners.rewriters import Rewriter
+from verified_cogen.runners.rewriters.nagini_rewriter import NaginiRewriter
+from verified_cogen.runners.rewriters.nagini_rewriter_fixing import NaginiRewriterFixing
+from verified_cogen.runners.rewriters.nagini_rewriter_fixing_ast import (
+    NaginiRewriterFixingAST,
+)
 from verified_cogen.runners.step_by_step import StepByStepRunner
-from verified_cogen.runners.step_by_step_flush import StepByStepFlushRunner
 from verified_cogen.runners.validating import ValidatingRunner
 from verified_cogen.tools import (
     ext_glob,
@@ -33,9 +39,10 @@ logger = logging.getLogger(__name__)
 def run_once(
     files: list[Path],
     args: ProgramArgs,
-    runner_cls: Callable[[LLM, Logger, Verifier], Runner],
+    runner_cls: Callable[[LLM, Logger, Verifier, Optional[Rewriter]], Runner],
     verifier: Verifier,
     mode: Mode,
+    rewriter: Optional[Rewriter],
     is_once: bool,
 ) -> tuple[int, int, int, dict[str, int]]:
     _init: tuple[list[str], list[str], list[str]] = ([], [], [])
@@ -51,7 +58,7 @@ def run_once(
             args.temperature,
         )
 
-        runner = runner_cls(llm, logger, verifier)
+        runner = runner_cls(llm, logger, verifier, rewriter)
 
         retries = args.retries + 1
         tries = None
@@ -96,10 +103,39 @@ def run_once(
     return len(success_zero_tries), len(success), len(failed), cnt
 
 
+def construct_nagini_rewriter(runner_types: List[str]) -> Optional[Rewriter]:
+    runner = None
+    for runner_type in runner_types:
+        if runner_type == "NaginiRewriter":
+            runner = NaginiRewriter()
+        elif runner_type == "NaginiRewriterFixing":
+            runner = NaginiRewriterFixing(runner)
+        elif runner_type == "NaginiRewriterFixingAST":
+            runner = NaginiRewriterFixingAST(runner)
+        else:
+            raise ValueError(f"Unexpected nagini rewriter type: {runner_type}")
+    return runner
+
+
+def construct_rewriter(extension: str, runner_types: List[str]) -> Optional[Rewriter]:
+    if extension == "py":
+        return construct_nagini_rewriter(runner_types)
+    if runner_types:
+        raise ValueError(
+            f"Not implemented rewriters for language: {LanguageDatabase().regularise[extension]}"
+        )
+    return None
+
+
 def make_runner_cls(
     bench_type: str, extension: str, config: RunnerConfig
-) -> Callable[[LLM, Logger, Verifier], Runner]:
-    def runner_cls(llm: LLM, logger: Logger, verifier: Verifier):
+) -> Callable[[LLM, Logger, Verifier, Optional[Rewriter]], Runner]:
+    def runner_cls(
+        llm: LLM,
+        logger: Logger,
+        verifier: Verifier,
+        rewriter: Optional[Rewriter] = None,
+    ):
         if bench_type == "invariants":
             return InvariantRunner(llm, logger, verifier, config)
         elif bench_type == "generic":
@@ -108,17 +144,23 @@ def make_runner_cls(
             return GenerateRunner(llm, logger, verifier, config)
         elif bench_type == "validating":
             return ValidatingRunner(
-                InvariantRunner(llm, logger, verifier, config),
+                InvariantRunner(llm, logger, verifier, config, rewriter),
                 LanguageDatabase().get(extension),
             )
         elif bench_type == "step-by-step":
             return ValidatingRunner(
-                StepByStepRunner(InvariantRunner(llm, logger, verifier, config)),
+                StepByStepRunner(
+                    InvariantRunner(llm, logger, verifier, config, rewriter)
+                ),
                 LanguageDatabase().get(extension),
             )
         elif bench_type == "step-by-step-flush":
             return ValidatingRunner(
-                StepByStepFlushRunner(InvariantRunner(llm, logger, verifier, config)),
+                FlushRunner(
+                    StepByStepRunner(
+                        InvariantRunner(llm, logger, verifier, config, rewriter)
+                    )
+                ),
                 LanguageDatabase().get(extension),
             )
         else:
@@ -152,12 +194,17 @@ def main():
 
     verifier = Verifier(args.verifier_command, args.verifier_timeout)
     config = RunnerConfig(
-        log_tries=log_tries, include_text_descriptions=args.include_text_descriptions
+        log_tries=log_tries,
+        include_text_descriptions=args.include_text_descriptions,
+        remove_implementations=args.remove_implementations,
     )
     if args.dir is not None:
         files = sorted(list(pathlib.Path(args.dir).glob(ext_glob(args.filter_by_ext))))
         runner_cls = make_runner_cls(
             args.bench_type, extension_from_file_list(files), config
+        )
+        rewriter = construct_rewriter(
+            extension_from_file_list(files), args.manual_rewriters
         )
         runner = runner_cls(
             LLM(
@@ -168,6 +215,7 @@ def main():
             ),
             logger,
             verifier,
+            rewriter,
         )
         for file in files:
             with open(file) as f:
@@ -175,14 +223,14 @@ def main():
 
         if args.runs == 1:
             _, _, _, total_cnt = run_once(
-                files, args, runner_cls, verifier, mode, is_once=True
+                files, args, runner_cls, verifier, mode, rewriter, is_once=True
             )
         else:
             success_zero_tries, success, failed = 0, 0, 0
             total_cnt = {rename_file(f): 0 for f in files}
             for _ in range(args.runs):
                 s0, s, f, cnt = run_once(
-                    files, args, runner_cls, verifier, mode, is_once=False
+                    files, args, runner_cls, verifier, mode, rewriter, is_once=False
                 )
                 success_zero_tries += s0
                 success += s
@@ -215,7 +263,7 @@ def main():
             args.temperature,
         )
         runner = make_runner_cls(args.bench_type, Path(args.input).suffix[1:], config)(
-            llm, logger, verifier
+            llm, logger, verifier, None
         )
         tries = runner.run_on_file(mode, args.tries, args.input)
         if tries == 0:
