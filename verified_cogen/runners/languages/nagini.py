@@ -46,11 +46,11 @@ class NaginiLanguage(GenericLanguage):
         return "\n".join(lines), ""
 
     def check_helpers(
-        self, code: str, pure_non_helpers: [str]
+        self, code: str, pure_non_helpers: List[str]
     ) -> Tuple[List[str], str]:
         return detect_and_replace_pure_calls_nagini(code, pure_non_helpers)
 
-    def find_pure_non_helpers(self, code: str) -> [str]:
+    def find_pure_non_helpers(self, code: str) -> List[str]:
         pattern: Pattern[str] = re.compile(
             r"#use-as-unpure(\r\n|\r|\n)@Pure(\r\n|\r|\n)def\s+(\w+)\s*\((.*?)\)\s*->\s*(.*?):",
             re.DOTALL,

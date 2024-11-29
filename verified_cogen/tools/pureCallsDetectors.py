@@ -1,18 +1,21 @@
 import ast
-from typing import Tuple, List
+from typing import Tuple, List, cast
 
 
 class PureFunctionCallReplacer(ast.NodeTransformer):
-    def __init__(self, pure_non_helpers: [str]):
-        self.pure_functions = list()
-        self.detected_calls = list()
+    def __init__(self, pure_non_helpers: List[str]):
+        self.pure_functions: List[str] = list()
+        self.detected_calls: List[str] = list()
         self.current_function = None
         self.in_pure_function = False
         self.in_condition = False
         self.pure_non_helpers = pure_non_helpers
 
     def visit_FunctionDef(self, node: ast.FunctionDef):
-        is_pure = any(decorator.id == "Pure" for decorator in node.decorator_list)
+        is_pure = any(
+            isinstance(decorator, ast.Name) and decorator.id == "Pure"
+            for decorator in node.decorator_list
+        )
         if is_pure and node.name not in self.pure_non_helpers:
             self.pure_functions.append(node.name)
 
@@ -29,11 +32,7 @@ class PureFunctionCallReplacer(ast.NodeTransformer):
         return node
 
     def visit_Call(self, node: ast.Call):
-        # if node.func:
-        #     print(node.func.id)
         if isinstance(node.func, ast.Name):
-            # print("A")
-            # print("A " + node.func.id)
             if (
                 node.func.id in self.pure_functions
                 and not self.in_pure_function
@@ -48,9 +47,6 @@ class PureFunctionCallReplacer(ast.NodeTransformer):
                 )
             if node.func.id not in ["Invariant", "Assert", "Requires", "Ensures"]:
                 return self.generic_visit(node)
-        # print("B")
-        # print(node.func)
-        # print("B " + node.func.id)
         return node
 
     def visit_If(self, node: ast.If):
@@ -73,13 +69,13 @@ class PureFunctionCallReplacer(ast.NodeTransformer):
     def visit_Assert(self, node: ast.Assert):
         prev_in_condition = self.in_condition
         self.in_condition = True
-        node = self.generic_visit(node)
+        node = cast(ast.Assert, self.generic_visit(node))
         self.in_condition = prev_in_condition
         return node
 
 
 def detect_and_replace_pure_calls_nagini(
-    code: str, pure_non_helpers: [str]
+    code: str, pure_non_helpers: List[str]
 ) -> Tuple[List[str], str]:
     tree = ast.parse(code)
     replacer = PureFunctionCallReplacer(pure_non_helpers)

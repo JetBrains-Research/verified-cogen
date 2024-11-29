@@ -28,11 +28,11 @@ class Language:
 
     @abstractmethod
     def check_helpers(
-        self, code: str, pure_non_helpers: [str]
+        self, code: str, pure_non_helpers: List[str]
     ) -> Tuple[List[str], str]: ...
 
     @abstractmethod
-    def find_pure_non_helpers(self, code: str) -> [str]: ...
+    def find_pure_non_helpers(self, code: str) -> List[str]: ...
 
 
 class GenericLanguage(Language):
@@ -108,11 +108,11 @@ class GenericLanguage(Language):
         return "\n".join(lines).strip()
 
     def check_helpers(
-        self, code: str, pure_non_helpers: [str]
+        self, code: str, pure_non_helpers: List[str]
     ) -> Tuple[List[str], str]:
         return [], code
 
-    def find_pure_non_helpers(self, code: str) -> [str]:
+    def find_pure_non_helpers(self, code: str) -> List[str]:
         return []
 
 

@@ -5,8 +5,10 @@ import textwrap
 from typing_extensions import Optional
 
 from verified_cogen.llm import LLM
-from verified_cogen.runners import Runner
+from verified_cogen.runners import Runner, RunnerConfig
+from verified_cogen.runners.rewriters import Rewriter
 from verified_cogen.tools.modes import Mode
+from verified_cogen.tools.verifier import Verifier
 
 logger = logging.getLogger(__name__)
 
@@ -44,6 +46,20 @@ def insert_invariants(llm: LLM, prg: str, inv: str, mode: Mode):
 
 
 class InvariantRunner(Runner):
+    rewriter: Optional[Rewriter]
+    previous_prg: Optional[str] = None
+
+    def __init__(
+        self,
+        llm: LLM,
+        logger: logging.Logger,
+        verifier: Verifier,
+        config: RunnerConfig,
+        rewriter: Optional[Rewriter] = None,
+    ):
+        super().__init__(llm, logger, verifier, config)
+        self.rewriter = rewriter
+
     def rewrite(
         self,
         prg: str,
@@ -67,3 +83,20 @@ class InvariantRunner(Runner):
                 raise ValueError(
                     "Multiple loops in program, not supported in regex mode"
                 )
+
+    def postprocess(self, inv_prg: str) -> str:
+        if self.rewriter is not None:
+            prg, prompt = self.rewriter.rewrite(inv_prg)
+
+            if prompt != "":
+                self.logger.info("Manually rewrite:")
+                self.logger.info(inv_prg)
+                self.logger.info("Manual rewriting results:")
+                self.logger.info(prompt)
+                self.llm.add_user_prompt(prompt)
+        else:
+            prg = super().postprocess(inv_prg)
+
+        self.previous_prg = prg
+
+        return prg

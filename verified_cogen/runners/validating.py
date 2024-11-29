@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List
 
 from verified_cogen.llm import prompts
 from verified_cogen.llm.llm import LLM
@@ -11,7 +11,7 @@ class ValidatingRunner(Runner):
     wrapped_runner: Runner
     language: Language
     summarizer_llm: LLM
-    pure_non_helpers: [str] = []
+    pure_non_helpers: List[str]
 
     def __init__(
         self,
@@ -32,6 +32,7 @@ class ValidatingRunner(Runner):
         )
         self.wrapped_runner = wrapping
         self.language = language
+        self.pure_non_helpers = []
 
     def _add_validators(self, prg: str, inv_prg: str):
         validators = self.language.generate_validators(prg)
@@ -51,7 +52,7 @@ class ValidatingRunner(Runner):
 
     def postprocess(self, inv_prg: str) -> str:
         assert self.starting_prg is not None
-        invalid_helpers: [str] = []
+        invalid_helpers: List[str] = []
         try:
             invalid_helpers, inv_prg = self.language.check_helpers(
                 inv_prg, self.pure_non_helpers
