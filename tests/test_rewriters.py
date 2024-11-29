@@ -1,8 +1,10 @@
 from textwrap import dedent
+from zipfile import error
 
 from verified_cogen.runners.rewriters.nagini_rewriter import NaginiRewriter
 from verified_cogen.runners.rewriters.nagini_rewriter_fixing import NaginiRewriterFixing
 from verified_cogen.runners.rewriters.nagini_rewriter_fixing_ast import NaginiRewriterFixingAST
+from verified_cogen.tools import rewrite_error
 
 
 def test_nagini_rewriter():
@@ -413,3 +415,365 @@ def test_rewriter7():
         Invariant(Forall(int, lambda i: Forall(int, lambda j: Implies(0 <= i and i < j and j < len(result), result[i] < result[j]))))
         """
     )
+
+def test_rewrite_error():
+    error = dedent(
+"""\
+Errors:
+The precondition of function count_chars_inter might not hold. Assertion Forall(int, (lambda d_0_i_: ((not ((0 <= d_0_i_) and (d_0_i_ < len(s)))) or ((97 <= s[d_0_i_]) and (s[d_0_i_] <= 122))))) might not hold. (016-count_distinct_characters.2.py@43.23--43.51)
+Verification took 9.10 seconds.
+"""
+    )
+
+    code = dedent(
+"""\
+from typing import cast, List, Dict, Set, Optional, Union, Tuple
+from nagini_contracts.contracts import *
+
+@Pure
+def contains_char(s : List[int], c : int, i : int, j : int) -> bool:
+    Requires(Acc(list_pred(s)))
+    Requires(Forall(int, lambda d_0_i_:
+        not (((0) <= (d_0_i_)) and ((d_0_i_) < (len(s)))) or (((97) <= ((s)[d_0_i_])) and (((s)[d_0_i_]) <= (122)))))
+    Requires(0 <= i and i <= j and j <= len(s))
+    Requires(((97) <= (c)) and ((c) <= (122)))
+
+    if i == j:
+        return False
+    else:
+        return s[j - 1] == c or contains_char(s, c, i, j - 1)
+
+@Pure 
+def count_chars_inter(s : List[int], c : int) -> int:
+    Requires(Acc(list_pred(s)))
+    Requires(Forall(int, lambda d_0_i_:
+        not (((0) <= (d_0_i_)) and ((d_0_i_) < (len(s)))) or (((97) <= ((s)[d_0_i_])) and (((s)[d_0_i_]) <= (122)))))
+    Requires(((97) <= (c)) and ((c) <= (123)))
+
+    if c == 97:
+        return 0
+    else:
+        return count_chars_inter(s, c - 1) + (1 if contains_char(s, c - 1, 0, len(s)) else 0)
+
+def count_distinct_characters(s : List[int]) -> int:
+    Requires(Acc(list_pred(s)))
+    Requires(Forall(int, lambda d_1_i_:
+        not (((0) <= (d_1_i_)) and ((d_1_i_) < (len(s)))) or (((97) <= ((s)[d_1_i_])) and (((s)[d_1_i_]) <= (122)))))
+    Ensures(Acc(list_pred(s)))
+    Ensures(Forall(int, lambda d_1_i_:
+        not (((0) <= (d_1_i_)) and ((d_1_i_) < (len(s)))) or (((97) <= ((s)[d_1_i_])) and (((s)[d_1_i_]) <= (122)))))
+    Ensures((Result()) == count_chars_inter(s, 123))
+
+    c : int = int(0)
+    d_2_i_ : int = int(97)
+    while (d_2_i_) <= (122):
+        Invariant(Acc(list_pred(s)))
+        Invariant(97 <= d_2_i_ and d_2_i_ <= 123)
+        Invariant(c == count_chars_inter(s, d_2_i_))
+        Invariant(Forall(int, lambda i: Implies((0 <= i and i < len(s)), (97 <= s[i] and s[i] <= 122))))
+        Invariant(0 <= c and c <= d_2_i_ - 97)
+        Invariant(Forall(int, lambda x: Implies((97 <= x and x < d_2_i_), (contains_char(s, x, 0, len(s)) == (count_chars_inter(s, x + 1) > count_chars_inter(s, x))))))
+        if contains_char(s, d_2_i_, 0, len(s)):
+            c = c + 1
+        d_2_i_ = d_2_i_ + 1
+    return c
+# ==== verifiers ==== 
+def contains_char_valid(s : List[int], c : int, i : int, j : int) -> bool:
+    # pre-conditions-start
+    Requires(Acc(list_pred(s)))
+    Requires(Forall(int, lambda d_0_i_:
+        not (((0) <= (d_0_i_)) and ((d_0_i_) < (len(s)))) or (((97) <= ((s)[d_0_i_])) and (((s)[d_0_i_]) <= (122)))))
+    Requires(0 <= i and i <= j and j <= len(s))
+    Requires(((97) <= (c)) and ((c) <= (122)))
+    # pre-conditions-end
+    ret = contains_char(s, c, i, j)
+    return ret
+def count_chars_inter_valid(s : List[int], c : int) -> int:
+    # pre-conditions-start
+    Requires(Acc(list_pred(s)))
+    Requires(Forall(int, lambda d_0_i_:
+        not (((0) <= (d_0_i_)) and ((d_0_i_) < (len(s)))) or (((97) <= ((s)[d_0_i_])) and (((s)[d_0_i_]) <= (122)))))
+    Requires(((97) <= (c)) and ((c) <= (123)))
+    # pre-conditions-end
+    ret = count_chars_inter(s, c)
+    return ret
+def count_distinct_characters_valid(s : List[int]) -> int:
+    # pre-conditions-start
+    Requires(Acc(list_pred(s)))
+    Requires(Forall(int, lambda d_1_i_:
+        not (((0) <= (d_1_i_)) and ((d_1_i_) < (len(s)))) or (((97) <= ((s)[d_1_i_])) and (((s)[d_1_i_]) <= (122)))))
+    # pre-conditions-end
+    # post-conditions-start
+    Ensures(Acc(list_pred(s)))
+    Ensures(Forall(int, lambda d_1_i_:
+        not (((0) <= (d_1_i_)) and ((d_1_i_) < (len(s)))) or (((97) <= ((s)[d_1_i_])) and (((s)[d_1_i_]) <= (122)))))
+    Ensures((Result()) == count_chars_inter(s, 123))
+    # post-conditions-end
+    ret = count_distinct_characters(s)
+    return ret
+"""
+    )
+
+    assert dedent(
+"""\
+Errors:
+The precondition of function count_chars_inter might not hold. Assertion Forall(int, (lambda d_0_i_: ((not ((0 <= d_0_i_) and (d_0_i_ < len(s)))) or ((97 <= s[d_0_i_]) and (s[d_0_i_] <= 122))))) might not hold. (016-count_distinct_characters.2.py@43.23--43.51)
+Error occurred on the following line(s)
+        Invariant(c == count_chars_inter(s, d_2_i_))
+Verification took 9.10 seconds.
+"""
+    ) == rewrite_error(code, error)
+
+
+def test_rewrite_error1():
+    error = dedent(
+"""\
+Errors:
+The precondition of function len might not hold. There might be insufficient permission. (029-filter_by_prefix.2.py@39.44--39.51)
+The precondition of function len might not hold. There might be insufficient permission. (029-filter_by_prefix.2.py@59.20--59.26)
+The precondition of function starts__with might not hold. There might be insufficient permission to access list_pred(s). (029-filter_by_prefix.2.py@71.24--71.45)
+Verification took 10.88 seconds.
+"""
+    )
+
+    code = dedent(
+"""\
+from typing import cast, List, Dict, Set, Optional, Union
+from nagini_contracts.contracts import *
+@Pure
+def starts__with(s : List[int], p : List[int], i : int) -> bool :
+    Requires(Acc(list_pred(s), 1/2))
+    Requires(Acc(list_pred(p), 1/2))
+    Requires(i >= 0 and i <= len(p) and i <= len(s))
+    Ensures(Implies(len(p) == i and len(s) >= len(p), Result()))
+    Ensures(Implies(len(s) < len(p), not Result()))
+    return len(s) >= len(p) and Forall(int, lambda x: Implies(x >= i and x < len(p), s[x] == p[x]))
+
+@Pure
+def starts__with__fun(s : List[int], p : List[int], i : int) -> bool :
+    Requires(Acc(list_pred(s), 1/2))
+    Requires(Acc(list_pred(p), 1/2))
+    Requires(0 <= i and i <= len(p) and i <= len(s))
+    Ensures(Result() == starts__with(s, p, i))
+    if (len(p) == i):
+        return True
+    if (len(s) > i and len(s) >= len(p) and s[i] == p[i]):
+        return starts__with(s, p, i + 1)
+    return False
+
+def filter__by__prefix(xs : List[List[int]], p : List[int]) -> List[int]:
+    Requires(Acc(list_pred(xs)))
+    Requires(Acc(list_pred(p)))
+    Requires(Forall(xs, lambda x : Acc(list_pred(x))))
+    Ensures(Acc(list_pred(p)))
+    Ensures(Acc(list_pred(xs)))
+    Ensures(Forall(xs, lambda x : Acc(list_pred(x))))
+    Ensures(Acc(list_pred(Result())))
+    Ensures(Forall(int, lambda d_2_j_: 
+        Implies(d_2_j_ >= 0 and d_2_j_ < len(Result()), Result()[d_2_j_] >= 0 and Result()[d_2_j_] < len(xs))))
+    Ensures(Forall(int, lambda d_0_i_:
+        not (((0) <= (d_0_i_)) and ((d_0_i_) < (len(Result())))) or (starts__with(xs[Result()[d_0_i_]], p, 0))))
+    filtered : List[int] = []
+    d_1_i_ : int = 0
+    while (d_1_i_) < (len(xs)):
+        Invariant(0 <= d_1_i_ and d_1_i_ <= len(xs))
+        Invariant(Acc(list_pred(xs)))
+        Invariant(Acc(list_pred(p)))
+        Invariant(Forall(xs, lambda x: Acc(list_pred(x), 1/2)))
+        Invariant(Acc(list_pred(filtered)))
+        Invariant(Forall(int, lambda j: Implies(0 <= j and j < len(filtered), 0 <= filtered[j] and filtered[j] < d_1_i_)))
+        Invariant(Forall(int, lambda j: Implies(0 <= j and j < len(filtered), starts__with(xs[filtered[j]], p, 0))))
+        Invariant(Forall(int, lambda k: Implies(0 <= k and k < d_1_i_ and starts__with(xs[k], p, 0), k in filtered)))
+        if starts__with__fun((xs)[d_1_i_], p, 0):
+            filtered = (filtered) + [d_1_i_]
+        d_1_i_ = (d_1_i_) + (1)
+    return filtered
+# ==== verifiers ==== 
+def starts__with_valid(s : List[int], p : List[int], i : int) -> bool :
+    # pre-conditions-start
+    Requires(Acc(list_pred(s), 1/2))
+    Requires(Acc(list_pred(p), 1/2))
+    Requires(i >= 0 and i <= len(p) and i <= len(s))
+    # pre-conditions-end
+    # post-conditions-start
+    Ensures(Implies(len(p) == i and len(s) >= len(p), Result()))
+    Ensures(Implies(len(s) < len(p), not Result()))
+    # post-conditions-end
+    ret = starts__with(s, p, i)
+    return ret
+def starts__with__fun_valid(s : List[int], p : List[int], i : int) -> bool :
+    # pre-conditions-start
+    Requires(Acc(list_pred(s), 1/2))
+    Requires(Acc(list_pred(p), 1/2))
+    Requires(0 <= i and i <= len(p) and i <= len(s))
+    # pre-conditions-end
+    # post-conditions-start
+    Ensures(Result() == starts__with(s, p, i))
+    # post-conditions-end
+    ret = starts__with__fun(s, p, i)
+    return ret
+def filter__by__prefix_valid(xs : List[List[int]], p : List[int]) -> List[int]:
+    # pre-conditions-start
+    Requires(Acc(list_pred(xs)))
+    Requires(Acc(list_pred(p)))
+    Requires(Forall(xs, lambda x : Acc(list_pred(x))))
+    # pre-conditions-end
+    # post-conditions-start
+    Ensures(Acc(list_pred(p)))
+    Ensures(Acc(list_pred(xs)))
+    Ensures(Forall(xs, lambda x : Acc(list_pred(x))))
+    Ensures(Acc(list_pred(Result())))
+    Ensures(Forall(int, lambda d_2_j_: 
+        Implies(d_2_j_ >= 0 and d_2_j_ < len(Result()), Result()[d_2_j_] >= 0 and Result()[d_2_j_] < len(xs))))
+    Ensures(Forall(int, lambda d_0_i_:
+        not (((0) <= (d_0_i_)) and ((d_0_i_) < (len(Result())))) or (starts__with(xs[Result()[d_0_i_]], p, 0))))
+    # post-conditions-end
+    ret = filter__by__prefix(xs, p)
+    return ret
+"""
+    )
+
+    assert dedent(
+"""\
+Errors:
+The precondition of function len might not hold. There might be insufficient permission. (029-filter_by_prefix.2.py@39.44--39.51)
+Error occurred on the following line(s)
+        Invariant(0 <= d_1_i_ and d_1_i_ <= len(xs))
+The precondition of function len might not hold. There might be insufficient permission. (029-filter_by_prefix.2.py@59.20--59.26)
+Error occurred on the following line(s)
+    Ensures(Implies(len(p) == i and len(s) >= len(p), Result()))
+The precondition of function starts__with might not hold. There might be insufficient permission to access list_pred(s). (029-filter_by_prefix.2.py@71.24--71.45)
+Error occurred on the following line(s)
+    Ensures(Result() == starts__with(s, p, i))
+Verification took 10.88 seconds.
+"""
+    ) == rewrite_error(code, error)
+
+
+def test_rewrite_errors2():
+    error = dedent(
+"""\
+Verification failed
+Errors:
+The precondition of function len might not hold. There might be insufficient permission. (029-filter_by_prefix.4.py@40.44--40.51)
+The precondition of function len might not hold. There might be insufficient permission. (029-filter_by_prefix.4.py@61.20--61.26)
+The precondition of function starts__with might not hold. There might be insufficient permission to access list_pred(s). (029-filter_by_prefix.4.py@73.24--73.45)
+Verification took 11.41 seconds.
+"""
+    )
+
+    code = dedent(
+"""\
+
+from typing import cast, List, Dict, Set, Optional, Union
+from nagini_contracts.contracts import *
+@Pure
+def starts__with(s : List[int], p : List[int], i : int) -> bool :
+    Requires(Acc(list_pred(s), 1/2))
+    Requires(Acc(list_pred(p), 1/2))
+    Requires(i >= 0 and i <= len(p) and i <= len(s))
+    Ensures(Implies(len(p) == i and len(s) >= len(p), Result()))
+    Ensures(Implies(len(s) < len(p), not Result()))
+    return len(s) >= len(p) and Forall(int, lambda x: Implies(x >= i and x < len(p), s[x] == p[x]))
+
+@Pure
+def starts__with__fun(s : List[int], p : List[int], i : int) -> bool :
+    Requires(Acc(list_pred(s), 1/2))
+    Requires(Acc(list_pred(p), 1/2))
+    Requires(0 <= i and i <= len(p) and i <= len(s))
+    Ensures(Result() == starts__with(s, p, i))
+    if (len(p) == i):
+        return True
+    if (len(s) > i and len(s) >= len(p) and s[i] == p[i]):
+        return starts__with(s, p, i + 1)
+    return False
+
+def filter__by__prefix(xs : List[List[int]], p : List[int]) -> List[int]:
+    Requires(Acc(list_pred(xs)))
+    Requires(Acc(list_pred(p)))
+    Requires(Forall(xs, lambda x : Acc(list_pred(x))))
+    Ensures(Acc(list_pred(p)))
+    Ensures(Acc(list_pred(xs)))
+    Ensures(Forall(xs, lambda x : Acc(list_pred(x))))
+    Ensures(Acc(list_pred(Result())))
+    Ensures(Forall(int, lambda d_2_j_: 
+        Implies(d_2_j_ >= 0 and d_2_j_ < len(Result()), Result()[d_2_j_] >= 0 and Result()[d_2_j_] < len(xs))))
+    Ensures(Forall(int, lambda d_0_i_:
+        not (((0) <= (d_0_i_)) and ((d_0_i_) < (len(Result())))) or (starts__with(xs[Result()[d_0_i_]], p, 0))))
+    filtered : List[int] = []
+    d_1_i_ : int = 0
+    while (d_1_i_) < (len(xs)):
+        Invariant(0 <= d_1_i_ and d_1_i_ <= len(xs))
+        Invariant(Acc(list_pred(xs)))
+        Invariant(Forall(xs, lambda x : Acc(list_pred(x))))
+        Invariant(Acc(list_pred(p)))
+        Invariant(Acc(list_pred(filtered)))
+        Invariant(Forall(int, lambda j: Implies(0 <= j and j < len(filtered), 0 <= filtered[j] and filtered[j] < d_1_i_)))
+        Invariant(Forall(int, lambda j: Implies(0 <= j and j < len(filtered), starts__with(xs[filtered[j]], p, 0))))
+        Invariant(Forall(int, lambda k: Implies(0 <= k and k < d_1_i_ and starts__with(xs[k], p, 0), k in filtered)))
+        if starts__with__fun((xs)[d_1_i_], p, 0):
+            filtered = (filtered) + [d_1_i_]
+        d_1_i_ = (d_1_i_) + (1)
+    return filtered
+
+# ==== verifiers ==== 
+def starts__with_valid(s : List[int], p : List[int], i : int) -> bool :
+    # pre-conditions-start
+    Requires(Acc(list_pred(s), 1/2))
+    Requires(Acc(list_pred(p), 1/2))
+    Requires(i >= 0 and i <= len(p) and i <= len(s))
+    # pre-conditions-end
+    # post-conditions-start
+    Ensures(Implies(len(p) == i and len(s) >= len(p), Result()))
+    Ensures(Implies(len(s) < len(p), not Result()))
+    # post-conditions-end
+    ret = starts__with(s, p, i)
+    return ret
+def starts__with__fun_valid(s : List[int], p : List[int], i : int) -> bool :
+    # pre-conditions-start
+    Requires(Acc(list_pred(s), 1/2))
+    Requires(Acc(list_pred(p), 1/2))
+    Requires(0 <= i and i <= len(p) and i <= len(s))
+    # pre-conditions-end
+    # post-conditions-start
+    Ensures(Result() == starts__with(s, p, i))
+    # post-conditions-end
+    ret = starts__with__fun(s, p, i)
+    return ret
+def filter__by__prefix_valid(xs : List[List[int]], p : List[int]) -> List[int]:
+    # pre-conditions-start
+    Requires(Acc(list_pred(xs)))
+    Requires(Acc(list_pred(p)))
+    Requires(Forall(xs, lambda x : Acc(list_pred(x))))
+    # pre-conditions-end
+    # post-conditions-start
+    Ensures(Acc(list_pred(p)))
+    Ensures(Acc(list_pred(xs)))
+    Ensures(Forall(xs, lambda x : Acc(list_pred(x))))
+    Ensures(Acc(list_pred(Result())))
+    Ensures(Forall(int, lambda d_2_j_: 
+        Implies(d_2_j_ >= 0 and d_2_j_ < len(Result()), Result()[d_2_j_] >= 0 and Result()[d_2_j_] < len(xs))))
+    Ensures(Forall(int, lambda d_0_i_:
+        not (((0) <= (d_0_i_)) and ((d_0_i_) < (len(Result())))) or (starts__with(xs[Result()[d_0_i_]], p, 0))))
+    # post-conditions-end
+    ret = filter__by__prefix(xs, p)
+    return ret
+"""
+    )
+
+    assert dedent(
+"""\
+Verification failed
+Errors:
+The precondition of function len might not hold. There might be insufficient permission. (029-filter_by_prefix.4.py@40.44--40.51)
+Error occurred on the following line(s)
+        Invariant(0 <= d_1_i_ and d_1_i_ <= len(xs))
+The precondition of function len might not hold. There might be insufficient permission. (029-filter_by_prefix.4.py@61.20--61.26)
+Error occurred on the following line(s)
+    Ensures(Implies(len(p) == i and len(s) >= len(p), Result()))
+The precondition of function starts__with might not hold. There might be insufficient permission to access list_pred(s). (029-filter_by_prefix.4.py@73.24--73.45)
+Error occurred on the following line(s)
+    Ensures(Result() == starts__with(s, p, i))
+Verification took 11.41 seconds.
+"""
+    ) == rewrite_error(code, error)

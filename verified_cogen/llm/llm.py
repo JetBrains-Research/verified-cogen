@@ -127,10 +127,18 @@ class LLM:
         self.add_user_prompt(prompt, False)
         return self.make_request()
 
-    def rewrite(self, prg: str) -> str:
-        self.add_user_prompt(
-            prompts.rewrite_prompt(self.prompt_dir).replace("{program}", prg)
-        )
+    def rewrite(
+        self,
+        prg: str,
+        text_description: Optional[str] = None,
+        additional_prompt: str = "",
+    ) -> str:
+        result = prompts.rewrite_prompt(self.prompt_dir).replace("{program}", prg)
+        if text_description is not None and "{text_description}" in result:
+            result = result.replace("{text_description}", text_description)
+        self.add_user_prompt(result)
+        if additional_prompt:
+            self.add_user_prompt(additional_prompt)
         return self.make_request()
 
     def ask_for_fixed(self, err: str) -> str:

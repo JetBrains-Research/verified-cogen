@@ -1,8 +1,12 @@
-Given the following Python program, output Nagini invariants that should go into the `while` loop.
+Rewrite the following Nagini code with implementations of some functions missing. While rewriting it, ensure that it verifies. Include invariants and assertions. Don't remove any helper functions (they are marked with @Pure annotation), they are there to help you. Prefer loops to recursion.
+Use helper functions only in invariants, asserts and conditions (in `if` or `while` conditions). Don't use helpers in the plain code.
+Do not change helper functions.
+Add code and invariants to other functions.
 Ensure that the invariants are as comprehensive as they can be.
 Even if you think some invariant is not totally necessary, better add it than not.
 Don't add any additional text comments, your response must contain only program with invariants.
 Do not provide ANY explanations. Don't include markdown backticks. Respond only in Python code, nothing else.
+
 
 You remember the following aspects of Nagini syntax:
 
@@ -42,39 +46,42 @@ second argument is a lambda. `Forall(type, lambda x : a)` denotes that assertion
 6. In Nagini `Implies(e1, a2)` plays role of implication. `Implies(e1, a2)` denotes that assertion a2 holds if boolean expression e1 is true.
 You can use it inside invariants and asserts.
 
-Here are some examples of verified Python cycles with Nagini invariants:
+You might need to work with accumulating functions, such as sum, so here's an example of how to do that:
 ```
-    while i < len(numbers):
+from typing import cast, List, Dict, Set, Optional, Union
+from nagini_contracts.contracts import *
+
+@Pure
+def Sum(a : List[int], s : int, t : int) -> int :
+    Requires(Acc(list_pred(a)))
+    Requires(((0) <= (s)) and ((s) <= (t)) and ((t) <= (len(a))))
+
+    if s == t:
+        return 0
+    else:
+        return (a)[t - 1] + (Sum(a, s, t - 1))
+
+def sum_loop(numbers: List[int]) -> int:
+    Requires(Acc(list_pred(numbers)))
+    Ensures(Acc(list_pred(numbers)))
+    Ensures(Result() == Sum(numbers, 0, len(numbers)))
+    s = int(0)
+    i = int(0)
+    while (i) < (len(numbers)):
         Invariant(Acc(list_pred(numbers)))
-        Invariant(Acc(list_pred(result)))
         Invariant(0 <= i and i <= len(numbers))
-        Invariant(len(result) == i)
-        Invariant(Forall(range(i), lambda i1: numbers[i1] <= result[i1]))
-        Invariant(Old(running_max) is None or ((Old(running_max) is not None) and (getVal(Old(running_max)) <= getVal(running_max))))
-        Invariant(Implies(len(result) > 0, running_max is not None))
-        Invariant(Implies(len(result) > 0, result[-1] == getVal(running_max)))
-        Invariant(Forall(range(i - 1), lambda i1: result[i1] <= result[i1 + 1]))
-
-        n = numbers[i]
-        if running_max is None or running_max < n:
-            running_max = n
-
-        result.append(running_max)
-        i += 1
+        Invariant(Forall(int, lambda d_1_p_:
+            (Implies(0 <= d_1_p_ and d_1_p_ < len(numbers), Sum(numbers, 0, d_1_p_ + 1) == Sum(numbers, 0, d_1_p_) + numbers[d_1_p_]), [[Sum(numbers, 0, d_1_p_ + 1)]])))
+        Invariant(s == Sum(numbers, 0, i))
+        Assert(Sum(numbers, 0, i + 1) == Sum(numbers, 0, i) + numbers[i])
+        s = s + (numbers)[i]
+        i = i + 1
+    return s
 ```
 
-```
-    while (d_0_i_) < (len((a))):
-        Invariant(Acc(list_pred(c)))
-        Invariant(Acc(list_pred(a)))
-        Invariant(len(c) == len(a) + 1)
-        Invariant(((0) <= (d_0_i_)) and ((d_0_i_) <= (len((a)))))
-        Invariant(Forall(int, lambda d_1_ii_:
-            Implies(((0) <= (d_1_ii_)) and ((d_1_ii_) < (d_0_i_)), ((c)[d_1_ii_]) == ((a)[d_1_ii_]))))
-        (c)[(d_0_i_)] = (a)[d_0_i_]
-        d_0_i_ = (d_0_i_) + (1)
-```
+To help you, here's a text description given to a person who wrote this program:
+
+{text_description}
 
 The program:
 {program}
-

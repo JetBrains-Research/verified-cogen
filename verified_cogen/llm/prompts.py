@@ -62,3 +62,11 @@ def ask_for_fixed_had_errors_prompt(prompt_dir: str) -> str:
 
 def ask_for_timeout_prompt(prompt_dir: str) -> str:
     return read_prompt(f"{prompt_dir}/timeout.txt")
+
+
+def invalid_helpers_prompt(prompt_dir: str) -> str:
+    return read_prompt(f"{prompt_dir}/invalid_helpers.txt")
+
+
+def helpers_prompt(prompt_dir: str) -> str:
+    return read_prompt(f"{prompt_dir}/helpers.txt")

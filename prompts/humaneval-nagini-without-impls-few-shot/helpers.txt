@@ -1,0 +1,3 @@
+Generally, you should use helper functions (marked with @Pure annotation) only in invariants, asserts and conditions (in `if` or `while` conditions), not in the plain code.
+But, the following helper functions you can use anywhere: {helpers}.
+Do not change helper functions.
