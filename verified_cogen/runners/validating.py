@@ -52,22 +52,23 @@ class ValidatingRunner(Runner):
 
     def postprocess(self, inv_prg: str) -> str:
         assert self.starting_prg is not None
-        invalid_helpers: List[str] = []
-        try:
-            invalid_helpers, inv_prg = self.language.check_helpers(
-                inv_prg, self.pure_non_helpers
-            )
-            self.logger.info("invalid_helpers: " + ",".join(invalid_helpers))
-        except Exception:
-            self.logger.info("pass")
-            pass
-        if invalid_helpers:
-            self.llm.add_user_prompt(
-                prompts.invalid_helpers_prompt(self.llm.prompt_dir)
-                .replace("{invalid_helpers}", ",".join(invalid_helpers))
-                .replace("{program}", inv_prg)
-                .replace("{helpers}", ",".join(self.pure_non_helpers))
-            )
+        if self.config.remove_implementations:
+            invalid_helpers: List[str] = []
+            try:
+                invalid_helpers, inv_prg = self.language.check_helpers(
+                    inv_prg, self.pure_non_helpers
+                )
+                self.logger.info("invalid_helpers: " + ",".join(invalid_helpers))
+            except Exception:
+                self.logger.info("pass")
+                pass
+            if invalid_helpers:
+                self.llm.add_user_prompt(
+                    prompts.invalid_helpers_prompt(self.llm.prompt_dir)
+                    .replace("{invalid_helpers}", ",".join(invalid_helpers))
+                    .replace("{program}", inv_prg)
+                    .replace("{helpers}", ",".join(self.pure_non_helpers))
+                )
         return self._add_validators(
             self.starting_prg, self.wrapped_runner.postprocess(inv_prg)
         )
