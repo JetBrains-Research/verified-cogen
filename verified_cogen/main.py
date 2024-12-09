@@ -197,6 +197,7 @@ def main():
         log_tries=log_tries,
         include_text_descriptions=args.include_text_descriptions,
         remove_implementations=args.remove_implementations,
+        remove_helpers=args.remove_pure,
     )
     if args.dir is not None:
         files = sorted(list(pathlib.Path(args.dir).glob(ext_glob(args.filter_by_ext))))

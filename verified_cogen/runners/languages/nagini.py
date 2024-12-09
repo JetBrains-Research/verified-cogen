@@ -5,9 +5,17 @@ from verified_cogen.runners.languages.language import AnnotationType, GenericLan
 from verified_cogen.tools.pureCallsDetectors import detect_and_replace_pure_calls_nagini
 
 NAGINI_VALIDATOR_TEMPLATE = """\
+
 def {method_name}_valid({parameters}) -> {returns}:{specs}\
+\n
     ret = {method_name}({param_names})
     return ret\
+"""
+
+NAGINI_VALIDATOR_TEMPLATE_PURE = """\
+@Pure
+def {method_name}_valid({parameters}) -> {returns}:{specs}\
+    {body}\
 """
 
 
@@ -21,13 +29,19 @@ class NaginiLanguage(GenericLanguage):
             AnnotationType.PRE_CONDITIONS: r" *# pre-conditions-start.*?# pre-conditions-end\n?",
             AnnotationType.POST_CONDITIONS: r" *# post-conditions-start.*?# post-conditions-end\n?",
             AnnotationType.IMPLS: r" *# impl-start.*?# impl-end\n",
+            AnnotationType.PURE: r"@Pure\ndef.*?# pure-end\n",
         }
         super().__init__(
             re.compile(
-                r"def\s+(\w+)\s*\((.*?)\)\s*->\s*(.*?):(.*?(\r\n|\r|\n))\s+# (impl-start|pure-start)",
+                r"def\s+(\w+)\s*\((.*?)\)\s*->\s*(.*?):(.*?)\s+# (impl-start|pure-start)",
+                re.DOTALL,
+            ),
+            re.compile(
+                r"@Pure\s+def\s+(\w+)\s*\((.*?)\)\s*->\s*(.*?):(.*?)\s+# pure-start(.*?)# pure-end",
                 re.DOTALL,
             ),
             NAGINI_VALIDATOR_TEMPLATE,
+            NAGINI_VALIDATOR_TEMPLATE_PURE,
             [
                 annotation_by_type[annotation_type]
                 for annotation_type in remove_annotations
@@ -52,7 +66,7 @@ class NaginiLanguage(GenericLanguage):
 
     def find_pure_non_helpers(self, code: str) -> List[str]:
         pattern: Pattern[str] = re.compile(
-            r"#use-as-unpure(\r\n|\r|\n)@Pure(\r\n|\r|\n)def\s+(\w+)\s*\((.*?)\)\s*->\s*(.*?):",
+            r"#use-as-unpure\s+@Pure\s+def\s+(\w+)\s*\((.*?)\)\s*->\s*(.*?):",
             re.DOTALL,
         )
         methods = list(pattern.finditer(code))

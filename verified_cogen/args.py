@@ -27,6 +27,7 @@ class ProgramArgs:
     remove_implementations: bool
     include_text_descriptions: bool
     manual_rewriters: List[str]
+    remove_pure: bool
 
     @no_type_check
     def __init__(self, args):
@@ -51,6 +52,7 @@ class ProgramArgs:
         self.remove_implementations = args.remove_implementations
         self.include_text_descriptions = args.include_text_descriptions
         self.manual_rewriters = args.manual_rewriters
+        self.remove_pure = args.remove_pure
 
 
 def get_default_parser():
@@ -136,6 +138,12 @@ def get_default_parser():
         help="Manual rewriters for additional program modifications",
         default=[],
         nargs="+",
+    )
+    parser.add_argument(
+        "--remove-pure",
+        help="Remove pure functions from the program",
+        default=False,
+        action="store_true",
     )
     return parser
 

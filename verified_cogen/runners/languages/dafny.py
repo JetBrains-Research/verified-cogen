@@ -8,6 +8,12 @@ method {method_name}_valid({parameters}) returns ({returns}){specs}\
 { var {return_values} := {method_name}({param_names}); return {return_values}; }
 """
 
+DAFNY_VALIDATOR_TEMPLATE_PURE = """\
+function {method_name}_valid({parameters}) returns ({returns}){specs}\
+{ 
+    {body} 
+}
+"""
 
 class DafnyLanguage(GenericLanguage):
     method_regex: Pattern[str]
@@ -19,12 +25,17 @@ class DafnyLanguage(GenericLanguage):
             AnnotationType.PRE_CONDITIONS: r" *// pre-conditions-start.*?// pre-conditions-end\n",
             AnnotationType.POST_CONDITIONS: r" *// post-conditions-start.*?// post-conditions-end\n",
             AnnotationType.IMPLS: r" *// impl-start.*?// impl-end\n",
+            AnnotationType.PURE: r"function.*?// pure-end\n",
         }
         super().__init__(
             re.compile(
                 r"method\s+(\w+)\s*\((.*?)\)\s*returns\s*\((.*?)\)(.*?)\{", re.DOTALL
             ),
+            re.compile(
+                r"function\s+(\w+)\s*\((.*?)\)\s*returns\s*\((.*?)\)(.*?)\{(.*?)}", re.DOTALL
+            ),
             DAFNY_VALIDATOR_TEMPLATE,
+            DAFNY_VALIDATOR_TEMPLATE_PURE,
             [
                 annotation_by_type[annotation_type]
                 for annotation_type in remove_annotations

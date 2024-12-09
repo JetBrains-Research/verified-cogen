@@ -8,6 +8,13 @@ fn {method_name}_valid({parameters}) -> ({returns}){specs}\
 { let ret = {method_name}({param_names}); ret }
 """
 
+VERUS_VALIDATOR_TEMPLATE_PURE = """\
+spec fn {method_name}_valid({parameters}) -> ({returns}){specs}\
+{ 
+    {body}
+}
+"""
+
 
 class VerusLanguage(GenericLanguage):
     method_regex: Pattern[str]
@@ -19,13 +26,19 @@ class VerusLanguage(GenericLanguage):
             AnnotationType.PRE_CONDITIONS: r" *// pre-conditions-start.*?// pre-conditions-end\n",
             AnnotationType.POST_CONDITIONS: r" *// post-conditions-start.*?// post-conditions-end\n",
             AnnotationType.IMPLS: r" *// impl-start.*?// impl-end\n",
+            AnnotationType.PURE: r"spec fn.*?// pure-end\n",
         }
         super().__init__(
             re.compile(
                 r"^\s*fn\s+(\w+)\s*\((.*?)\)\s*->\s*\((.*?)\)(.*?)\{",
                 flags=re.DOTALL | re.MULTILINE,
             ),
+            re.compile(
+                r"^\s*spec fn\s+(\w+)\s*\((.*?)\)\s*->\s*\((.*?)\)(.*?)\{",
+                flags=re.DOTALL | re.MULTILINE,
+            ),
             VERUS_VALIDATOR_TEMPLATE,
+            VERUS_VALIDATOR_TEMPLATE_PURE,
             [
                 annotation_by_type[annotation_type]
                 for annotation_type in remove_annotations
