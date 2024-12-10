@@ -9,10 +9,8 @@ fn {method_name}_valid({parameters}) -> ({returns}){specs}\
 """
 
 VERUS_VALIDATOR_TEMPLATE_PURE = """\
-spec fn {method_name}_valid({parameters}) -> ({returns}){specs}\
-{ 
-    {body}
-}
+spec fn {method_name}_valid_pure({parameters}) -> ({returns}){specs}\
+{{body}}
 """
 
 
@@ -34,7 +32,7 @@ class VerusLanguage(GenericLanguage):
                 flags=re.DOTALL | re.MULTILINE,
             ),
             re.compile(
-                r"^\s*spec fn\s+(\w+)\s*\((.*?)\)\s*->\s*\((.*?)\)(.*?)\{",
+                r"^\s*spec fn\s+(\w+)\s*\((.*?)\)\s*->\s*\((.*?)\)(.*?)\{(.*?)}",
                 flags=re.DOTALL | re.MULTILINE,
             ),
             VERUS_VALIDATOR_TEMPLATE,
@@ -47,8 +45,8 @@ class VerusLanguage(GenericLanguage):
             "//",
         )
 
-    def generate_validators(self, code: str) -> str:
-        result = super().generate_validators(code)
+    def generate_validators(self, code: str, validate_helpers: bool) -> str:
+        result = super().generate_validators(code, validate_helpers)
         return "verus!{{\n{}}}".format(result)
 
     def separate_validator_errors(self, errors: str) -> tuple[str, str]:

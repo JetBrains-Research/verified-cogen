@@ -9,11 +9,12 @@ method {method_name}_valid({parameters}) returns ({returns}){specs}\
 """
 
 DAFNY_VALIDATOR_TEMPLATE_PURE = """\
-function {method_name}_valid({parameters}) returns ({returns}){specs}\
+function {method_name}_valid_pure({parameters}) returns ({returns}){specs}\
 { 
     {body} 
 }
 """
+
 
 class DafnyLanguage(GenericLanguage):
     method_regex: Pattern[str]
@@ -32,7 +33,8 @@ class DafnyLanguage(GenericLanguage):
                 r"method\s+(\w+)\s*\((.*?)\)\s*returns\s*\((.*?)\)(.*?)\{", re.DOTALL
             ),
             re.compile(
-                r"function\s+(\w+)\s*\((.*?)\)\s*returns\s*\((.*?)\)(.*?)\{(.*?)}", re.DOTALL
+                r"function\s+(\w+)\s*\((.*?)\)\s*returns\s*\((.*?)\)(.*?)\{(.*?)}",
+                re.DOTALL,
             ),
             DAFNY_VALIDATOR_TEMPLATE,
             DAFNY_VALIDATOR_TEMPLATE_PURE,

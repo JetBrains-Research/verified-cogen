@@ -19,7 +19,7 @@ class Language:
     def __init__(self, *args: list[Any], **kwargs: dict[str, Any]): ...
 
     @abstractmethod
-    def generate_validators(self, code: str) -> str: ...
+    def generate_validators(self, code: str, validate_helpers: bool) -> str: ...
 
     @abstractmethod
     def remove_conditions(self, code: str) -> str: ...
@@ -103,17 +103,19 @@ class GenericLanguage(Language):
                     for param in parameters.split(",")
                     if param.strip()
                 ),
-            ).replace("{body}", body)
+            )
+            .replace("{body}", body)
         )
 
     def replace_pure(self, code: str, pure_names: list[str]):
         for pure_name in pure_names:
-            code = code.replace(pure_name + "(", pure_name + "_valid(")
+            code = code.replace(pure_name + "(", pure_name + "_valid_pure(")
         return code
 
-    def generate_validators(self, code: str) -> str:
+    def generate_validators(self, code: str, validate_helpers: bool) -> str:
         pure_methods = list(self.pure_regex.finditer(code))
         methods = list(self.method_regex.finditer(code))
+        method_names = [match.group(1) for match in methods]
 
         validators: list[str] = []
         pure_names: list[str] = []
@@ -131,10 +133,16 @@ class GenericLanguage(Language):
                 pure_match.group(5),
             )
 
+            if method_name not in method_names:
+                methods += [pure_match]
+
+            specs = self.replace_pure(specs, pure_names)
             body = self.replace_pure(body, pure_names)
 
             validators.append(
-                self._validators_from_pure(method_name, parameters, returns, specs, body)
+                self._validators_from_pure(
+                    method_name, parameters, returns, specs, body
+                )
             )
 
         for match in methods:
@@ -144,11 +152,11 @@ class GenericLanguage(Language):
                 match.group(3),
                 match.group(4),
             )
-            if method_name in pure_names:
-                continue
+
+            specs = self.replace_pure(specs, pure_names)
 
             validators.append(
-                self.replace_pure(self._validators_from(method_name, parameters, returns, specs), pure_names)
+                self._validators_from(method_name, parameters, returns, specs)
             )
 
         return "\n".join(validators)

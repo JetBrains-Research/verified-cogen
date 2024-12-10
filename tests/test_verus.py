@@ -24,7 +24,10 @@ def test_verus_generate():
             value * 2
         }
 
-        spec fn test() {}
+        spec fn test(val: i32) -> (result: i32) 
+        {
+            val
+        }
 
         fn is_prime(num: u32) -> (result: bool)
             requires
@@ -55,9 +58,14 @@ def test_verus_generate():
             result
         }"""
     )
-    assert verus_lang.generate_validators(code) == dedent(
+    assert verus_lang.generate_validators(code, True) == dedent(
         """\
         verus!{
+        spec fn test_valid_pure(val: i32) -> (result: i32) 
+        {
+            val
+        }
+        
         fn main_valid(value: i32) -> (result: i32)
             requires
                 value >= 10,
@@ -71,6 +79,9 @@ def test_verus_generate():
             ensures
                 result <==> spec_prime(num as int),
         { let ret = is_prime(num); ret }
+        
+        fn test_valid(val: i32) -> (result: i32) 
+        { let ret = test(val); ret }
         }"""
     )
 

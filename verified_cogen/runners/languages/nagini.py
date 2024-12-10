@@ -12,11 +12,10 @@ def {method_name}_valid({parameters}) -> {returns}:{specs}\
     return ret\
 """
 
-NAGINI_VALIDATOR_TEMPLATE_PURE = """\
+NAGINI_VALIDATOR_TEMPLATE_PURE = """
 @Pure
-def {method_name}_valid({parameters}) -> {returns}:{specs}\
-    {body}\
-"""
+def {method_name}_valid_pure({parameters}) -> {returns}:{specs}\
+{body}"""
 
 
 class NaginiLanguage(GenericLanguage):
@@ -37,7 +36,7 @@ class NaginiLanguage(GenericLanguage):
                 re.DOTALL,
             ),
             re.compile(
-                r"@Pure\s+def\s+(\w+)\s*\((.*?)\)\s*->\s*(.*?):(.*?)\s+# pure-start(.*?)# pure-end",
+                r"@Pure\s+def\s+(\w+)\s*\((.*?)\)\s*->\s*(.*?):(.*?)\s+# pure-start(.*?)\s+# pure-end",
                 re.DOTALL,
             ),
             NAGINI_VALIDATOR_TEMPLATE,
@@ -72,5 +71,5 @@ class NaginiLanguage(GenericLanguage):
         methods = list(pattern.finditer(code))
         non_helpers: list[str] = []
         for match in methods:
-            non_helpers.append(match.group(3))
+            non_helpers.append(match.group(1))
         return non_helpers

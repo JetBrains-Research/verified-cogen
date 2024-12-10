@@ -35,7 +35,9 @@ class ValidatingRunner(Runner):
         self.pure_non_helpers = []
 
     def _add_validators(self, prg: str, inv_prg: str):
-        validators = self.language.generate_validators(prg)
+        validators = self.language.generate_validators(
+            prg, not self.config.remove_helpers
+        )
         comment = self.language.simple_comment
         val_prg = inv_prg + "\n" + comment + " ==== verifiers ==== \n" + validators
         return val_prg
