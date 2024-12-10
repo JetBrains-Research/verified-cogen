@@ -1,5 +1,5 @@
-Rewrite the following Nagini code. It does not contain any preconditions, postconditions, invariants, assertions or helper functions (annotated with @Pure). Rewrite the program to add those in a way that makes it verify.
-Do not change the code, only add invariants, assertions and conditions.
+Rewrite the following Nagini code. It does not contain any preconditions, postconditions, invariants, or assertions. Rewrite the program to add those in a way that makes it verify.
+Do not change the code, only add invariants, assertions and conditions. Don't remove any helper functions, they are there to help you.
 Ensure that the invariants are as comprehensive as they can be.
 Even if you think some invariant is not totally necessary, better add it than not.
 Don't add any additional text comments, your response must contain only program with invariants.

@@ -3,7 +3,7 @@ Using text description you should add implementations and relevant pre/postcondi
 Use helper functions only in invariants, assertions and conditions (in `if` or `while` conditions). Don't use helpers in the plain code.
 Ensure that the invariants are as comprehensive as they can be.
 Even if you think some invariant is not totally necessary, better add it than not.
-Don't add any additional text comments, your response must contain only program with invariants.
+Don't add any additional text comments, your response must contain only program with invariants, helpers and pre/postconditions.
 Do not provide ANY explanations. Don't include markdown backticks. Respond only in Python code, nothing else.
 
 
