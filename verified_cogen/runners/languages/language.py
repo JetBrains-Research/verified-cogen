@@ -167,11 +167,12 @@ class GenericLanguage(Language):
                 )
             )
 
-            validators.append(
-                self._validators_from_pure(
-                    method_name, parameters, returns, specs, body
+            if validate_helpers:
+                validators.append(
+                    self._validators_from_pure(
+                        method_name, parameters, returns, specs, body
+                    )
                 )
-            )
 
         for match in methods:
             method_name, parameters, returns, specs = (
