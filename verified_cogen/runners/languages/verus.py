@@ -8,9 +8,14 @@ fn {method_name}_valid({parameters}) -> ({returns}){specs}\
 { let ret = {method_name}({param_names}); ret }
 """
 
+VERUS_VALIDATOR_TEMPLATE_PURE_COPY = """\
+spec fn {method_name}_copy_pure({parameters}) -> ({returns}){specs}\
+{{body}}
+"""
+
 VERUS_VALIDATOR_TEMPLATE_PURE = """\
 spec fn {method_name}_valid_pure({parameters}) -> ({returns}){specs}\
-{{body}}
+{ let ret = {method_name}({param_names}); ret }
 """
 
 
@@ -37,6 +42,7 @@ class VerusLanguage(GenericLanguage):
             ),
             VERUS_VALIDATOR_TEMPLATE,
             VERUS_VALIDATOR_TEMPLATE_PURE,
+            VERUS_VALIDATOR_TEMPLATE_PURE_COPY,
             [
                 annotation_by_type[annotation_type]
                 for annotation_type in remove_annotations

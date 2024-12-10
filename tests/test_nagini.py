@@ -254,55 +254,59 @@ def test_nagini_large():
         """\
         
         @Pure
-        def lower_valid_pure(c : int) -> bool :
+        def lower_copy_pure(c : int) -> bool :
                 
             return ((0) <= (c)) and ((c) <= (25))
-            
-        @Pure
-        def upper_valid_pure(c : int) -> bool :
-            
-            return ((26) <= (c)) and ((c) <= (51))
-            
-        @Pure
-        def alpha_valid_pure(c : int) -> bool :
-            
-            return (lower_valid_pure(c)) or (upper_valid_pure(c))
-            
-        @Pure
-        def flip__char_valid_pure(c : int) -> int :
-            # pre-conditions-start
-            Ensures(lower_valid_pure(c) == upper_valid_pure(Result()))
-            Ensures(upper_valid_pure(c) == lower_valid_pure(Result()))
-            # pre-conditions-end
-            if lower_valid_pure(c):
-                return ((c) - (0)) + (26)
-            elif upper_valid_pure(c):
-                return ((c) + (0)) - (26)
-            elif True:
-                return c
         
-        def lower_valid(c : int) -> bool :
+        @Pure
+        def lower_valid_pure(c : int) -> bool :
         
         
             ret = lower(c)
             return ret
             
-        def upper_valid(c : int) -> bool :
+        @Pure
+        def upper_copy_pure(c : int) -> bool :
+            
+            return ((26) <= (c)) and ((c) <= (51))
+        
+        @Pure
+        def upper_valid_pure(c : int) -> bool :
         
         
             ret = upper(c)
             return ret
             
-        def alpha_valid(c : int) -> bool :
+        @Pure
+        def alpha_copy_pure(c : int) -> bool :
+            
+            return (lower_copy_pure(c)) or (upper_copy_pure(c))
+        
+        @Pure
+        def alpha_valid_pure(c : int) -> bool :
         
         
             ret = alpha(c)
             return ret
             
-        def flip__char_valid(c : int) -> int :
+        @Pure
+        def flip__char_copy_pure(c : int) -> int :
             # pre-conditions-start
-            Ensures(lower_valid_pure(c) == upper_valid_pure(Result()))
-            Ensures(upper_valid_pure(c) == lower_valid_pure(Result()))
+            Ensures(lower_copy_pure(c) == upper_copy_pure(Result()))
+            Ensures(upper_copy_pure(c) == lower_copy_pure(Result()))
+            # pre-conditions-end
+            if lower_copy_pure(c):
+                return ((c) - (0)) + (26)
+            elif upper_copy_pure(c):
+                return ((c) + (0)) - (26)
+            elif True:
+                return c
+            
+        @Pure
+        def flip__char_valid_pure(c : int) -> int :
+            # pre-conditions-start
+            Ensures(lower_copy_pure(c) == upper_copy_pure(Result()))
+            Ensures(upper_copy_pure(c) == lower_copy_pure(Result()))
             # pre-conditions-end
             
             ret = flip__char(c)
@@ -316,8 +320,8 @@ def test_nagini_large():
             Ensures(Acc(list_pred(s)))
             Ensures(Acc(list_pred(Result())))
             Ensures((len(Result())) == (len(s)))
-            Ensures(Forall(int, lambda d_0_i_: (Implies(((0) <= (d_0_i_)) and ((d_0_i_) < (len(s))), lower_valid_pure((s)[d_0_i_]) == upper_valid_pure((Result())[d_0_i_])))))
-            Ensures(Forall(int, lambda d_0_i_: (Implies(((0) <= (d_0_i_)) and ((d_0_i_) < (len(s))), upper_valid_pure((s)[d_0_i_]) == lower_valid_pure((Result())[d_0_i_])))))
+            Ensures(Forall(int, lambda d_0_i_: (Implies(((0) <= (d_0_i_)) and ((d_0_i_) < (len(s))), lower_copy_pure((s)[d_0_i_]) == upper_copy_pure((Result())[d_0_i_])))))
+            Ensures(Forall(int, lambda d_0_i_: (Implies(((0) <= (d_0_i_)) and ((d_0_i_) < (len(s))), upper_copy_pure((s)[d_0_i_]) == lower_copy_pure((Result())[d_0_i_])))))
             # post-conditions-end
             
             ret = flip__case(s)

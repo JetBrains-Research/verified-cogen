@@ -61,10 +61,13 @@ def test_verus_generate():
     assert verus_lang.generate_validators(code, True) == dedent(
         """\
         verus!{
-        spec fn test_valid_pure(val: i32) -> (result: i32) 
+        spec fn test_copy_pure(val: i32) -> (result: i32) 
         {
             val
         }
+        
+        spec fn test_valid_pure(val: i32) -> (result: i32) 
+        { let ret = test(val); ret }
         
         fn main_valid(value: i32) -> (result: i32)
             requires
@@ -79,9 +82,6 @@ def test_verus_generate():
             ensures
                 result <==> spec_prime(num as int),
         { let ret = is_prime(num); ret }
-        
-        fn test_valid(val: i32) -> (result: i32) 
-        { let ret = test(val); ret }
         }"""
     )
 
