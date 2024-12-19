@@ -5,7 +5,7 @@ from itertools import accumulate
 import pathlib
 
 # %%
-path = "../results/tries_HumanEval-Dafny.json"
+path = "../results/tries_HumanEval-Dafny_comments.json"
 bench = pathlib.Path("../benches/HumanEval-Dafny")
 file_cnt = len(list(bench.glob("*.dfy")))
 with open(path) as f:
