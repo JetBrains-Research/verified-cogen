@@ -1,9 +1,11 @@
 The following Nagini code contains no implementations of functions, pre/postconditions, invariants and assertions.
-Using text description you should add implementations and relevant pre/postconditions. Prefer loops to recursion. You should also add invariants/assertions and helper functions (annotated with @Pure).
-Use helper functions only in preconditions, postconditions, invariants, assertions and conditions (in `if` or `while` conditions). Don't use helpers in the plain code.
+Using text description and helper functions you should add implementations and relevant pre/postconditions. Prefer loops to recursion. You should also add invariants/assertions.
+Use helper functions only in preconditions, postconditions, invariants, asserts and conditions (in `if` or `while` conditions). Don't use helpers in the plain code.
+Do not change helper functions.
+Add code and invariants to other functions.
 Ensure that the invariants are as comprehensive as they can be.
 Even if you think some invariant is not totally necessary, better add it than not.
-Don't add any additional text comments, your response must contain only program with invariants, helpers and pre/postconditions.
+Don't add any additional text comments, your response must contain only program with invariants.
 Do not provide ANY explanations. Don't include markdown backticks. Respond only in Python code, nothing else.
 
 

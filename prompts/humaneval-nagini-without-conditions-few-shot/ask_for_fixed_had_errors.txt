@@ -1,6 +1,8 @@
 There are still some errors:
 {error}
 
-Could you please fix them?
+Please fix the error by adding, removing or modifying the preconditions, postconditions, invariants or assertions and return the fixed program.
+You should not modify implementation and helper functions.
 Don't add any additional text comments, your response must contain only program with invariants.
+Remember, your preconditions, postconditions and implementations should be aligned with text description.
 Do not provide ANY explanations. Don't include markdown backticks. Respond only in Python code, nothing else.

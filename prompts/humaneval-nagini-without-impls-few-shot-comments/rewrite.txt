@@ -1,9 +1,10 @@
-The following Nagini code contains no implementations of functions, pre/postconditions, invariants and assertions.
-Using text description you should add implementations and relevant pre/postconditions. Prefer loops to recursion. You should also add invariants/assertions and helper functions (annotated with @Pure).
-Use helper functions only in preconditions, postconditions, invariants, assertions and conditions (in `if` or `while` conditions). Don't use helpers in the plain code.
+Rewrite the following Nagini code with implementations of some functions missing. While rewriting it, ensure that it verifies. Include invariants and assertions. Don't remove any helper functions (they are marked with @Pure annotation), they are there to help you. Prefer loops to recursion.
+Use helper functions only in invariants, asserts and conditions (in `if` or `while` conditions). Don't use helpers in the plain code.
+Do not change helper functions.
+Add code and invariants to other functions.
 Ensure that the invariants are as comprehensive as they can be.
 Even if you think some invariant is not totally necessary, better add it than not.
-Don't add any additional text comments, your response must contain only program with invariants, helpers and pre/postconditions.
+Use extensive comments in the code, but don't explain anything outside of it.
 Do not provide ANY explanations. Don't include markdown backticks. Respond only in Python code, nothing else.
 
 
@@ -77,10 +78,5 @@ def sum_loop(numbers: List[int]) -> int:
         i = i + 1
     return s
 ```
-
-To help you, here's a text description given to a person who wrote this program:
-
-{text_description}
-
 The program:
 {program}

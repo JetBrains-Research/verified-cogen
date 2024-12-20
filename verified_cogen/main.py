@@ -176,6 +176,9 @@ def main():
         all_removed += [AnnotationType.PRE_CONDITIONS, AnnotationType.POST_CONDITIONS]
     if args.remove_implementations:
         all_removed += [AnnotationType.IMPLS]
+    if args.remove_pure:
+        all_removed += [AnnotationType.PURE]
+
     register_basic_languages(with_removed=all_removed)
     mode = Mode(args.insert_conditions_mode)
     if mode == Mode.REGEX:
