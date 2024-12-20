@@ -1,7 +1,9 @@
 The following errors occurred during verification:
 {error}
+Please try again by taking the Nagini feedback.
+
+If an error appears in one of method ending with `_valid`, that means annotations of an existing function were altered.
 
 Please fix the error by adding, removing or modifying the implementation, invariants or assertions and return the fixed program.
-You should not modify any helper functions (annotated with @Pure), remember they are here to help you with verification.
 Don't add any additional text comments, your response must contain only program with invariants.
 Do not provide ANY explanations. Don't include markdown backticks. Respond only in Python code, nothing else.

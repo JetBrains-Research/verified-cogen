@@ -273,4 +273,4 @@ def f(n : int) -> List[int]:
 
     result: List[str] = ["factorial__spec"]
 
-    assert result == nagini_lang.find_pure_non_helpers(code)
+    assert nagini_lang.find_pure_non_helpers(code) == result

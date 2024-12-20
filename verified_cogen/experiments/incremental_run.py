@@ -43,6 +43,8 @@ def main():
         all_removed += [AnnotationType.PRE_CONDITIONS, AnnotationType.POST_CONDITIONS]
     if args.remove_implementations:
         all_removed += [AnnotationType.IMPLS]
+    if args.remove_pure:
+        all_removed += [AnnotationType.PURE]
 
     register_basic_languages(with_removed=all_removed)
 
@@ -78,6 +80,7 @@ def main():
         log_tries=log_tries,
         include_text_descriptions=args.include_text_descriptions,
         remove_implementations=args.remove_implementations,
+        remove_helpers=args.remove_pure,
     )
     for file in files:
         llm = LLM(
