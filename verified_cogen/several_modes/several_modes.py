@@ -23,9 +23,6 @@ logger = logging.getLogger(__name__)
 
 def main():
     parser = get_default_parser_multiple()
-    parser.add_argument(
-        "--ignore-failed", help="Ignore failed files", action="store_true"
-    )
     args = parser.parse_args()
     print(args.manual_rewriters)
 
@@ -116,7 +113,7 @@ def main():
         json_avg_results = results_directory / f"tries_{directory.name}_{mode}_avg.json"
         with open(json_avg_results, "w") as f:
             json.dump({}, f)
-        results_avg: Dict[int, float] = dict([(i, 0) for i in range(args.runs)])
+        results_avg: Dict[int, float] = dict([(i, 0) for i in range(args.runs + 1)])
 
         for run in range(args.runs):
             logger.info(f"Run {run}")
