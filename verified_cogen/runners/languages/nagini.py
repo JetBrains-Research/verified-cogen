@@ -50,6 +50,7 @@ class NaginiLanguage(GenericLanguage):
             NAGINI_VALIDATOR_TEMPLATE,
             NAGINI_VALIDATOR_TEMPLATE_PURE,
             NAGINI_VALIDATOR_TEMPLATE_PURE_COPY,
+            AnnotationType.PURE in remove_annotations,
             [
                 annotation_by_type[annotation_type]
                 for annotation_type in remove_annotations

@@ -254,21 +254,11 @@ def test_nagini_large():
         """\
         
         @Pure
-        def lower_copy_pure(c : int) -> bool :
-                
-            return ((0) <= (c)) and ((c) <= (25))
-        
-        @Pure
         def lower_valid_pure(c : int) -> bool :
         
         
             ret = lower(c)
             return ret
-            
-        @Pure
-        def upper_copy_pure(c : int) -> bool :
-            
-            return ((26) <= (c)) and ((c) <= (51))
         
         @Pure
         def upper_valid_pure(c : int) -> bool :
@@ -278,11 +268,6 @@ def test_nagini_large():
             return ret
             
         @Pure
-        def alpha_copy_pure(c : int) -> bool :
-            
-            return (lower_copy_pure(c)) or (upper_copy_pure(c))
-        
-        @Pure
         def alpha_valid_pure(c : int) -> bool :
         
         
@@ -290,23 +275,10 @@ def test_nagini_large():
             return ret
             
         @Pure
-        def flip__char_copy_pure(c : int) -> int :
-            # pre-conditions-start
-            Ensures(lower_copy_pure(c) == upper_copy_pure(Result()))
-            Ensures(upper_copy_pure(c) == lower_copy_pure(Result()))
-            # pre-conditions-end
-            if lower_copy_pure(c):
-                return ((c) - (0)) + (26)
-            elif upper_copy_pure(c):
-                return ((c) + (0)) - (26)
-            elif True:
-                return c
-            
-        @Pure
         def flip__char_valid_pure(c : int) -> int :
             # pre-conditions-start
-            Ensures(lower_copy_pure(c) == upper_copy_pure(Result()))
-            Ensures(upper_copy_pure(c) == lower_copy_pure(Result()))
+            Ensures(lower(c) == upper(Result()))
+            Ensures(upper(c) == lower(Result()))
             # pre-conditions-end
             
             ret = flip__char(c)
@@ -320,8 +292,8 @@ def test_nagini_large():
             Ensures(Acc(list_pred(s)))
             Ensures(Acc(list_pred(Result())))
             Ensures((len(Result())) == (len(s)))
-            Ensures(Forall(int, lambda d_0_i_: (Implies(((0) <= (d_0_i_)) and ((d_0_i_) < (len(s))), lower_copy_pure((s)[d_0_i_]) == upper_copy_pure((Result())[d_0_i_])))))
-            Ensures(Forall(int, lambda d_0_i_: (Implies(((0) <= (d_0_i_)) and ((d_0_i_) < (len(s))), upper_copy_pure((s)[d_0_i_]) == lower_copy_pure((Result())[d_0_i_])))))
+            Ensures(Forall(int, lambda d_0_i_: (Implies(((0) <= (d_0_i_)) and ((d_0_i_) < (len(s))), lower((s)[d_0_i_]) == upper((Result())[d_0_i_])))))
+            Ensures(Forall(int, lambda d_0_i_: (Implies(((0) <= (d_0_i_)) and ((d_0_i_) < (len(s))), upper((s)[d_0_i_]) == lower((Result())[d_0_i_])))))
             # post-conditions-end
             
             ret = flip__case(s)

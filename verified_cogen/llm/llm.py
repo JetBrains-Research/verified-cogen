@@ -136,9 +136,8 @@ class LLM:
         result = prompts.rewrite_prompt(self.prompt_dir).replace("{program}", prg)
         if text_description is not None and "{text_description}" in result:
             result = result.replace("{text_description}", text_description)
+        result = result + "\n" + additional_prompt
         self.add_user_prompt(result)
-        if additional_prompt:
-            self.add_user_prompt(additional_prompt)
         return self.make_request()
 
     def ask_for_fixed(self, err: str) -> str:

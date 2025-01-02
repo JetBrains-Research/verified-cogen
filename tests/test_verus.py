@@ -61,11 +61,6 @@ def test_verus_generate():
     assert verus_lang.generate_validators(code, True) == dedent(
         """\
         verus!{
-        spec fn test_copy_pure(val: i32) -> (result: i32) 
-        {
-            val
-        }
-        
         spec fn test_valid_pure(val: i32) -> (result: i32) 
         { let ret = test(val); ret }
         
