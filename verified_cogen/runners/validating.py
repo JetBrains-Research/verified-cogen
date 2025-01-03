@@ -71,6 +71,7 @@ class ValidatingRunner(Runner):
                     .replace("{program}", inv_prg)
                     .replace("{helpers}", ",".join(self.pure_non_helpers))
                 )
+                self.llm.add_response("understood")
         return self._add_validators(
             self.starting_prg, self.wrapped_runner.postprocess(inv_prg)
         )
