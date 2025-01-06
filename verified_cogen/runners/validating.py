@@ -35,13 +35,15 @@ class ValidatingRunner(Runner):
         self.pure_non_helpers = []
 
     def _add_validators(self, prg: str, inv_prg: str):
-        validators = self.language.generate_validators(prg)
+        validators = self.language.generate_validators(
+            prg, not self.config.remove_helpers
+        )
         comment = self.language.simple_comment
         val_prg = inv_prg + "\n" + comment + " ==== verifiers ==== \n" + validators
         return val_prg
 
     def preprocess(self, prg: str, mode: Mode) -> str:
-        if self.config.remove_implementations:
+        if self.config.remove_implementations and not self.config.remove_helpers:
             self.pure_non_helpers = self.language.find_pure_non_helpers(prg)
             self.logger.info(
                 "found pure_non_helpers: " + ",".join(self.pure_non_helpers)
@@ -69,6 +71,7 @@ class ValidatingRunner(Runner):
                     .replace("{program}", inv_prg)
                     .replace("{helpers}", ",".join(self.pure_non_helpers))
                 )
+                self.llm.add_response("understood")
         return self._add_validators(
             self.starting_prg, self.wrapped_runner.postprocess(inv_prg)
         )
@@ -79,7 +82,7 @@ class ValidatingRunner(Runner):
         text_description: Optional[str] = None,
         additional_prompt: str = "",
     ) -> str:
-        if self.config.remove_implementations and self.pure_non_helpers:
+        if self.config.remove_implementations:
             additional_prompt += prompts.helpers_prompt(self.llm.prompt_dir).replace(
                 "{helpers}", ",".join(self.pure_non_helpers)
             )

@@ -1,6 +1,6 @@
-The following errors occurred during verification:
+There are still some errors:
 {error}
 
-Please fix the error by adding, removing or modifying the invariants and asserts and return the fixed program.
+Could you please fix them?
 Don't add any additional text comments, your response must contain only program with invariants.
 Do not provide ANY explanations. Don't include markdown backticks. Respond only in Python code, nothing else.

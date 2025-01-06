@@ -84,6 +84,11 @@ class LLM:
         prompt = ChatPrompt().add_system(self.system_prompt)
         current_prompt_user = 0
         current_response = 0
+        print(len(self.user_prompts), len(self.responses))
+        # for p in self.user_prompts:
+        #     print("P:" + p[:min(len(p), 20)])
+        # for response in self.responses:
+        #     print("R:" + response[:min(len(response), 20)])
         while current_prompt_user < len(self.user_prompts) or current_response < len(
             self.responses
         ):
@@ -136,9 +141,8 @@ class LLM:
         result = prompts.rewrite_prompt(self.prompt_dir).replace("{program}", prg)
         if text_description is not None and "{text_description}" in result:
             result = result.replace("{text_description}", text_description)
+        result = result + "\n" + additional_prompt
         self.add_user_prompt(result)
-        if additional_prompt:
-            self.add_user_prompt(additional_prompt)
         return self.make_request()
 
     def ask_for_fixed(self, err: str) -> str:

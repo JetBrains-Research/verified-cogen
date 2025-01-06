@@ -8,6 +8,16 @@ fn {method_name}_valid({parameters}) -> ({returns}){specs}\
 { let ret = {method_name}({param_names}); ret }
 """
 
+VERUS_VALIDATOR_TEMPLATE_PURE_COPY = """\
+spec fn {method_name}_copy_pure({parameters}) -> ({returns}){specs}\
+{{body}}
+"""
+
+VERUS_VALIDATOR_TEMPLATE_PURE = """\
+spec fn {method_name}_valid_pure({parameters}) -> ({returns}){specs}\
+{ let ret = {method_name}({param_names}); ret }
+"""
+
 
 class VerusLanguage(GenericLanguage):
     method_regex: Pattern[str]
@@ -19,13 +29,21 @@ class VerusLanguage(GenericLanguage):
             AnnotationType.PRE_CONDITIONS: r" *// pre-conditions-start.*?// pre-conditions-end\n",
             AnnotationType.POST_CONDITIONS: r" *// post-conditions-start.*?// post-conditions-end\n",
             AnnotationType.IMPLS: r" *// impl-start.*?// impl-end\n",
+            AnnotationType.PURE: r"spec fn.*?// pure-end\n",
         }
         super().__init__(
             re.compile(
                 r"^\s*fn\s+(\w+)\s*\((.*?)\)\s*->\s*\((.*?)\)(.*?)\{",
                 flags=re.DOTALL | re.MULTILINE,
             ),
+            re.compile(
+                r"^\s*spec fn\s+(\w+)\s*\((.*?)\)\s*->\s*\((.*?)\)(.*?)\{(.*?)}",
+                flags=re.DOTALL | re.MULTILINE,
+            ),
             VERUS_VALIDATOR_TEMPLATE,
+            VERUS_VALIDATOR_TEMPLATE_PURE,
+            VERUS_VALIDATOR_TEMPLATE_PURE_COPY,
+            AnnotationType.PURE in remove_annotations,
             [
                 annotation_by_type[annotation_type]
                 for annotation_type in remove_annotations
@@ -34,8 +52,8 @@ class VerusLanguage(GenericLanguage):
             "//",
         )
 
-    def generate_validators(self, code: str) -> str:
-        result = super().generate_validators(code)
+    def generate_validators(self, code: str, validate_helpers: bool) -> str:
+        result = super().generate_validators(code, validate_helpers)
         return "verus!{{\n{}}}".format(result)
 
     def separate_validator_errors(self, errors: str) -> tuple[str, str]:

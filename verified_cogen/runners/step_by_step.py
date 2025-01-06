@@ -3,7 +3,6 @@ from typing import Optional
 
 from verified_cogen.runners import Runner
 from verified_cogen.runners.chain_of_thought.step import Step, Substep
-from verified_cogen.tools import extract_code_from_llm_output
 from verified_cogen.tools.modes import Mode
 
 
@@ -81,7 +80,7 @@ class StepByStepRunner(Runner):
         if self._config.remove_old_examples:
             self.llm.wipe_temporary()
 
-        return extract_code_from_llm_output(response)
+        return response
 
     def rewrite_full_examples(self, prg: str, text_description: Optional[str]) -> str:
         steps: list[Step] = []
@@ -115,7 +114,7 @@ class StepByStepRunner(Runner):
         )
         response = self.llm.make_request()
 
-        return extract_code_from_llm_output(response)
+        return response
 
     def postprocess(self, inv_prg: str) -> str:
         return self.wrapped_runner.postprocess(inv_prg)

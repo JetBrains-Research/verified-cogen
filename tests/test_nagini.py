@@ -22,11 +22,13 @@ def test_nagini_generate():
             return value * 2
             # impl-end"""
     )
-    assert nagini_lang.generate_validators(code) == dedent(
+    assert nagini_lang.generate_validators(code, True) == dedent(
         """\
+        
         def main_valid(value: int) -> int:
             Requires(value >= 10)
             Ensures(Result() >= 20)
+            
             ret = main(value)
             return ret"""
     )
@@ -48,8 +50,9 @@ def test_nagini_with_comments():
             return value * 2
             # impl-end"""
     )
-    assert nagini_lang.generate_validators(code) == dedent(
+    assert nagini_lang.generate_validators(code, True) == dedent(
         """\
+        
         def main_valid(value: int) -> int:
             # pre-conditions-start
             Requires(value >= 10)
@@ -57,6 +60,7 @@ def test_nagini_with_comments():
             # post-conditions-start
             Ensures(Result() >= 20)
             # post-conditions-end
+            
             ret = main(value)
             return ret"""
     )
@@ -185,21 +189,21 @@ def test_nagini_large():
 
         @Pure
         def lower(c : int) -> bool :
-            # impl-start
+            # pure-start
             return ((0) <= (c)) and ((c) <= (25))
-            # impl-end
+            # pure-end
 
         @Pure
         def upper(c : int) -> bool :
-            # impl-start
+            # pure-start
             return ((26) <= (c)) and ((c) <= (51))
-            # impl-end
+            # pure-end
 
         @Pure
         def alpha(c : int) -> bool :
-            # impl-start
+            # pure-start
             return (lower(c)) or (upper(c))
-            # impl-end
+            # pure-end
 
         @Pure
         def flip__char(c : int) -> int :
@@ -208,14 +212,14 @@ def test_nagini_large():
             Ensures(upper(c) == lower(Result()))
             # pre-conditions-end
 
-            # impl-start
+            # pure-start
             if lower(c):
                 return ((c) - (0)) + (26)
             elif upper(c):
                 return ((c) + (0)) - (26)
             elif True:
                 return c
-            # impl-end
+            # pure-end
 
         def flip__case(s : List[int]) -> List[int] :
             # pre-conditions-start
@@ -246,25 +250,40 @@ def test_nagini_large():
             return res
             # impl-end"""
     )
-    # print(nagini_lang.generate_validators(code))
-    assert nagini_lang.generate_validators(code) == dedent(
+    assert nagini_lang.generate_validators(code, True) == dedent(
         """\
-        def lower_valid(c : int) -> bool :
+        
+        @Pure
+        def lower_valid_pure(c : int) -> bool :
+        
+        
             ret = lower(c)
             return ret
-        def upper_valid(c : int) -> bool :
+        
+        @Pure
+        def upper_valid_pure(c : int) -> bool :
+        
+        
             ret = upper(c)
             return ret
-        def alpha_valid(c : int) -> bool :
+            
+        @Pure
+        def alpha_valid_pure(c : int) -> bool :
+        
+        
             ret = alpha(c)
             return ret
-        def flip__char_valid(c : int) -> int :
+            
+        @Pure
+        def flip__char_valid_pure(c : int) -> int :
             # pre-conditions-start
             Ensures(lower(c) == upper(Result()))
             Ensures(upper(c) == lower(Result()))
             # pre-conditions-end
+            
             ret = flip__char(c)
             return ret
+            
         def flip__case_valid(s : List[int]) -> List[int] :
             # pre-conditions-start
             Requires(Acc(list_pred(s)))
@@ -276,6 +295,7 @@ def test_nagini_large():
             Ensures(Forall(int, lambda d_0_i_: (Implies(((0) <= (d_0_i_)) and ((d_0_i_) < (len(s))), lower((s)[d_0_i_]) == upper((Result())[d_0_i_])))))
             Ensures(Forall(int, lambda d_0_i_: (Implies(((0) <= (d_0_i_)) and ((d_0_i_) < (len(s))), upper((s)[d_0_i_]) == lower((Result())[d_0_i_])))))
             # post-conditions-end
+            
             ret = flip__case(s)
             return ret"""
     )
@@ -302,13 +322,15 @@ def test_nagini_small():
                 return c
             # impl-end"""
     )
-    assert nagini_lang.generate_validators(code) == dedent(
+    assert nagini_lang.generate_validators(code, False) == dedent(
         """\
+        
         def flip__char_valid(c : int) -> int :
             # pre-conditions-start
             Ensures(lower(c) == upper(Result()))
             Ensures(upper(c) == lower(Result()))
             # pre-conditions-end
+            
             ret = flip__char(c)
             return ret"""
     )

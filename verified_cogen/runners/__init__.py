@@ -15,16 +15,19 @@ class RunnerConfig:
     log_tries: Optional[pathlib.Path] = None
     include_text_descriptions: bool = False
     remove_implementations: bool = False
+    remove_helpers: bool = False
 
     def __init__(
         self,
         log_tries: Optional[pathlib.Path] = None,
         include_text_descriptions: bool = False,
         remove_implementations: bool = False,
+        remove_helpers: bool = False,
     ):
         self.log_tries = log_tries
         self.include_text_descriptions = include_text_descriptions
         self.remove_implementations = remove_implementations
+        self.remove_helpers = remove_helpers
 
 
 class Runner:
