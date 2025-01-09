@@ -94,6 +94,7 @@ class InvariantRunner(Runner):
                 self.logger.info("Manual rewriting results:")
                 self.logger.info(prompt)
                 self.llm.add_user_prompt(prompt)
+                self.llm.add_response("understood")
         else:
             prg = super().postprocess(inv_prg)
 

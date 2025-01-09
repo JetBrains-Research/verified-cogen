@@ -9,6 +9,7 @@ class AnnotationType(Enum):
     PRE_CONDITIONS = "pre-conditions"
     POST_CONDITIONS = "post-conditions"
     IMPLS = "impls"
+    PURE = "pure"
 
 
 class Language:
@@ -18,7 +19,7 @@ class Language:
     def __init__(self, *args: list[Any], **kwargs: dict[str, Any]): ...
 
     @abstractmethod
-    def generate_validators(self, code: str) -> str: ...
+    def generate_validators(self, code: str, validate_helpers: bool) -> str: ...
 
     @abstractmethod
     def remove_conditions(self, code: str) -> str: ...
@@ -37,23 +38,33 @@ class Language:
 
 class GenericLanguage(Language):
     method_regex: Pattern[str]
+    pure_regex: Pattern[str]
     validator_template: str
     check_patterns: list[str]
     inline_assert_comment: str
+    remove_pure: bool
 
     def __init__(  # type: ignore
         self,
         method_regex: Pattern[str],
+        pure_regex: Pattern[str],
         validator_template: str,
+        validator_template_pure: str,
+        validator_template_pure_copy: str,
+        remove_pure: bool,
         check_patterns: list[str],
         inline_assert_comment: str,
         simple_comment: str,
     ):
         self.simple_comment = simple_comment
         self.method_regex = method_regex
+        self.pure_regex = pure_regex
         self.validator_template = validator_template
+        self.validator_template_pure = validator_template_pure
+        self.validator_template_pure_copy = validator_template_pure_copy
         self.check_patterns = check_patterns
         self.inline_assert_comment = inline_assert_comment
+        self.remove_pure = remove_pure
 
     def _validators_from(
         self,
@@ -77,10 +88,103 @@ class GenericLanguage(Language):
             )
         )
 
-    def generate_validators(self, code: str) -> str:
+    def _validators_from_pure_copy(
+        self,
+        method_name: str,
+        parameters: str,
+        returns: str,
+        specs: str,
+        body: str,
+    ) -> str:
+        return (
+            self.validator_template_pure_copy.replace("{method_name}", method_name)
+            .replace("{parameters}", parameters or "")
+            .replace("{returns}", returns or "")
+            .replace("{specs}", specs or "\n")
+            .replace(
+                "{param_names}",
+                ", ".join(
+                    param.split(":")[0].strip()
+                    for param in parameters.split(",")
+                    if param.strip()
+                ),
+            )
+            .replace("{body}", body)
+        )
+
+    def _validators_from_pure(
+        self,
+        method_name: str,
+        parameters: str,
+        returns: str,
+        specs: str,
+        body: str,
+    ) -> str:
+        return (
+            self.validator_template_pure.replace("{method_name}", method_name)
+            .replace("{parameters}", parameters or "")
+            .replace("{returns}", returns or "")
+            .replace("{specs}", specs or "\n")
+            .replace(
+                "{param_names}",
+                ", ".join(
+                    param.split(":")[0].strip()
+                    for param in parameters.split(",")
+                    if param.strip()
+                ),
+            )
+            .replace("{body}", body)
+        )
+
+    def replace_pure(self, code: str, pure_names: list[str]):
+        for pure_name in pure_names:
+            code = code.replace(pure_name + "(", pure_name + "_copy_pure(")
+        return code
+
+    def generate_validators(self, code: str, validate_helpers: bool) -> str:
+        pure_methods = list(self.pure_regex.finditer(code))
         methods = list(self.method_regex.finditer(code))
 
         validators: list[str] = []
+        pure_names: list[str] = []
+
+        for pure_match in pure_methods:
+            method_name = pure_match.group(1)
+            pure_names.append(method_name)
+
+        if self.remove_pure:
+            for pure_match in pure_methods:
+                method_name, parameters, returns, specs, body = (
+                    pure_match.group(1),
+                    pure_match.group(2),
+                    pure_match.group(3),
+                    pure_match.group(4),
+                    pure_match.group(5),
+                )
+
+                specs = self.replace_pure(specs, pure_names)
+                body = self.replace_pure(body, pure_names)
+
+                validators.append(
+                    self._validators_from_pure_copy(
+                        method_name, parameters, returns, specs, body
+                    )
+                )
+
+        if validate_helpers:
+            for pure_match in pure_methods:
+                method_name, parameters, returns, specs, body = (
+                    pure_match.group(1),
+                    pure_match.group(2),
+                    pure_match.group(3),
+                    pure_match.group(4),
+                    pure_match.group(5),
+                )
+                validators.append(
+                    self._validators_from_pure(
+                        method_name, parameters, returns, specs, body
+                    )
+                )
 
         for match in methods:
             method_name, parameters, returns, specs = (
@@ -89,6 +193,12 @@ class GenericLanguage(Language):
                 match.group(3),
                 match.group(4),
             )
+
+            if method_name in pure_names:
+                continue
+
+            if self.remove_pure:
+                specs = self.replace_pure(specs, pure_names)
 
             validators.append(
                 self._validators_from(method_name, parameters, returns, specs)

@@ -5,7 +5,7 @@ from typing import Optional, no_type_check, List
 from verified_cogen.tools.modes import VALID_MODES
 
 
-class ProgramArgs:
+class ProgramArgsMultiple:
     input: Optional[str]
     dir: Optional[str]
     runs: int
@@ -14,7 +14,8 @@ class ProgramArgs:
     temperature: float
     verifier_command: str
     verifier_timeout: int
-    prompts_directory: str
+    prompts_directory: List[str]
+    modes: List[str]
     grazie_token: str
     llm_profile: str
     tries: int
@@ -23,11 +24,7 @@ class ProgramArgs:
     filter_by_ext: Optional[str]
     log_tries: Optional[str]
     output_logging: bool
-    remove_conditions: bool
-    remove_implementations: bool
-    include_text_descriptions: bool
     manual_rewriters: List[str]
-    remove_pure: bool
 
     @no_type_check
     def __init__(self, args):
@@ -48,14 +45,11 @@ class ProgramArgs:
         self.filter_by_ext = args.filter_by_ext
         self.log_tries = args.log_tries
         self.output_logging = args.output_logging
-        self.remove_conditions = args.remove_conditions
-        self.remove_implementations = args.remove_implementations
-        self.include_text_descriptions = args.include_text_descriptions
         self.manual_rewriters = args.manual_rewriters
-        self.remove_pure = args.remove_pure
+        self.modes = args.modes
 
 
-def get_default_parser():
+def get_default_parser_multiple():
     parser = argparse.ArgumentParser()
     parser.add_argument("-i", "--input", help="input file", required=False)
     parser.add_argument("-d", "--dir", help="directory to run on", required=False)
@@ -91,8 +85,9 @@ def get_default_parser():
     )
     parser.add_argument(
         "--prompts-directory",
-        help="directory containing prompts",
-        default=os.getenv("llm/prompts"),
+        help="directories containing prompts",
+        default=[],
+        nargs="+",
     )
     parser.add_argument(
         "--grazie-token", help="Grazie JWT token", default=os.getenv("GRAZIE_JWT_TOKEN")
@@ -116,37 +111,19 @@ def get_default_parser():
         action="store_true",
     )
     parser.add_argument(
-        "--remove-conditions",
-        help="Remove conditions from the program",
-        default=False,
-        action="store_true",
-    )
-    parser.add_argument(
-        "--remove-implementations",
-        help="Remove implementations from the program",
-        default=False,
-        action="store_true",
-    )
-    parser.add_argument(
-        "--include-text-descriptions",
-        help="Add text descriptions to the rewrite prompt (only works with step-by-step)",
-        default=False,
-        action="store_true",
-    )
-    parser.add_argument(
         "--manual-rewriters",
         help="Manual rewriters for additional program modifications",
         default=[],
         nargs="+",
     )
     parser.add_argument(
-        "--remove-pure",
-        help="Remove pure functions from the program",
-        default=False,
-        action="store_true",
+        "--modes",
+        help="modes",
+        default=[],
+        nargs="+",
     )
     return parser
 
 
-def get_args() -> ProgramArgs:
-    return ProgramArgs(get_default_parser().parse_args())
+def get_args() -> ProgramArgsMultiple:
+    return ProgramArgsMultiple(get_default_parser_multiple().parse_args())

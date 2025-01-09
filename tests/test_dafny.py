@@ -22,8 +22,34 @@ def test_dafny_generate():
             result := value * 2;
         }"""
     )
-    assert dafny_lang.generate_validators(code) == dedent(
+    assert dafny_lang.generate_validators(code, True) == dedent(
         """\
+        method main_valid(value: int) returns (result: int)
+            requires value >= 10
+            ensures result >= 20
+        { var ret0 := main(value); return ret0; }
+        """
+    )
+
+
+def test_dafny_generate_with_helper():
+    dafny_lang = LanguageDatabase().get("dafny")
+    code = dedent(
+        """\
+        function abs(n: int) : nat { if n > 0 then n else -n }
+        
+        method main(value: int) returns (result: int)
+            requires value >= 10
+            ensures result >= 20
+        {
+            assert value * 2 >= 20; // assert-line
+            result := value * 2;
+        }"""
+    )
+    assert dafny_lang.generate_validators(code, True) == dedent(
+        """\
+        function abs_valid_pure(n: int): nat { abs(n) }
+        
         method main_valid(value: int) returns (result: int)
             requires value >= 10
             ensures result >= 20
@@ -46,7 +72,7 @@ def test_dafny_generate_multiple_returns():
             result2 := value * 3;
         }"""
     )
-    assert dafny_lang.generate_validators(code) == dedent(
+    assert dafny_lang.generate_validators(code, True) == dedent(
         """\
         method main_valid(value: int) returns (result: int, result2: int)
             requires value >= 10
@@ -167,3 +193,4 @@ def test_remove_all():
           }
         }"""
     )
+

@@ -31,7 +31,7 @@ fn should_restore() -> bool {
 fn main() -> eframe::Result {
     env_logger::init();
     let options = eframe::NativeOptions {
-        viewport: egui::ViewportBuilder::default().with_inner_size([800.0, 720.0]),
+        viewport: egui::ViewportBuilder::default().with_inner_size([1000.0, 720.0]),
         ..Default::default()
     };
 
@@ -83,6 +83,7 @@ enum BenchMode {
     Generate,
     Validating,
     StepByStep,
+    StepByStepFlush,
 }
 
 impl BenchMode {
@@ -91,7 +92,8 @@ impl BenchMode {
             BenchMode::Invariants
             | BenchMode::Generic
             | BenchMode::Validating
-            | BenchMode::StepByStep => basename(path).to_string(),
+            | BenchMode::StepByStep
+            | BenchMode::StepByStepFlush => basename(path).to_string(),
             BenchMode::Generate => {
                 let base = basename(path);
                 base.chars()
@@ -110,6 +112,7 @@ impl BenchMode {
             BenchMode::Generate => "Generate",
             BenchMode::Validating => "Validating",
             BenchMode::StepByStep => "Step by step",
+            BenchMode::StepByStepFlush => "Step by step (flush repeated errors)",
         }
     }
 
@@ -120,6 +123,7 @@ impl BenchMode {
             BenchMode::Generate,
             BenchMode::Validating,
             BenchMode::StepByStep,
+            BenchMode::StepByStepFlush,
         ];
         MODES
     }
@@ -133,6 +137,7 @@ impl Display for BenchMode {
             BenchMode::Generate => write!(f, "generate"),
             BenchMode::Validating => write!(f, "validating"),
             BenchMode::StepByStep => write!(f, "step-by-step"),
+            BenchMode::StepByStepFlush => write!(f, "step-by-step-flush"),
         }
     }
 }
