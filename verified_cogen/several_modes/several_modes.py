@@ -106,22 +106,28 @@ def main():
         register_basic_languages(with_removed=all_removed)
 
         logger.info(mode)
-        log_tries_mode = log_tries_dir / mode if log_tries_dir is not None else None
+        log_tries_mode = (
+            log_tries_dir / f"{idx}_{mode}" if log_tries_dir is not None else None
+        )
         if log_tries_mode is not None:
             log_tries_mode.mkdir(exist_ok=True)
 
-        json_avg_results = results_directory / f"tries_{directory.name}_{mode}_avg.json"
+        json_avg_results = (
+            results_directory / f"tries_{directory.name}_{idx}_{mode}_avg.json"
+        )
         with open(json_avg_results, "w") as f:
             json.dump({}, f)
-        results_avg: Dict[int, float] = dict([(i, 0) for i in range(args.runs + 1)])
+        results_avg: Dict[int, float] = dict([(i, 0) for i in range(args.tries + 1)])
 
         for run in range(args.runs):
             logger.info(f"Run {run}")
 
-            history_dir = results_directory / f"history_{directory.name}_{mode}_{run}"
+            history_dir = (
+                results_directory / f"history_{directory.name}_{idx}_{mode}_{run}"
+            )
             history_dir.mkdir(exist_ok=True)
             json_results = (
-                results_directory / f"tries_{directory.name}_{mode}_{run}.json"
+                results_directory / f"tries_{directory.name}_{idx}_{mode}_{run}.json"
             )
             if not json_results.exists():
                 with open(json_results, "w") as f:
