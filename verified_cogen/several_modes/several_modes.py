@@ -113,7 +113,7 @@ def main():
         json_avg_results = results_directory / f"tries_{directory.name}_{mode}_avg.json"
         with open(json_avg_results, "w") as f:
             json.dump({}, f)
-        results_avg: Dict[int, float] = dict([(i, 0) for i in range(args.runs + 1)])
+        results_avg: Dict[int, float] = {i: 0 for i in range(args.tries + 1)}
 
         for run in range(args.runs):
             logger.info(f"Run {run}")
