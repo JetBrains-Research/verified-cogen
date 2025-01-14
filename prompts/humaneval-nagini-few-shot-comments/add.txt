@@ -1,0 +1,6 @@
+Do not provide ANY explanations. Don't include markdown backticks. Respond only in Python code, nothing else.
+The program:
+{program}
+–
+The invariants:
+{checks}

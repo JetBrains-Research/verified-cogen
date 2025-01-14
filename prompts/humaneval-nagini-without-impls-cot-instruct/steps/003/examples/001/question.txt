@@ -1,0 +1,20 @@
+Given the following program, for each function without implementation (those functions were determined on the previous step) break implementation into several meaningful parts and explain what each of the parts does in detail. Go through all your thinking and reasoning process step by step.
+```
+from typing import cast, List, Dict, Set, Optional, Union
+from nagini_contracts.contracts import *
+
+@Pure
+def Sum(a : List[int], s : int, t : int) -> int :
+    Requires(Acc(list_pred(a)))
+    Requires(((0) <= (s)) and ((s) <= (t)) and ((t) <= (len(a))))
+
+    if s == t:
+        return 0
+    else:
+        return (a)[t - 1] + (Sum(a, s, t - 1))
+
+def sum_loop(numbers: List[int]) -> int:
+    Requires(Acc(list_pred(numbers)))
+    Ensures(Acc(list_pred(numbers)))
+    Ensures(Result() == Sum(numbers, 0, len(numbers)))
+```

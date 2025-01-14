@@ -159,7 +159,7 @@ def main():
                     extension_from_file_list([file]), args.manual_rewriters
                 )
                 runner = make_runner_cls(
-                    args.bench_type, extension_from_file_list([file]), config
+                    args.bench_types[idx], extension_from_file_list([file]), config
                 )(llm, logger, verifier, rewriter)
                 display_name = rename_file(file)
                 marker_name = str(file.relative_to(directory))
