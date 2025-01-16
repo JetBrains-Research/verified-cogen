@@ -8,17 +8,20 @@ readme = "README.md"
 [tool.poetry.scripts]
 verified-cogen = "verified_cogen.main:main"
 incremental_run = "verified_cogen.experiments.incremental_run:main"
+several_modes = "verified_cogen.several_modes:main"
 
-[tool.isort]
-profile = "black"
-src_paths = ["verified_cogen"]
+[tool.ruff]
+preview = true
+
+[tool.ruff.lint]
+extend-select = ["I"]
 
 [tool.pyright]
 typeCheckingMode = "strict"
-pythonVersion = "3.9"
+pythonVersion = "3.10"
 
 [[tool.poetry.source]]
-name = "PyPI"
+name = "pypi"
 priority = "primary"
 
 [[tool.poetry.source]]
@@ -27,17 +30,15 @@ url = "https://packages.jetbrains.team/pypi/p/grazi/jetbrains-ai-platform-public
 priority = "supplemental"
 
 [tool.poetry.dependencies]
-python = "^3.9"
+python = "^3.10"
 grazie-api-gateway-client = "^0.1.3"
 appdirs = "^1.4.4"
 
 [tool.poetry.group.dev.dependencies]
-isort = "^5.10.1"
-ruff = "^0.5.4"
+ruff = "*"
+matplotlib = "*"
+pyright = "*"
 pytest = "^8.3.1"
-matplotlib = "^3.9.2"
-ipykernel = "^6.29.5"
-pyright = "^1.1.381"
 
 [build-system]
 requires = ["poetry-core"]

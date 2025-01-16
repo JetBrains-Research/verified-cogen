@@ -16,14 +16,27 @@
         "x86_64-darwin"
         "aarch64-darwin"
       ];
-      devShell.packages = pkgs: [
-        pkgs.poetry
-        (pkgs.dafny.override {
-          z3 = pkgs.z3.override {
-            stdenv = pkgs.llvmPackages_16.stdenv;
-          };
-        })
-      ];
+      devShell = {
+        packages = pkgs: [
+          pkgs.poetry
+          (pkgs.dafny.override {
+            z3 = pkgs.z3.override {
+              stdenv = pkgs.llvmPackages_16.stdenv;
+            };
+          })
+
+          pkgs.rustc
+          pkgs.cargo
+          pkgs.clippy
+          pkgs.rust-analyzer
+          pkgs.rustfmt
+        ];
+        shellHook = ''
+          poetry sync
+          export PATH=$(pwd)/.venv/bin:$PATH
+        '';
+      };
+
       formatter = pkgs: pkgs.nixfmt-rfc-style;
     };
 }
