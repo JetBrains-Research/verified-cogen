@@ -1,6 +1,6 @@
 from abc import abstractmethod
 from enum import Enum
-from typing import Any, Pattern, List, Tuple
+from typing import Any, List, Pattern, Tuple
 
 
 class AnnotationType(Enum):

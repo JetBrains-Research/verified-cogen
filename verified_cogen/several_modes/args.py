@@ -1,6 +1,6 @@
 import argparse
 import os
-from typing import Optional, no_type_check, List
+from typing import List, Optional, no_type_check
 
 from verified_cogen.tools.modes import VALID_MODES
 

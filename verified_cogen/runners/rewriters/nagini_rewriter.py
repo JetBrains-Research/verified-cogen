@@ -1,4 +1,4 @@
-from typing import Tuple, List
+from typing import List, Tuple
 
 from verified_cogen.runners.rewriters import Rewriter
 

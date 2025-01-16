@@ -5,7 +5,7 @@ from typing import no_type_check
 
 from verified_cogen.args import ProgramArgs, get_default_parser
 from verified_cogen.llm.llm import LLM
-from verified_cogen.main import make_runner_cls, construct_rewriter
+from verified_cogen.main import construct_rewriter, make_runner_cls
 from verified_cogen.runners import RunnerConfig
 from verified_cogen.runners.languages import AnnotationType, register_basic_languages
 from verified_cogen.tools import (

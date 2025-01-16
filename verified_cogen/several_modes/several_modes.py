@@ -1,13 +1,20 @@
 import json
 import logging
+import multiprocessing as mp
 import pathlib
-from typing import Dict
+from typing import Dict, Optional
 
-from verified_cogen.several_modes.args import get_default_parser_multiple
 from verified_cogen.llm.llm import LLM
-from verified_cogen.main import make_runner_cls, construct_rewriter
-from verified_cogen.runners import RunnerConfig
-from verified_cogen.runners.languages import AnnotationType, register_basic_languages
+from verified_cogen.main import construct_rewriter, make_runner_cls
+from verified_cogen.runners import Runner, RunnerConfig
+from verified_cogen.runners.languages import register_basic_languages
+from verified_cogen.runners.rewriters import Rewriter
+from verified_cogen.several_modes.args import ProgramArgsMultiple, get_args
+from verified_cogen.several_modes.constants import (
+    MODE_MAPPING,
+    REMOVE_IMPLS_MAPPING,
+    TEXT_DESCRIPTIONS,
+)
 from verified_cogen.tools import (
     ext_glob,
     extension_from_file_list,
@@ -17,75 +24,38 @@ from verified_cogen.tools import (
 from verified_cogen.tools.modes import Mode
 from verified_cogen.tools.verifier import Verifier
 
-
 logger = logging.getLogger(__name__)
 
 
+def process_file(
+    file: pathlib.Path,
+    args: ProgramArgsMultiple,
+    history_dir: pathlib.Path,
+    llm: LLM,
+    rewriter: Rewriter,
+    runner: Runner,
+) -> Optional[int]:
+    try:
+        mode = Mode(args.insert_conditions_mode)
+        tries = runner.run_on_file(mode, args.tries, str(file))
+    except Exception as e:
+        print(e)
+        tries = None
+
+    llm.dump_history(history_dir / f"{file.stem}.txt")
+
+    return tries
+
+
 def main():
-    parser = get_default_parser_multiple()
-    args = parser.parse_args()
+    args = get_args()
     print(args.manual_rewriters)
 
     assert args.insert_conditions_mode != Mode.REGEX
     assert args.dir is not None
 
-    mode_mapping = {
-        "mode1": [AnnotationType.INVARIANTS, AnnotationType.ASSERTS],
-        "mode2": [
-            AnnotationType.INVARIANTS,
-            AnnotationType.ASSERTS,
-            AnnotationType.PRE_CONDITIONS,
-            AnnotationType.POST_CONDITIONS,
-        ],
-        "mode3": [
-            AnnotationType.INVARIANTS,
-            AnnotationType.ASSERTS,
-            AnnotationType.IMPLS,
-        ],
-        "mode4": [
-            AnnotationType.INVARIANTS,
-            AnnotationType.ASSERTS,
-            AnnotationType.IMPLS,
-        ],
-        "mode5": [
-            AnnotationType.INVARIANTS,
-            AnnotationType.ASSERTS,
-            AnnotationType.PRE_CONDITIONS,
-            AnnotationType.POST_CONDITIONS,
-            AnnotationType.IMPLS,
-        ],
-        "mode6": [
-            AnnotationType.INVARIANTS,
-            AnnotationType.ASSERTS,
-            AnnotationType.PRE_CONDITIONS,
-            AnnotationType.POST_CONDITIONS,
-            AnnotationType.IMPLS,
-            AnnotationType.PURE,
-        ],
-    }
-
-    remove_impls_mapping = {
-        "mode1": False,
-        "mode2": False,
-        "mode3": True,
-        "mode4": True,
-        "mode5": True,
-        "mode6": True,
-    }
-
-    text_descriptions = {
-        "mode1": False,
-        "mode2": False,
-        "mode3": False,
-        "mode4": True,
-        "mode5": True,
-        "mode6": True,
-    }
-
     if args.output_logging:
         register_output_handler(logger)
-
-    mode_insert_conditions = Mode(args.insert_conditions_mode)
 
     log_tries_dir = pathlib.Path(args.log_tries) if args.log_tries is not None else None
     if log_tries_dir is not None:
@@ -102,19 +72,21 @@ def main():
     verifier = Verifier(args.verifier_command)
 
     for idx, mode in enumerate(args.modes):
-        all_removed = mode_mapping[mode]
+        all_removed = MODE_MAPPING[mode]
         register_basic_languages(with_removed=all_removed)
 
         logger.info(mode)
         log_tries_mode = (
             log_tries_dir / f"{idx}_{mode}" if log_tries_dir is not None else None
         )
+
         if log_tries_mode is not None:
             log_tries_mode.mkdir(exist_ok=True)
 
         json_avg_results = (
             results_directory / f"tries_{directory.name}_{idx}_{mode}_avg.json"
         )
+
         with open(json_avg_results, "w") as f:
             json.dump({}, f)
         results_avg: Dict[int, float] = dict([(i, 0) for i in range(args.tries + 1)])
@@ -129,38 +101,27 @@ def main():
             json_results = (
                 results_directory / f"tries_{directory.name}_{idx}_{mode}_{run}.json"
             )
+
             if not json_results.exists():
                 with open(json_results, "w") as f:
                     json.dump({}, f)
+
             with open(json_results, "r") as f:
                 results = json.load(f)
 
-            log_tries = (
-                log_tries_mode / f"run_{run}" if log_tries_mode is not None else None
-            )
+            log_tries = log_tries_mode and (log_tries_mode / f"run_{run}")
             if log_tries is not None:
                 log_tries.mkdir(exist_ok=True)
 
             config = RunnerConfig(
                 log_tries=log_tries,
-                include_text_descriptions=text_descriptions[mode],
-                remove_implementations=remove_impls_mapping[mode],
-                remove_helpers=mode == "mode6",
+                include_text_descriptions=TEXT_DESCRIPTIONS[mode],
+                remove_implementations=REMOVE_IMPLS_MAPPING[mode],
+                remove_helpers=(mode == "mode6"),
             )
 
+            files_to_process: list[tuple[pathlib.Path, str, str]] = []
             for file in files:
-                llm = LLM(
-                    args.grazie_token,
-                    args.llm_profile,
-                    args.prompts_directory[idx],
-                    args.temperature,
-                )
-                rewriter = construct_rewriter(
-                    extension_from_file_list([file]), args.manual_rewriters
-                )
-                runner = make_runner_cls(
-                    args.bench_type, extension_from_file_list([file]), config
-                )(llm, logger, verifier, rewriter)
                 display_name = rename_file(file)
                 marker_name = str(file.relative_to(directory))
                 if (
@@ -172,16 +133,38 @@ def main():
                         f"Skipping: {display_name} as it has already been verified"
                     )
                     continue
-                logger.info(f"Processing: {display_name}")
-                try:
-                    tries = runner.run_on_file(
-                        mode_insert_conditions, args.tries, str(file)
-                    )
-                except KeyboardInterrupt:
-                    return
-                except Exception as e:
-                    print(e)
-                    tries = None
+                files_to_process.append((file, display_name, marker_name))
+
+            llm = LLM(
+                args.grazie_token,
+                args.llm_profile,
+                args.prompts_directory[idx],
+                args.temperature,
+            )
+
+            rewriter = construct_rewriter(
+                extension_from_file_list(files), args.manual_rewriters
+            )
+
+            runner = make_runner_cls(
+                args.bench_type, extension_from_file_list(files), config
+            )(llm, logger, verifier, rewriter)
+
+            with mp.Pool(processes=mp.cpu_count()) as pool:
+
+                def make_arguments(file: pathlib.Path):
+                    return file, args, history_dir, llm, rewriter, runner
+
+                mp_results = pool.starmap(
+                    process_file,
+                    (make_arguments(file) for file, _, _ in files_to_process),
+                )
+
+            for (file, display_name, marker_name), tries in zip(
+                files_to_process, mp_results
+            ):
+                logger.info(f"Processing results for: {display_name}")
+
                 if tries is not None:
                     results[marker_name] = tries
                     results_avg[tries] += 1
@@ -191,8 +174,6 @@ def main():
                     logger.info(f"Failed to verify {display_name}")
                 with open(json_results, "w") as f:
                     json.dump(results, f, indent=2)
-
-                llm.dump_history(history_dir / f"{file.stem}.txt")
 
         for key in results_avg.keys():
             results_avg[key] = results_avg[key] / args.runs

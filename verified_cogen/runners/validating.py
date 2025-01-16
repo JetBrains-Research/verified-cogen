@@ -1,4 +1,4 @@
-from typing import Optional, List
+from typing import List, Optional
 
 from verified_cogen.llm import prompts
 from verified_cogen.llm.llm import LLM
