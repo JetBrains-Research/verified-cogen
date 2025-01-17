@@ -33,7 +33,7 @@
         ];
         shellHook = ''
           poetry sync
-          export PATH=$(pwd)/.venv/bin:$PATH
+          source .venv/bin/activate
         '';
       };
 
