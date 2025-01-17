@@ -187,7 +187,7 @@ def run_mode(
         results_avg[key] = results_avg[key] / args.runs
 
     with open(json_avg_results, "w") as f:
-        json.dump(results_avg, f)
+        json.dump(dict(results_avg), f)
 
     logger.info(f"Averaged results for {mode}: {results_avg}")
 
