@@ -35,8 +35,8 @@ class NaginiLanguage(GenericLanguage):
             AnnotationType.ASSERTS: r" *# assert-start.*?# assert-end\n?",
             AnnotationType.PRE_CONDITIONS: r" *# pre-conditions-start.*?# pre-conditions-end\n?",
             AnnotationType.POST_CONDITIONS: r" *# post-conditions-start.*?# post-conditions-end\n?",
-            AnnotationType.IMPLS: r" *# impl-start.*?# impl-end\n",
-            AnnotationType.PURE: r"@Pure\ndef.*?# pure-end\n",
+            AnnotationType.IMPLS: r" *# impl-start.*?# impl-end\n?",
+            AnnotationType.PURE: r"@Pure\s+def.*?# pure-end\n?",
         }
         super().__init__(
             re.compile(

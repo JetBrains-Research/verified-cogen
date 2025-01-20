@@ -27,9 +27,10 @@ url = "https://packages.jetbrains.team/pypi/p/grazi/jetbrains-ai-platform-public
 priority = "supplemental"
 
 [tool.poetry.dependencies]
-python = "^3.9"
+python = ">=3.10"
 grazie-api-gateway-client = "^0.1.3"
 appdirs = "^1.4.4"
+networkx = "^3.4.2"
 
 [tool.poetry.group.dev.dependencies]
 isort = "^5.10.1"
