@@ -32,7 +32,7 @@ class ProgramArgsMultiple:
         self.dir = args.dir
         self.runs = args.runs
         self.insert_conditions_mode = args.insert_conditions_mode
-        self.bench_type = args.bench_type
+        self.bench_types = args.bench_types
         self.temperature = args.temperature
         self.verifier_command = args.verifier_command
         self.verifier_timeout = args.verifier_timeout
