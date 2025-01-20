@@ -134,7 +134,7 @@ def get_default_parser_search():
         action="store_true",
     )
 
-    args, remaining_args = parser.parse_known_args()
+    args, _ = parser.parse_known_args()
     if args.scoring_fun == "NaginiSimple":
         parser.add_argument("--error-penalty", default=0.1, type=float)
         parser.add_argument("--long-penalty", default=10.0, type=float)
