@@ -1,0 +1,4 @@
+Given the following program, for each function without implementation (those functions were determined on the previous step) break implementation into several meaningful parts and explain what each of the parts does in detail. Go through all your thinking and reasoning process step by step.
+```
+{program}
+```

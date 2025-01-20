@@ -162,7 +162,7 @@ def run_mode(
         )
 
         runner = make_runner_cls(
-            args.bench_type, extension_from_file_list(files), config
+            args.bench_types[idx], extension_from_file_list(files), config
         )(llm, logger, verifier, rewriter)
 
         state = SharedState(lock, results, results_avg)

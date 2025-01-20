@@ -10,7 +10,7 @@ class ProgramArgsMultiple:
     dir: Optional[str]
     runs: int
     insert_conditions_mode: str
-    bench_type: str
+    bench_types: list[str]
     temperature: float
     verifier_command: str
     verifier_timeout: int
@@ -62,9 +62,10 @@ def get_default_parser_multiple():
         default="llm",
     )
     parser.add_argument(
-        "--bench-type",
+        "--bench-types",
         help="benchmark type, available: {invariants, generic, generate, validating, step-by-step, step-by-step-flush}",
-        default="invariants",
+        default=[],
+        nargs="+",
     )
     parser.add_argument(
         "--temperature",

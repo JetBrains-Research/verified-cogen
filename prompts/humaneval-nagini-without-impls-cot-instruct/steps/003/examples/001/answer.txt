@@ -1,0 +1,48 @@
+1. During previous step we understood that `sum_loop` doesn't contain implementation
+
+Implementation of this method should contain 3 parts
+First, it initializes sum `s` with 0 and index `i` with 0. The following part of code corresponds to this:
+```
+s = int(0)
+i = int(0)
+```
+This part doesn't require any invariants/asserts, since it's too simple.
+
+Secondly, it goes through the list `numbers` with cycle and add each new element `numbers[i]` to the sum `s`.
+This means that the program should have access to the list `numbers`, namely `Acc(list_pred(numbers))`.
+Also index `i` should lie within the bounds of `numbers` list, namely `0 <= i and i <= len(numbers)`.
+We also know that 's' is the running sum of the elements in 'numbers', so 's == Sum(numbers, 0, i)'.
+From the statements written above we can derive the following code:
+```
+while (i) < (len(numbers)):
+    Invariant(Acc(list_pred(numbers)))
+    Invariant(0 <= i and i <= len(numbers))
+    Invariant(s == Sum(numbers, 0, i))
+    s = s + (numbers)[i]
+    i = i + 1
+```
+
+However, for such code it might be difficult to prove `Invariant(s == Sum(numbers, 0, i))`, so we add additional invariants and assertions, like:
+```
+Invariant(Forall(int, lambda d_1_p_:
+    (Implies(0 <= d_1_p_ and d_1_p_ < len(numbers), Sum(numbers, 0, d_1_p_ + 1) == Sum(numbers, 0, d_1_p_) + numbers[d_1_p_]), [[Sum(numbers, 0, d_1_p_ + 1)]])))
+Assert(Sum(numbers, 0, i + 1) == Sum(numbers, 0, i) + numbers[i])
+```
+So the part of code with cycle now looks like:
+```
+while (i) < (len(numbers)):
+    Invariant(Acc(list_pred(numbers)))
+    Invariant(0 <= i and i <= len(numbers))
+    Invariant(Forall(int, lambda d_1_p_:
+        (Implies(0 <= d_1_p_ and d_1_p_ < len(numbers), Sum(numbers, 0, d_1_p_ + 1) == Sum(numbers, 0, d_1_p_) + numbers[d_1_p_]), [[Sum(numbers, 0, d_1_p_ + 1)]])))
+    Invariant(s == Sum(numbers, 0, i))
+    Assert(Sum(numbers, 0, i + 1) == Sum(numbers, 0, i) + numbers[i])
+    s = s + (numbers)[i]
+    i = i + 1
+```
+And finally, `sum_loop` should return the value of sum `s`:
+```
+return s
+```
+
+2. There is no other functions without implementations, so we can move to another step.
