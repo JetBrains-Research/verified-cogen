@@ -1,0 +1,5 @@
+Given the following program, for each function, determine if it has a specification and implementation. Determine functions, that can be used in specifications. Determine also functions, that need to provide implementation with invariants.
+
+```
+{program}
+```

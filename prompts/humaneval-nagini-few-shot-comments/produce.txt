@@ -1,0 +1,80 @@
+Given the following Python program, output Nagini invariants that should go into the `while` loop.
+Ensure that the invariants are as comprehensive as they can be.
+Even if you think some invariant is not totally necessary, better add it than not.
+Don't add any additional text comments, your response must contain only program with invariants.
+Do not provide ANY explanations. Don't include markdown backticks. Respond only in Python code, nothing else.
+
+You remember the following aspects of Nagini syntax:
+
+1. Nagini DOES NOT SUPPORT some Python features as list comprehensions (k + 1 for k in range(5)), as double inequalities (a <= b <= c).
+Instead of double inequalities it's customary to use two separate inequalities (a <= b and b <= c).
+
+2. In Nagini method preconditions (Requires) and postconditions (Ensures) placed right after method signature, like here:
+"
+def Sum(a : List[int], s : int, t : int) -> int :
+    Requires(Acc(list_pred(a)))
+    Requires(((0) <= (s)) and ((s) <= (t)) and ((t) <= (len(a))))
+    Ensures(Acc(list_pred(a)))
+    ...
+"
+
+3. Invariant are placed right after `while` statement and before the code of `while` body:
+"
+    while i < len(numbers):
+        Invariant(Acc(list_pred(numbers)))
+        Invariant(0 <= i and i <= len(numbers))
+        s = s + numbers[i]
+"
+Invariants CANNOT be placed in any other position.
+You remember that each invariant (and each expression) should contain equal number of opening and closing brackets, so that it is valid.
+You should sustain balanced parentheses.
+
+4. Nagini requires special annotations for working with lists `Acc(list_pred(..))`. You can use these constructs only inside `Invariant`,
+anywhere else you should not use `Acc()` or `list_pred()`:
+"
+    while i < len(numbers):
+        Invariant(Acc(list_pred(numbers)))
+"
+
+5. Nagini contains `Forall` and `Exists` constructs that can be used in invariants. First argument of Forall/Exists is typically a type (i.e `int`),
+second argument is a lambda. `Forall(type, lambda x : a)` denotes that assertion `a` is true for every element `x` of type `type`.
+
+6. In Nagini `Implies(e1, a2)` plays role of implication. `Implies(e1, a2)` denotes that assertion a2 holds if boolean expression e1 is true.
+You can use it inside invariants and asserts.
+
+Here are some examples of verified Python cycles with Nagini invariants:
+```
+    while i < len(numbers):
+        Invariant(Acc(list_pred(numbers)))
+        Invariant(Acc(list_pred(result)))
+        Invariant(0 <= i and i <= len(numbers))
+        Invariant(len(result) == i)
+        Invariant(Forall(range(i), lambda i1: numbers[i1] <= result[i1]))
+        Invariant(Old(running_max) is None or ((Old(running_max) is not None) and (getVal(Old(running_max)) <= getVal(running_max))))
+        Invariant(Implies(len(result) > 0, running_max is not None))
+        Invariant(Implies(len(result) > 0, result[-1] == getVal(running_max)))
+        Invariant(Forall(range(i - 1), lambda i1: result[i1] <= result[i1 + 1]))
+
+        n = numbers[i]
+        if running_max is None or running_max < n:
+            running_max = n
+
+        result.append(running_max)
+        i += 1
+```
+
+```
+    while (d_0_i_) < (len((a))):
+        Invariant(Acc(list_pred(c)))
+        Invariant(Acc(list_pred(a)))
+        Invariant(len(c) == len(a) + 1)
+        Invariant(((0) <= (d_0_i_)) and ((d_0_i_) <= (len((a)))))
+        Invariant(Forall(int, lambda d_1_ii_:
+            Implies(((0) <= (d_1_ii_)) and ((d_1_ii_) < (d_0_i_)), ((c)[d_1_ii_]) == ((a)[d_1_ii_]))))
+        (c)[(d_0_i_)] = (a)[d_0_i_]
+        d_0_i_ = (d_0_i_) + (1)
+```
+
+The program:
+{program}
+
