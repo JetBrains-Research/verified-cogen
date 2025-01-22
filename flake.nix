@@ -19,11 +19,7 @@
       devShell = {
         packages = pkgs: [
           pkgs.poetry
-          (pkgs.dafny.override {
-            z3 = pkgs.z3.override {
-              stdenv = pkgs.llvmPackages_16.stdenv;
-            };
-          })
+          pkgs.dafny
 
           pkgs.rustc
           pkgs.cargo
