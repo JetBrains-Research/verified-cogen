@@ -66,6 +66,13 @@ class GenericLanguage(Language):
         self.inline_assert_comment = inline_assert_comment
         self.remove_pure = remove_pure
 
+    def split_params(self, parameters: str) -> str:
+        return ", ".join(
+            param.split(":")[0].strip()
+            for param in parameters.split(",")
+            if param.strip()
+        )
+
     def _validators_from(
         self,
         method_name: str,
@@ -80,11 +87,7 @@ class GenericLanguage(Language):
             .replace("{specs}", specs or "\n")
             .replace(
                 "{param_names}",
-                ", ".join(
-                    param.split(":")[0].strip()
-                    for param in parameters.split(",")
-                    if param.strip()
-                ),
+                self.split_params(parameters),
             )
         )
 
@@ -103,11 +106,7 @@ class GenericLanguage(Language):
             .replace("{specs}", specs or "\n")
             .replace(
                 "{param_names}",
-                ", ".join(
-                    param.split(":")[0].strip()
-                    for param in parameters.split(",")
-                    if param.strip()
-                ),
+                self.split_params(parameters),
             )
             .replace("{body}", body)
         )
@@ -127,11 +126,7 @@ class GenericLanguage(Language):
             .replace("{specs}", specs or "\n")
             .replace(
                 "{param_names}",
-                ", ".join(
-                    param.split(":")[0].strip()
-                    for param in parameters.split(",")
-                    if param.strip()
-                ),
+                self.split_params(parameters),
             )
             .replace("{body}", body)
         )
@@ -145,7 +140,6 @@ class GenericLanguage(Language):
         pure_methods = list(self.pure_regex.finditer(code))
         methods = list(self.method_regex.finditer(code))
 
-        print(len(pure_methods), len(methods))
         validators: list[str] = []
         pure_names: list[str] = []
 
@@ -194,8 +188,6 @@ class GenericLanguage(Language):
                 match.group(3),
                 match.group(4),
             )
-
-            print(method_name)
 
             if method_name in pure_names:
                 continue

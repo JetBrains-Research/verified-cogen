@@ -1,6 +1,8 @@
-Rewrite the following verus program, adding correct invariants into `while` loops.
+Rewrite the following verus program, adding correct verus invariants into `while` loops.
 Also add assertions in nessesary places.
-Do not change the code, only add invariants and assertions. Don't remove any helper functions, they are there to help you.
+Do not change the code, only add invariants and assertions. Don't remove any helper functions(annotated with spec), they are there to help you.
+Don't add any additional text comments, your response must contain only program with invariants.
+Do not provide ANY explanations. Don't include markdown backticks. Respond only in verus code, nothing else.
 You might need to work with accumulating functions, such as sum, so here's an example of how to do that:
 ```verus
 pub open spec fn sum(numbers: Seq<u32>) -> int {

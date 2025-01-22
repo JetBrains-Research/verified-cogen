@@ -52,11 +52,16 @@ class VerusLanguage(GenericLanguage):
             "//",
         )
 
+    def split_params(self, parameters: str) -> str:
+        pattern = r"(\w+)\s*:\s*((?:\[[^\[\]]*\]|\([^()]*\)|[^\[\],])+)"
+        matches = re.findall(pattern, parameters)
+        return ", ".join([var.strip() for var, _ in matches])
+
     def generate_validators(self, code: str, validate_helpers: bool) -> str:
         result = super().generate_validators(code, validate_helpers)
         return "verus!{{\n{}}}".format(result)
 
     def separate_validator_errors(self, errors: str) -> tuple[str, str]:
-        raise NotImplementedError(
-            "Separating validator errors is not implemented for Verus yet"
-        )
+        lines = errors.split("\n")
+        lines = [line for line in lines if "verification results" not in line]
+        return "\n".join(lines), ""

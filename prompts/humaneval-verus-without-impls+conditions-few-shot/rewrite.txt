@@ -1,83 +1,52 @@
 The following Nagini code contains no implementations of functions, pre/postconditions, invariants and assertions.
 Using text description and helper functions you should add implementations and relevant pre/postconditions. Prefer loops to recursion. You should also add invariants/assertions.
 Use helper functions only in preconditions, postconditions, invariants, asserts and conditions (in `if` or `while` conditions). Don't use helpers in the plain code.
-Do not change helper functions.
+Do not change helper functions (annotated with spec).
 Add code and invariants to other functions.
 Ensure that the invariants are as comprehensive as they can be.
 Even if you think some invariant is not totally necessary, better add it than not.
 Don't add any additional text comments, your response must contain only program with invariants.
-Do not provide ANY explanations. Don't include markdown backticks. Respond only in Python code, nothing else.
-
-
-You remember the following aspects of Nagini syntax:
-
-1. Nagini DOES NOT SUPPORT some Python features as list comprehensions (k + 1 for k in range(5)), as double inequalities (a <= b <= c).
-Instead of double inequalities it's customary to use two separate inequalities (a <= b and b <= c).
-
-2. In Nagini method preconditions (Requires) and postconditions (Ensures) placed right after method signature, like here:
-"
-def Sum(a : List[int], s : int, t : int) -> int :
-    Requires(Acc(list_pred(a)))
-    Requires(((0) <= (s)) and ((s) <= (t)) and ((t) <= (len(a))))
-    Ensures(Acc(list_pred(a)))
-    ...
-"
-
-3. Invariant are placed right after `while` statement and before the code of `while` body:
-"
-    while i < len(numbers):
-        Invariant(Acc(list_pred(numbers)))
-        Invariant(0 <= i and i <= len(numbers))
-        s = s + numbers[i]
-"
-Invariants CANNOT be placed in any other position.
-You remember that each invariant (and each expression) should contain equal number of opening and closing brackets, so that it is valid.
-You should sustain balanced parentheses.
-
-4. Nagini requires special annotations for working with lists `Acc(list_pred(..))`. You can use these constructs only inside `Invariant`,
-anywhere else you should not use `Acc()` or `list_pred()`:
-"
-    while i < len(numbers):
-        Invariant(Acc(list_pred(numbers)))
-"
-
-5. Nagini contains `Forall` and `Exists` constructs that can be used in invariants. First argument of Forall/Exists is typically a type (i.e `int`),
-second argument is a lambda. `Forall(type, lambda x : a)` denotes that assertion `a` is true for every element `x` of type `type`.
-
-6. In Nagini `Implies(e1, a2)` plays role of implication. `Implies(e1, a2)` denotes that assertion a2 holds if boolean expression e1 is true.
-You can use it inside invariants and asserts.
-
+Do not provide ANY explanations. Don't include markdown backticks. Respond only in verus code, nothing else.
 You might need to work with accumulating functions, such as sum, so here's an example of how to do that:
-```
-from typing import cast, List, Dict, Set, Optional, Union
-from nagini_contracts.contracts import *
-
-@Pure
-def Sum(a : List[int], s : int, t : int) -> int :
-    Requires(Acc(list_pred(a)))
-    Requires(((0) <= (s)) and ((s) <= (t)) and ((t) <= (len(a))))
-
-    if s == t:
-        return 0
-    else:
-        return (a)[t - 1] + (Sum(a, s, t - 1))
-
-def sum_loop(numbers: List[int]) -> int:
-    Requires(Acc(list_pred(numbers)))
-    Ensures(Acc(list_pred(numbers)))
-    Ensures(Result() == Sum(numbers, 0, len(numbers)))
-    s = int(0)
-    i = int(0)
-    while (i) < (len(numbers)):
-        Invariant(Acc(list_pred(numbers)))
-        Invariant(0 <= i and i <= len(numbers))
-        Invariant(Forall(int, lambda d_1_p_:
-            (Implies(0 <= d_1_p_ and d_1_p_ < len(numbers), Sum(numbers, 0, d_1_p_ + 1) == Sum(numbers, 0, d_1_p_) + numbers[d_1_p_]), [[Sum(numbers, 0, d_1_p_ + 1)]])))
-        Invariant(s == Sum(numbers, 0, i))
-        Assert(Sum(numbers, 0, i + 1) == Sum(numbers, 0, i) + numbers[i])
-        s = s + (numbers)[i]
-        i = i + 1
-    return s
+```verus
+pub open spec fn sum(numbers: Seq<u32>) -> int {
+    numbers.fold_left(0, |acc: int, x| acc + x)
+}
+proof fn sum_bound(numbers: Seq<u32>)
+    ensures
+        sum(numbers) <= numbers.len() * u32::MAX,
+    decreases numbers.len(),
+{
+    if numbers.len() == 0 {
+    } else {
+        sum_bound(numbers.drop_last());
+    }
+}
+fn sum_numbers(numbers: Vec<u32>) -> (result: u64)
+    requires
+        numbers.len() < u32::MAX,
+    ensures
+        result.0 == sum(numbers@),
+{
+    let mut sum_value: u64 = 0;
+    for index in 0..numbers.len()
+        invariant
+            numbers.len() < u32::MAX,
+            sum_value == sum(numbers@.take(index as int)),
+            index <= numbers.len(),
+            index >= 0,
+    {
+        proof {
+            sum_bound(numbers@.take(index as int));
+            assert(sum_value <= index * u32::MAX);
+        }
+        assert(numbers@.take(index as int + 1).drop_last() =~= numbers@.take(index as int));
+        assert(numbers[index as int] == numbers@.take(index as int + 1).last());
+        sum_value += numbers[index] as u64;
+    }
+    assert(numbers@.take(numbers@.len() as int) =~= numbers@);
+    sum_value
+}
 ```
 
 To help you, here's a text description given to a person who wrote this program:

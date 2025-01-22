@@ -1,4 +1,0 @@
-There are still some errors:
-{error}
-
-Could you please fix them?

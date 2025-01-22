@@ -1,2 +1,0 @@
-Given the following verus program, output invariants and assertions which are required to prove the program correct.
-{program}

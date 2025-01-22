@@ -82,6 +82,25 @@ def test_verus_generate():
     )
 
 
+def test_verus_generate2():
+    verus_lang = LanguageDatabase().get("verus")
+    code = dedent(
+        """\
+        spec fn expr_inner_divide_i32_by_usize(qr : (i32, usize), x: i32, d: usize) -> (result:bool) 
+        {
+            let (q, r) = qr;
+            q == x as int / d as int && r == x as int % d as int
+        }
+        // pure-end"""
+    )
+    assert verus_lang.generate_validators(code, True) == dedent(
+        """\
+        verus!{
+        spec fn expr_inner_divide_i32_by_usize_valid_pure(qr : (i32, usize), x: i32, d: usize) -> (result:bool) 
+        { let ret = expr_inner_divide_i32_by_usize(qr, x, d); ret }
+        }"""
+    )
+
 def test_verus_generate1_step0():
     verus_lang = LanguageDatabase().get("verus")
     code = dedent(
