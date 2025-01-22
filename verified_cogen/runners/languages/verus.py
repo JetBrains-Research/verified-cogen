@@ -24,20 +24,20 @@ class VerusLanguage(GenericLanguage):
 
     def __init__(self, remove_annotations: list[AnnotationType]):  # type: ignore
         annotation_by_type = {
-            AnnotationType.INVARIANTS: r" *// invariants-start.*?// invariants-end\n",
-            AnnotationType.ASSERTS: r" *// assert-start.*?// assert-end\n",
-            AnnotationType.PRE_CONDITIONS: r" *// pre-conditions-start.*?// pre-conditions-end\n",
-            AnnotationType.POST_CONDITIONS: r" *// post-conditions-start.*?// post-conditions-end\n",
-            AnnotationType.IMPLS: r" *// impl-start.*?// impl-end\n",
-            AnnotationType.PURE: r"spec fn.*?// pure-end\n",
+            AnnotationType.INVARIANTS: r" *// invariants-start.*?// invariants-end\n?",
+            AnnotationType.ASSERTS: r" *// assert-start.*?// assert-end\n?",
+            AnnotationType.PRE_CONDITIONS: r" *// pre-conditions-start.*?// pre-conditions-end\n?",
+            AnnotationType.POST_CONDITIONS: r" *// post-conditions-start.*?// post-conditions-end\n?",
+            AnnotationType.IMPLS: r" *// impl-start.*?// impl-end\n?",
+            AnnotationType.PURE: r" *(spec fn|proof fn).*?// pure-end\n?",
         }
         super().__init__(
             re.compile(
-                r"^\s*fn\s+(\w+)\s*\((.*?)\)\s*->\s*\((.*?)\)(.*?)\{",
+                r"^fn\s+(\w+)\s*\((.*?)\)\s*->\s*\((.*?)\)(.*?)\{",
                 flags=re.DOTALL | re.MULTILINE,
             ),
             re.compile(
-                r"^\s*spec fn\s+(\w+)\s*\((.*?)\)\s*->\s*\((.*?)\)(.*?)\{(.*?)}",
+                r"^spec fn\s+(\w+)\s*\((.*?)\)\s*-> *\((.*?)\)(.*?)\{(.*?)}\n// pure-end",
                 flags=re.DOTALL | re.MULTILINE,
             ),
             VERUS_VALIDATOR_TEMPLATE,

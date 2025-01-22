@@ -2,12 +2,13 @@ use vstd::prelude::*;
 
 verus! {
 
-spec fn three_distinct_spec(s: Seq<char>, i: int) -> bool
+spec fn three_distinct_spec(s: Seq<char>, i: int) -> (ret:bool)
     recommends
         0 < i && i + 1 < s.len(),
 {
     (s[i - 1] != s[i]) && (s[i] != s[i + 1]) && (s[i] != s[i + 1])
 }
+// pure-end
 
 fn three_distinct(s: &Vec<char>, i: usize) -> (is: bool)
     // pre-conditions-start
@@ -24,9 +25,10 @@ fn three_distinct(s: &Vec<char>, i: usize) -> (is: bool)
     // impl-end
 }
 
-spec fn happy_spec(s: Seq<char>) -> bool {
+spec fn happy_spec(s: Seq<char>) -> (ret:bool) {
     s.len() >= 3 && (forall|i: int| 0 < i && i + 1 < s.len() ==> three_distinct_spec(s, i))
 }
+// pure-end
 
 #[verifier::loop_isolation(false)]
 fn is_happy(s: &Vec<char>) -> (happy: bool)

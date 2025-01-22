@@ -145,6 +145,7 @@ class GenericLanguage(Language):
         pure_methods = list(self.pure_regex.finditer(code))
         methods = list(self.method_regex.finditer(code))
 
+        print(len(pure_methods), len(methods))
         validators: list[str] = []
         pure_names: list[str] = []
 
@@ -193,6 +194,8 @@ class GenericLanguage(Language):
                 match.group(3),
                 match.group(4),
             )
+
+            print(method_name)
 
             if method_name in pure_names:
                 continue

@@ -25,10 +25,12 @@ fn derivative(xs: &Vec<usize>) -> (ret: Option<Vec<usize>>)
         ret.push(xs[i].checked_mul(i)?);
 
         let ghost prods = xs@.map(|i: int, x| i * x);
+        // assert-start
         assert(prods.subrange(1, i as int).push(prods.index(i as int)) =~= prods.subrange(
             1,
             i + 1 as int,
-        )); // assert-line
+        ));
+        // assert-end
 
         i += 1;
     }

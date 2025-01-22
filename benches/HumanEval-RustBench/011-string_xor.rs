@@ -5,6 +5,8 @@ verus! {
 spec fn is_binary_digit(c: char) -> bool {
     c == '0' || c == '1'
 }
+// pure-end
+
 spec fn xor_char(a: char, b: char) -> (result: char)
     recommends
         is_binary_digit(a),
@@ -16,6 +18,7 @@ spec fn xor_char(a: char, b: char) -> (result: char)
         '1'
     }
 }
+// pure-end
 
 fn string_xor(a: &[char], b: &[char]) -> (result: Vec<char>)
     // pre-conditions-start

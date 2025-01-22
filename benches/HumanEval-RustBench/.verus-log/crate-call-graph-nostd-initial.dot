@@ -1,0 +1,14 @@
+digraph M {
+  rankdir=LR;
+  node [shape="box"];
+  node_17 [margin=0.1, label="Fun\n063_fibfib::spec_fibfib", shape="cds"]
+  node_38 [margin=0.1, label="FnDefImplPath\n063_fibfib::spec_fibfib", shape="component"]
+  node_39 [margin=0.1, label="Fun\n063_fibfib::fibfib", shape="cds"]
+  node_40 [margin=0.1, label="FnDefImplPath\n063_fibfib::fibfib", shape="component"]
+
+  node_17 -> node_17
+  node_38 -> node_17
+  node_39 -> node_17
+  node_39 -> node_39
+  node_40 -> node_39
+}

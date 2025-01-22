@@ -1,0 +1,9 @@
+We detected an improper usage of helper functions. Here is the list of helper functions used in a wrong way:
+{invalid_helpers}
+You should use helper functions only in invariants, asserts and conditions (in `if` or `while` conditions), not in the plain code.
+The following helper functions you can use anywhere: {helpers}.
+We replaced all improper usages with `invalid_call()` and got the following program:
+{program}
+You should rewrite this program without changing helper functions (denoted with @Pure).
+After rewriting your code should verify.
+Your code should not contain any `invalid_call()` invocations.
