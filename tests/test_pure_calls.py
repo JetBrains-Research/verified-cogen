@@ -1,14 +1,14 @@
 from textwrap import dedent
 from typing import List
 
+import pytest
+
 from verified_cogen.runners.languages import (
+    AnnotationType,
     LanguageDatabase,
     register_basic_languages,
-    AnnotationType,
 )
 from verified_cogen.tools.pureCallsDetectors import detect_and_replace_pure_calls_nagini
-
-import pytest
 
 
 @pytest.fixture()

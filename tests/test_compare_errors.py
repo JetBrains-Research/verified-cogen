@@ -6,6 +6,7 @@ def test_compare_errors1():
     err2: str = "Verification timed out"
     assert compare_errors(err1, err2)
 
+
 def test_compare_errors2():
     err1: str = "Verification timed out"
     err2: str = """\
@@ -13,6 +14,7 @@ def test_compare_errors2():
     Not supported: (0 <= d_6_i_ <= len(l))
         (/home/aleksandr/verified-cogen/log_tries/humaneval-nagini/040-triples-sum-to-zero.1.py@19.18)"""
     assert not compare_errors(err1, err2)
+
 
 def test_compare_errors3():
     err1: str = """\
@@ -23,6 +25,7 @@ def test_compare_errors3():
     Type error: invalid syntax (/home/aleksandr/verified-cogen/log_tries/humaneval-nagini/042-incr-list.3.py@18.0)"""
     assert compare_errors(err1, err2)
 
+
 def test_compare_errors4():
     err1: str = """\
         Translation failed
@@ -31,6 +34,7 @@ def test_compare_errors4():
         Translation failed
     Type error: invalid syntax (/home/aleksandr/verified-cogen/log_tries/humaneval-nagini/042-incr-list.3.py@18.0)"""
     assert not compare_errors(err1, err2)
+
 
 def test_compare_errors5():
     err1: str = """\

@@ -1,15 +1,16 @@
 from textwrap import dedent
-from zipfile import error
 
 from verified_cogen.runners.rewriters.nagini_rewriter import NaginiRewriter
 from verified_cogen.runners.rewriters.nagini_rewriter_fixing import NaginiRewriterFixing
-from verified_cogen.runners.rewriters.nagini_rewriter_fixing_ast import NaginiRewriterFixingAST
+from verified_cogen.runners.rewriters.nagini_rewriter_fixing_ast import (
+    NaginiRewriterFixingAST,
+)
 from verified_cogen.tools import rewrite_error
 
 
 def test_nagini_rewriter():
     code = dedent(
-    """\
+        """\
 from typing import cast, List, Dict, Set, Optional, Union
 from nagini_contracts.contracts import *
 
@@ -47,20 +48,20 @@ def Compare(scores: List[int], guesses: List[int]) -> List[int]:
     )
 
     error = dedent(
-    """\
+        """\
 Manual inspection revealed occurrences of `==>` operator for implication on the following positions:
 (28, 65), (29, 70), (30, 71)
 `==>` operator does not exist in Nagini. All occurrences of `==>` operator should be replaced with `Implies(a, b)` operator, that is used to express implication in Nagini
     """
     )
 
-    prg, prompt = NaginiRewriter().rewrite(code)
+    _, prompt = NaginiRewriter().rewrite(code)
     assert prompt == error
 
 
 def test_nagini_rewriter1():
     code = dedent(
-    """\
+        """\
 from typing import cast, List, Dict, Set, Optional, Union
 from nagini_contracts.contracts import *
 
@@ -86,12 +87,12 @@ def get__positive(l : List[int]) -> List[int]:
         Invariant(0 <= d_5_i_ and d_5_i_ <= len(l))
         Invariant(len(result) <= d_5_i_)
         Invariant(Forall(int, lambda j: (0 <= j and j < len(result)) ==> (result[j] > 0)))
-        Invariant(Forall(int, lambda j: (0 <= j and j < d_5_i_) ==> 
+        Invariant(Forall(int, lambda j: (0 <= j and j < d_5_i_) ==>
                   (l[j] > 0 ==> Exists(int, lambda k: (0 <= k and k < len(result) and result[k] == l[j])))))
-        Invariant(Forall(int, lambda j: (0 <= j and j < len(result)) ==> 
+        Invariant(Forall(int, lambda j: (0 <= j and j < len(result)) ==>
                   Exists(int, lambda k: (0 <= k and k < d_5_i_ and l[k] == result[j]))))
         Invariant(Forall(int, lambda j1, j2: (0 <= j1 and j1 < j2 and j2 < len(result)) ==>
-                  Exists(int, lambda k1, k2: (0 <= k1 and k1 < k2 and k2 < d_5_i_ and 
+                  Exists(int, lambda k1, k2: (0 <= k1 and k1 < k2 and k2 < d_5_i_ and
                                               l[k1] == result[j1] and l[k2] == result[j2]))))
         d_13_n_ = int(0)
         d_13_n_ = (l)[d_5_i_]
@@ -104,7 +105,7 @@ def get__positive(l : List[int]) -> List[int]:
     )
 
     res = dedent(
-    """\
+        """\
 from typing import cast, List, Dict, Set, Optional, Union
 from nagini_contracts.contracts import *
 
@@ -130,12 +131,12 @@ def get__positive(l : List[int]) -> List[int]:
         Invariant(0 <= d_5_i_ and d_5_i_ <= len(l))
         Invariant(len(result) <= d_5_i_)
         Invariant(Forall(int, lambda j:Implies( (0 <= j and j < len(result)) , (result[j] > 0))))
-        Invariant(Forall(int, lambda j:Implies( (0 <= j and j < d_5_i_) , 
+        Invariant(Forall(int, lambda j:Implies( (0 <= j and j < d_5_i_) ,
                   (Implies(l[j] > 0 , Exists(int, lambda k: (0 <= k and k < len(result) and result[k] == l[j])))))))
-        Invariant(Forall(int, lambda j:Implies( (0 <= j and j < len(result)) , 
+        Invariant(Forall(int, lambda j:Implies( (0 <= j and j < len(result)) ,
                   Exists(int, lambda k: (0 <= k and k < d_5_i_ and l[k] == result[j])))))
         Invariant(Forall(int, lambda j1, j2:Implies( (0 <= j1 and j1 < j2 and j2 < len(result)) ,
-                  Exists(int, lambda k1, k2: (0 <= k1 and k1 < k2 and k2 < d_5_i_ and 
+                  Exists(int, lambda k1, k2: (0 <= k1 and k1 < k2 and k2 < d_5_i_ and
                                               l[k1] == result[j1] and l[k2] == result[j2])))))
         d_13_n_ = int(0)
         d_13_n_ = (l)[d_5_i_]
@@ -150,9 +151,10 @@ def get__positive(l : List[int]) -> List[int]:
     prg = NaginiRewriterFixing().replace_impl(code)
     assert prg == res
 
+
 def test_nagini_rewriter2():
     code = dedent(
-    """\
+        """\
 def fizz__buzz(n : int) -> int:
     Requires(n >= 0)
     Ensures(Result() >= 0)
@@ -166,8 +168,8 @@ def fizz__buzz(n : int) -> int:
         Invariant(d_1_i_ <= n)
         Invariant(result >= 0)
         Invariant(result == fizz_buzz_fun(d_1_i_))
-        Invariant(Forall(int, lambda k: (0 <= k and k < d_1_i_) ==> 
-                         (((k % 11 == 0) or (k % 13 == 0)) ==> 
+        Invariant(Forall(int, lambda k: (0 <= k and k < d_1_i_) ==>
+                         (((k % 11 == 0) or (k % 13 == 0)) ==>
                           (fizz_buzz_fun(k+1) == fizz_buzz_fun(k) + count7__r(k)))))
         if (((d_1_i_ % 11)) == (0)) or (((d_1_i_ % 13)) == (0)):
             d_4_cnt_ = int(0)
@@ -179,7 +181,7 @@ def fizz__buzz(n : int) -> int:
     )
 
     res = dedent(
-    """\
+        """\
 def fizz__buzz(n : int) -> int:
     Requires(n >= 0)
     Ensures(Result() >= 0)
@@ -193,8 +195,8 @@ def fizz__buzz(n : int) -> int:
         Invariant(d_1_i_ <= n)
         Invariant(result >= 0)
         Invariant(result == fizz_buzz_fun(d_1_i_))
-        Invariant(Forall(int, lambda k:Implies( (0 <= k and k < d_1_i_) , 
-                         (Implies(((k % 11 == 0) or (k % 13 == 0)) , 
+        Invariant(Forall(int, lambda k:Implies( (0 <= k and k < d_1_i_) ,
+                         (Implies(((k % 11 == 0) or (k % 13 == 0)) ,
                           (fizz_buzz_fun(k+1) == fizz_buzz_fun(k) + count7__r(k)))))))
         if (((d_1_i_ % 11)) == (0)) or (((d_1_i_ % 13)) == (0)):
             d_4_cnt_ = int(0)
@@ -208,9 +210,10 @@ def fizz__buzz(n : int) -> int:
     prg = NaginiRewriterFixing().replace_impl(code)
     assert prg == res
 
+
 def test_nagini_rewriter3():
     code = dedent(
-    """\
+        """\
 from typing import cast, List, Dict, Set, Optional, Union
 from nagini_contracts.contracts import *
 
@@ -248,7 +251,7 @@ def Compare(scores: List[int], guesses: List[int]) -> List[int]:
     )
 
     error = dedent(
-    """\
+        """\
 Manual inspection revealed occurrences of `==>` operator for implication on the following positions:
 (28, 65), (29, 70), (30, 71)
 `==>` operator does not exist in Nagini. All occurrences of `==>` operator should be replaced with `Implies(a, b)` operator, that is used to express implication in Nagini
@@ -291,13 +294,13 @@ Next, we run verifier on this program. Using the following verdict, you should p
     """
     )
 
-    prg, prompt = NaginiRewriterFixing(NaginiRewriter()).rewrite(code)
+    _, prompt = NaginiRewriterFixing(NaginiRewriter()).rewrite(code)
     assert prompt == error
 
 
 def test_nagini_rewriter4():
     code = dedent(
-    """\
+        """\
 from typing import cast, List, Dict, Set, Optional, Union
 from nagini_contracts.contracts import *
 
@@ -336,13 +339,13 @@ def Compare(scores: List[int], guesses: List[int]) -> List[int]:
 
     error = ""
 
-    prg, prompt = NaginiRewriterFixing(NaginiRewriter()).rewrite(code)
+    _, prompt = NaginiRewriterFixing(NaginiRewriter()).rewrite(code)
     assert prompt == error
 
 
 def test_nagini_rewriter5():
     code = dedent(
-    """\
+        """\
 from typing import cast, List, Dict, Set, Optional, Union
 from nagini_contracts.contracts import *
 
@@ -361,7 +364,7 @@ def Compare(scores: List[int], guesses: List[int]) -> List[int]:
     )
 
     error = dedent(
-    """\
+        """\
 We replaced all double (triple and so on) inequalities with their equivalents (as they are prohibited) and got the following program:
 from typing import cast, List, Dict, Set, Optional, Union
 from nagini_contracts.contracts import *
@@ -381,8 +384,11 @@ Next, we run verifier on this program. Using the following verdict, you should p
     """
     )
 
-    prg, prompt = NaginiRewriterFixingAST(NaginiRewriterFixing(NaginiRewriter())).rewrite(code)
+    _, prompt = NaginiRewriterFixingAST(NaginiRewriterFixing(NaginiRewriter())).rewrite(
+        code
+    )
     assert prompt == error
+
 
 def test_rewriter6():
     code = dedent(
@@ -400,6 +406,7 @@ def test_rewriter6():
         """
     )
 
+
 def test_rewriter7():
     code = dedent(
         """\
@@ -407,7 +414,9 @@ def test_rewriter7():
         """
     )
 
-    prg, prompt = NaginiRewriterFixingAST(NaginiRewriterFixing(NaginiRewriter())).rewrite(code)
+    prg, prompt = NaginiRewriterFixingAST(
+        NaginiRewriterFixing(NaginiRewriter())
+    ).rewrite(code)
 
     assert prompt == ""
     assert prg == dedent(
@@ -416,9 +425,10 @@ def test_rewriter7():
         """
     )
 
+
 def test_rewrite_error():
     error = dedent(
-"""\
+        """\
 Errors:
 The precondition of function count_chars_inter might not hold. Assertion Forall(int, (lambda d_0_i_: ((not ((0 <= d_0_i_) and (d_0_i_ < len(s)))) or ((97 <= s[d_0_i_]) and (s[d_0_i_] <= 122))))) might not hold. (016-count_distinct_characters.2.py@43.23--43.51)
 Verification took 9.10 seconds.
@@ -426,7 +436,7 @@ Verification took 9.10 seconds.
     )
 
     code = dedent(
-"""\
+        """\
 from typing import cast, List, Dict, Set, Optional, Union, Tuple
 from nagini_contracts.contracts import *
 
@@ -443,7 +453,7 @@ def contains_char(s : List[int], c : int, i : int, j : int) -> bool:
     else:
         return s[j - 1] == c or contains_char(s, c, i, j - 1)
 
-@Pure 
+@Pure
 def count_chars_inter(s : List[int], c : int) -> int:
     Requires(Acc(list_pred(s)))
     Requires(Forall(int, lambda d_0_i_:
@@ -477,7 +487,7 @@ def count_distinct_characters(s : List[int]) -> int:
             c = c + 1
         d_2_i_ = d_2_i_ + 1
     return c
-# ==== verifiers ==== 
+# ==== verifiers ====
 def contains_char_valid(s : List[int], c : int, i : int, j : int) -> bool:
     # pre-conditions-start
     Requires(Acc(list_pred(s)))
@@ -515,7 +525,7 @@ def count_distinct_characters_valid(s : List[int]) -> int:
     )
 
     assert dedent(
-"""\
+        """\
 Errors:
 The precondition of function count_chars_inter might not hold. Assertion Forall(int, (lambda d_0_i_: ((not ((0 <= d_0_i_) and (d_0_i_ < len(s)))) or ((97 <= s[d_0_i_]) and (s[d_0_i_] <= 122))))) might not hold. (016-count_distinct_characters.2.py@43.23--43.51)
 Error occurred on the following line(s)
@@ -527,7 +537,7 @@ Verification took 9.10 seconds.
 
 def test_rewrite_error1():
     error = dedent(
-"""\
+        """\
 Errors:
 The precondition of function len might not hold. There might be insufficient permission. (029-filter_by_prefix.2.py@39.44--39.51)
 The precondition of function len might not hold. There might be insufficient permission. (029-filter_by_prefix.2.py@59.20--59.26)
@@ -537,7 +547,7 @@ Verification took 10.88 seconds.
     )
 
     code = dedent(
-"""\
+        """\
 from typing import cast, List, Dict, Set, Optional, Union
 from nagini_contracts.contracts import *
 @Pure
@@ -569,7 +579,7 @@ def filter__by__prefix(xs : List[List[int]], p : List[int]) -> List[int]:
     Ensures(Acc(list_pred(xs)))
     Ensures(Forall(xs, lambda x : Acc(list_pred(x))))
     Ensures(Acc(list_pred(Result())))
-    Ensures(Forall(int, lambda d_2_j_: 
+    Ensures(Forall(int, lambda d_2_j_:
         Implies(d_2_j_ >= 0 and d_2_j_ < len(Result()), Result()[d_2_j_] >= 0 and Result()[d_2_j_] < len(xs))))
     Ensures(Forall(int, lambda d_0_i_:
         not (((0) <= (d_0_i_)) and ((d_0_i_) < (len(Result())))) or (starts__with(xs[Result()[d_0_i_]], p, 0))))
@@ -588,7 +598,7 @@ def filter__by__prefix(xs : List[List[int]], p : List[int]) -> List[int]:
             filtered = (filtered) + [d_1_i_]
         d_1_i_ = (d_1_i_) + (1)
     return filtered
-# ==== verifiers ==== 
+# ==== verifiers ====
 def starts__with_valid(s : List[int], p : List[int], i : int) -> bool :
     # pre-conditions-start
     Requires(Acc(list_pred(s), 1/2))
@@ -623,7 +633,7 @@ def filter__by__prefix_valid(xs : List[List[int]], p : List[int]) -> List[int]:
     Ensures(Acc(list_pred(xs)))
     Ensures(Forall(xs, lambda x : Acc(list_pred(x))))
     Ensures(Acc(list_pred(Result())))
-    Ensures(Forall(int, lambda d_2_j_: 
+    Ensures(Forall(int, lambda d_2_j_:
         Implies(d_2_j_ >= 0 and d_2_j_ < len(Result()), Result()[d_2_j_] >= 0 and Result()[d_2_j_] < len(xs))))
     Ensures(Forall(int, lambda d_0_i_:
         not (((0) <= (d_0_i_)) and ((d_0_i_) < (len(Result())))) or (starts__with(xs[Result()[d_0_i_]], p, 0))))
@@ -634,7 +644,7 @@ def filter__by__prefix_valid(xs : List[List[int]], p : List[int]) -> List[int]:
     )
 
     assert dedent(
-"""\
+        """\
 Errors:
 The precondition of function len might not hold. There might be insufficient permission. (029-filter_by_prefix.2.py@39.44--39.51)
 Error occurred on the following line(s)
@@ -652,7 +662,7 @@ Verification took 10.88 seconds.
 
 def test_rewrite_errors2():
     error = dedent(
-"""\
+        """\
 Verification failed
 Errors:
 The precondition of function len might not hold. There might be insufficient permission. (029-filter_by_prefix.4.py@40.44--40.51)
@@ -663,7 +673,7 @@ Verification took 11.41 seconds.
     )
 
     code = dedent(
-"""\
+        """\
 
 from typing import cast, List, Dict, Set, Optional, Union
 from nagini_contracts.contracts import *
@@ -696,7 +706,7 @@ def filter__by__prefix(xs : List[List[int]], p : List[int]) -> List[int]:
     Ensures(Acc(list_pred(xs)))
     Ensures(Forall(xs, lambda x : Acc(list_pred(x))))
     Ensures(Acc(list_pred(Result())))
-    Ensures(Forall(int, lambda d_2_j_: 
+    Ensures(Forall(int, lambda d_2_j_:
         Implies(d_2_j_ >= 0 and d_2_j_ < len(Result()), Result()[d_2_j_] >= 0 and Result()[d_2_j_] < len(xs))))
     Ensures(Forall(int, lambda d_0_i_:
         not (((0) <= (d_0_i_)) and ((d_0_i_) < (len(Result())))) or (starts__with(xs[Result()[d_0_i_]], p, 0))))
@@ -716,7 +726,7 @@ def filter__by__prefix(xs : List[List[int]], p : List[int]) -> List[int]:
         d_1_i_ = (d_1_i_) + (1)
     return filtered
 
-# ==== verifiers ==== 
+# ==== verifiers ====
 def starts__with_valid(s : List[int], p : List[int], i : int) -> bool :
     # pre-conditions-start
     Requires(Acc(list_pred(s), 1/2))
@@ -751,7 +761,7 @@ def filter__by__prefix_valid(xs : List[List[int]], p : List[int]) -> List[int]:
     Ensures(Acc(list_pred(xs)))
     Ensures(Forall(xs, lambda x : Acc(list_pred(x))))
     Ensures(Acc(list_pred(Result())))
-    Ensures(Forall(int, lambda d_2_j_: 
+    Ensures(Forall(int, lambda d_2_j_:
         Implies(d_2_j_ >= 0 and d_2_j_ < len(Result()), Result()[d_2_j_] >= 0 and Result()[d_2_j_] < len(xs))))
     Ensures(Forall(int, lambda d_0_i_:
         not (((0) <= (d_0_i_)) and ((d_0_i_) < (len(Result())))) or (starts__with(xs[Result()[d_0_i_]], p, 0))))
@@ -762,7 +772,7 @@ def filter__by__prefix_valid(xs : List[List[int]], p : List[int]) -> List[int]:
     )
 
     assert dedent(
-"""\
+        """\
 Verification failed
 Errors:
 The precondition of function len might not hold. There might be insufficient permission. (029-filter_by_prefix.4.py@40.44--40.51)

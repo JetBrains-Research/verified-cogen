@@ -1,8 +1,9 @@
 from textwrap import dedent
-from verified_cogen.runners.languages import LanguageDatabase, register_basic_languages
-from verified_cogen.runners.languages.language import AnnotationType
 
 import pytest
+
+from verified_cogen.runners.languages import LanguageDatabase, register_basic_languages
+from verified_cogen.runners.languages.language import AnnotationType
 
 
 @pytest.fixture()
