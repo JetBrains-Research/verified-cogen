@@ -4,7 +4,6 @@ data
 llm-generated
 .envrc
 **/.DS_Store
-benches/DafnyBench/
 benches/HumanEval-Dafny-Mini/
 break_assert.rs
 .venv
