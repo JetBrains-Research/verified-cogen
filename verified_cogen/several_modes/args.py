@@ -1,6 +1,6 @@
 import argparse
 import os
-from typing import Optional, no_type_check, List
+from typing import List, Optional, no_type_check
 
 from verified_cogen.tools.modes import VALID_MODES
 
@@ -10,7 +10,7 @@ class ProgramArgsMultiple:
     dir: Optional[str]
     runs: int
     insert_conditions_mode: str
-    bench_type: str
+    bench_types: list[str]
     temperature: float
     verifier_command: str
     verifier_timeout: int
@@ -32,7 +32,7 @@ class ProgramArgsMultiple:
         self.dir = args.dir
         self.runs = args.runs
         self.insert_conditions_mode = args.insert_conditions_mode
-        self.bench_type = args.bench_type
+        self.bench_types = args.bench_types
         self.temperature = args.temperature
         self.verifier_command = args.verifier_command
         self.verifier_timeout = args.verifier_timeout

@@ -3,9 +3,10 @@ use vstd::prelude::*;
 
 verus! {
 
-spec fn spec_prime(p: int) -> bool {
+spec fn spec_prime(p: int) -> (ret:bool) {
     p > 1 && forall|k: int| 1 < k < p ==> #[trigger] (p % k) != 0
 }
+// pure-end
 
 fn prime(p: u32) -> (ret: bool)
     // post-conditions-start

@@ -1,0 +1,6 @@
+The following errors occurred during verification:
+{error}
+
+Please fix the error by adding, removing or modifying the invariants and asserts and return the fixed program.
+Don't add any additional text comments, your response must contain only program with invariants.
+Do not provide ANY explanations. Don't include markdown backticks. Respond only in Verus code, nothing else.

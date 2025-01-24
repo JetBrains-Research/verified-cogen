@@ -1,17 +1,25 @@
 from textwrap import dedent
+
+import pytest
+
 from verified_cogen.runners.languages import LanguageDatabase, register_basic_languages
 from verified_cogen.runners.languages.language import AnnotationType
 
-register_basic_languages(
-    with_removed=[
-        AnnotationType.INVARIANTS,
-        AnnotationType.ASSERTS,
-    ]
-)
+
+@pytest.fixture()
+def language_database():
+    LanguageDatabase().reset()
+    register_basic_languages(
+        with_removed=[
+            AnnotationType.INVARIANTS,
+            AnnotationType.ASSERTS,
+        ]
+    )
+    return LanguageDatabase()
 
 
-def test_nagini_generate():
-    nagini_lang = LanguageDatabase().get("nagini")
+def test_nagini_generate(language_database: LanguageDatabase):
+    nagini_lang = language_database.get("nagini")
     code = dedent(
         """\
         def main(value: int) -> int:
@@ -24,18 +32,18 @@ def test_nagini_generate():
     )
     assert nagini_lang.generate_validators(code, True) == dedent(
         """\
-        
+
         def main_valid(value: int) -> int:
             Requires(value >= 10)
             Ensures(Result() >= 20)
-            
+
             ret = main(value)
             return ret"""
     )
 
 
-def test_nagini_with_comments():
-    nagini_lang = LanguageDatabase().get("nagini")
+def test_nagini_with_comments(language_database: LanguageDatabase):
+    nagini_lang = language_database.get("nagini")
     code = dedent(
         """\
         def main(value: int) -> int:
@@ -52,7 +60,7 @@ def test_nagini_with_comments():
     )
     assert nagini_lang.generate_validators(code, True) == dedent(
         """\
-        
+
         def main_valid(value: int) -> int:
             # pre-conditions-start
             Requires(value >= 10)
@@ -60,14 +68,14 @@ def test_nagini_with_comments():
             # post-conditions-start
             Ensures(Result() >= 20)
             # post-conditions-end
-            
+
             ret = main(value)
             return ret"""
     )
 
 
-def test_remove_line():
-    nagini_lang = LanguageDatabase().get("nagini")
+def test_remove_line(language_database: LanguageDatabase):
+    nagini_lang = language_database.get("nagini")
     code = dedent(
         """\
         def main():
@@ -80,8 +88,8 @@ def test_remove_line():
     )
 
 
-def test_remove_multiline_assert():
-    nagini_lang = LanguageDatabase().get("nagini")
+def test_remove_multiline_assert(language_database: LanguageDatabase):
+    nagini_lang = language_database.get("nagini")
 
     code = dedent(
         """\
@@ -98,8 +106,8 @@ def test_remove_multiline_assert():
     )
 
 
-def test_remove_invariants():
-    nagini_lang = LanguageDatabase().get("nagini")
+def test_remove_invariants(language_database: LanguageDatabase):
+    nagini_lang = language_database.get("nagini")
 
     code = dedent(
         """\
@@ -117,8 +125,8 @@ def test_remove_invariants():
     )
 
 
-def test_remove_all():
-    nagini_lang = LanguageDatabase().get("nagini")
+def test_remove_all(language_database: LanguageDatabase):
+    nagini_lang = language_database.get("nagini")
 
     code = dedent(
         """\
@@ -179,8 +187,8 @@ def test_remove_all():
     )
 
 
-def test_nagini_large():
-    nagini_lang = LanguageDatabase().get("nagini")
+def test_nagini_large(language_database: LanguageDatabase):
+    nagini_lang = language_database.get("nagini")
 
     code = dedent(
         """\
@@ -252,38 +260,38 @@ def test_nagini_large():
     )
     assert nagini_lang.generate_validators(code, True) == dedent(
         """\
-        
+
         @Pure
         def lower_valid_pure(c : int) -> bool :
-        
-        
+
+
             ret = lower(c)
             return ret
-        
+
         @Pure
         def upper_valid_pure(c : int) -> bool :
-        
-        
+
+
             ret = upper(c)
             return ret
-            
+
         @Pure
         def alpha_valid_pure(c : int) -> bool :
-        
-        
+
+
             ret = alpha(c)
             return ret
-            
+
         @Pure
         def flip__char_valid_pure(c : int) -> int :
             # pre-conditions-start
             Ensures(lower(c) == upper(Result()))
             Ensures(upper(c) == lower(Result()))
             # pre-conditions-end
-            
+
             ret = flip__char(c)
             return ret
-            
+
         def flip__case_valid(s : List[int]) -> List[int] :
             # pre-conditions-start
             Requires(Acc(list_pred(s)))
@@ -295,14 +303,14 @@ def test_nagini_large():
             Ensures(Forall(int, lambda d_0_i_: (Implies(((0) <= (d_0_i_)) and ((d_0_i_) < (len(s))), lower((s)[d_0_i_]) == upper((Result())[d_0_i_])))))
             Ensures(Forall(int, lambda d_0_i_: (Implies(((0) <= (d_0_i_)) and ((d_0_i_) < (len(s))), upper((s)[d_0_i_]) == lower((Result())[d_0_i_])))))
             # post-conditions-end
-            
+
             ret = flip__case(s)
             return ret"""
     )
 
 
-def test_nagini_small():
-    nagini_lang = LanguageDatabase().get("nagini")
+def test_nagini_small(language_database: LanguageDatabase):
+    nagini_lang = language_database.get("nagini")
 
     code = dedent(
         """\
@@ -324,13 +332,13 @@ def test_nagini_small():
     )
     assert nagini_lang.generate_validators(code, False) == dedent(
         """\
-        
+
         def flip__char_valid(c : int) -> int :
             # pre-conditions-start
             Ensures(lower(c) == upper(Result()))
             Ensures(upper(c) == lower(Result()))
             # pre-conditions-end
-            
+
             ret = flip__char(c)
             return ret"""
     )

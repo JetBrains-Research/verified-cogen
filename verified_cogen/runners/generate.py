@@ -40,7 +40,7 @@ class GenerateRunner(Runner):
                 f.write(inv_prg)
             verification_result = self.verifier.verify(output)
             if verification_result is None:
-                logger.info("Verification timed out")
+                logger.info(f"Verification timed out for {self.get_name()}")
                 tries -= 1
                 if tries > 0:
                     inv_prg = self.llm.ask_for_timeout()
@@ -49,10 +49,10 @@ class GenerateRunner(Runner):
                 if verified_inv:
                     return total_tries - tries + 1
                 else:
-                    logger.info("Verification failed:")
+                    logger.info(f"Verification failed for {self.get_name()}:")
                     logger.info(out_inv)
                     logger.info(err_inv)
-                    logger.info("Retrying...")
+                    logger.info(f"Retrying {self.get_name()}...")
                     tries -= 1
                     if tries > 0:
                         inv_prg = self.llm.ask_for_fixed(out_inv + err_inv)
@@ -65,6 +65,7 @@ class GenerateRunner(Runner):
         file: str,
     ) -> Optional[int]:
         logger.info(f"Running on {file}")
+        self.name = basename(file)
 
         with open(file, "r") as f:
             prg = f.read()

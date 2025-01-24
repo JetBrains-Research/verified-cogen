@@ -2,7 +2,7 @@ use vstd::prelude::*;
 
 verus! {
 
-spec fn modp_rec(n: nat, p: nat) -> nat
+spec fn modp_rec(n: nat, p: nat) -> (result:nat)
     decreases n,
 {
     if n == 0 {
@@ -11,6 +11,7 @@ spec fn modp_rec(n: nat, p: nat) -> nat
         (modp_rec((n - 1) as nat, p) * 2) % p
     }
 }
+// pure-end
 
 fn modmul(a: u32, b: u32, p: u32) -> (mul: u32)
     by (nonlinear_arith)

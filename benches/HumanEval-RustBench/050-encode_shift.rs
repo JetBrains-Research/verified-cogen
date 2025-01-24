@@ -2,48 +2,65 @@ use vstd::prelude::*;
 
 verus! {
 
-spec fn encode_char_spec(c: int) -> int
+spec fn encode_char_spec(c: int) -> (result:int)
     recommends
         65 <= c <= 90,
 {
     (c - 65 + 5) % 26 + 65
 }
+// pure-end
 
 fn encode_char(c: u8) -> (r: u8)
+    // pre-conditions-start
     requires
         65 <= c <= 90,
+    // pre-conditions-end
+    // post-conditions-start
     ensures
         r == encode_char_spec(c as int),
         65 <= r <= 90,
+    // post-conditions-end
 {
     (c - 65 + 5) % 26 + 65
 }
 
-spec fn decode_char_spec(c: int) -> int
+spec fn decode_char_spec(c: int) -> (result:int)
     recommends
         65 <= c <= 90,
 {
     (c - 65 + 26 - 5) % 26 + 65
 }
+// pure-end
 
 fn decode_char(c: u8) -> (r: u8)
+    // pre-conditions-start
     requires
         65 <= c <= 90,
+    // pre-conditions-end
+    // post-conditions-start
     ensures
         r == decode_char_spec(c as int),
         65 <= r <= 90,
+    // post-conditions-end
 {
+    // impl-start
     (c - 65 + 26 - 5) % 26 + 65
+    // impl-end
 }
 
 proof fn opposite_encode_decode(c: int)
+    // pre-conditions-start
     requires
         65 <= c <= 90,
+    // pre-conditions-end
+    // post-conditions-start
     ensures
         encode_char_spec(decode_char_spec(c)) == c,
         decode_char_spec(encode_char_spec(c)) == c,
+    // post-conditions-end
 {
 }
+// pure-end
 
 #[verifier::loop_isolation(false)]
 fn encode_shift(s: &Vec<u8>) -> (t: Vec<u8>)

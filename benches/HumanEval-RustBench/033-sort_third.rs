@@ -1,7 +1,8 @@
 use vstd::prelude::*;
 
 verus! {
-spec fn count<T>(s: Seq<T>, x: T) -> int
+
+spec fn count<T>(s: Seq<T>, x: T) -> (result:int)
     decreases s.len(),
 {
     if s.len() == 0 {
@@ -14,9 +15,13 @@ spec fn count<T>(s: Seq<T>, x: T) -> int
         }
     }
 }
-spec fn permutes<T>(s1: Seq<T>, s2: Seq<T>) -> bool {
+// pure-end
+
+spec fn permutes<T>(s1: Seq<T>, s2: Seq<T>) -> (result:bool) {
     forall|x: T| count(s1, x) == count(s2, x)
 }
+// pure-end
+
 proof fn lemma_update_effect_on_count<T>(s: Seq<T>, i: int, v: T, x: T)
     // pre-conditions-start
     requires
@@ -31,23 +36,25 @@ proof fn lemma_update_effect_on_count<T>(s: Seq<T>, i: int, v: T, x: T)
         } else {
             count(s, x)
         },
-    // post-conditions-end
     decreases s.len(),
+    // post-conditions-end
 {
     // impl-start
     if s.len() == 0 {
         return ;
     }
     if i == 0 {
-        assert(s.update(i, v) =~= seq![v] + s.skip(1)); // assert-line
-        assert(s.update(i, v).skip(1) =~= s.skip(1)); // assert-line
+        assert(s.update(i, v) =~= seq![v] + s.skip(1));
+        assert(s.update(i, v).skip(1) =~= s.skip(1));
     } else {
-        assert(s.update(i, v) =~= seq![s[0]] + s.skip(1).update(i - 1, v)); // assert-line
-        assert(s.update(i, v).skip(1) =~= s.skip(1).update(i - 1, v)); // assert-line
+        assert(s.update(i, v) =~= seq![s[0]] + s.skip(1).update(i - 1, v));
+        assert(s.update(i, v).skip(1) =~= s.skip(1).update(i - 1, v));
         lemma_update_effect_on_count(s.skip(1), i - 1, v, x);
     }
     // impl-end
 }
+// pure-end
+
 proof fn lemma_swapping_produces_a_permutation<T>(s: Seq<T>, i: int, j: int)
     // pre-conditions-start
     requires
@@ -60,14 +67,14 @@ proof fn lemma_swapping_produces_a_permutation<T>(s: Seq<T>, i: int, j: int)
     // post-conditions-end
 {
     // impl-start
-    // assert-start
     assert forall|x: T| #[trigger] count(s.update(i, s[j]).update(j, s[i]), x) == count(s, x) by {
         lemma_update_effect_on_count(s, i, s[j], x);
         lemma_update_effect_on_count(s.update(i, s[j]), j, s[i], x);
     }
-    // assert-end
     // impl-end
 }
+// pure-end
+
 fn sort_third(l: Vec<i32>) -> (l_prime: Vec<i32>)
     // post-conditions-start
     ensures
