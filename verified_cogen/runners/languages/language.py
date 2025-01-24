@@ -241,3 +241,7 @@ class LanguageDatabase:
         if name not in self.regularise:
             raise ValueError(f"language {name} not found, has it been registered?")
         return self.languages[self.regularise[name]]
+
+    def reset(self):
+        self.languages = dict()
+        self.regularise = dict()

@@ -2,19 +2,27 @@ from textwrap import dedent
 from verified_cogen.runners.languages import LanguageDatabase, register_basic_languages
 from verified_cogen.runners.languages.language import AnnotationType
 
-register_basic_languages(
-    with_removed=[
-        AnnotationType.INVARIANTS,
-        AnnotationType.ASSERTS,
-        AnnotationType.IMPLS,
-        AnnotationType.PRE_CONDITIONS,
-        AnnotationType.POST_CONDITIONS,
-        AnnotationType.PURE,
-    ]
-)
+import pytest
 
-def test_verus_wo_prepost_validators():
-    verus_lang = LanguageDatabase().get("verus")
+
+@pytest.fixture()
+def language_database():
+    LanguageDatabase().reset()
+    register_basic_languages(
+        with_removed=[
+            AnnotationType.INVARIANTS,
+            AnnotationType.ASSERTS,
+            AnnotationType.IMPLS,
+            AnnotationType.PRE_CONDITIONS,
+            AnnotationType.POST_CONDITIONS,
+            AnnotationType.PURE,
+        ]
+    )
+    return LanguageDatabase()
+
+
+def test_verus_wo_prepost_validators(language_database: LanguageDatabase):
+    verus_lang = language_database.get("verus")
     code = dedent(
         """\
 use vstd::assert_seqs_equal;
@@ -164,15 +172,15 @@ fn intersperse(numbers: Vec<u64>, delimiter: u64) -> (result: Vec<u64>)
                 intersperse_spec_copy_pure(numbers.drop_last(), delimiter) + seq![delimiter, numbers.last()]
             }
         }
-        
+
         spec fn even_copy_pure(i: int) -> (result:int) {
             2 * i
         }
-        
+
         spec fn odd_copy_pure(i: int) -> (result:int) {
             2 * i + 1
         }
-        
+
         spec fn intersperse_quantified_copy_pure(numbers: Seq<u64>, delimiter: u64, interspersed: Seq<u64>) -> (result:bool) {
             (if numbers.len() == 0 {
                 interspersed.len() == 0
@@ -193,8 +201,8 @@ fn intersperse(numbers: Vec<u64>, delimiter: u64) -> (result: Vec<u64>)
     )
 
 
-def test_verus_wo_prepost_remove():
-    verus_lang = LanguageDatabase().get("verus")
+def test_verus_wo_prepost_remove(language_database: LanguageDatabase):
+    verus_lang = language_database.get("verus")
     code = dedent(
         """\
 use vstd::assert_seqs_equal;
@@ -342,4 +350,3 @@ fn intersperse(numbers: Vec<u64>, delimiter: u64) -> (result: Vec<u64>)
 }
 } // verus!"""
     )
-

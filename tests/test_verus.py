@@ -2,16 +2,23 @@ from textwrap import dedent
 from verified_cogen.runners.languages import LanguageDatabase, register_basic_languages
 from verified_cogen.runners.languages.language import AnnotationType
 
-register_basic_languages(
-    with_removed=[
-        AnnotationType.INVARIANTS,
-        AnnotationType.ASSERTS,
-    ]
-)
+import pytest
 
 
-def test_verus_generate():
-    verus_lang = LanguageDatabase().get("verus")
+@pytest.fixture()
+def language_database():
+    LanguageDatabase().reset()
+    register_basic_languages(
+        with_removed=[
+            AnnotationType.INVARIANTS,
+            AnnotationType.ASSERTS,
+        ]
+    )
+    return LanguageDatabase()
+
+
+def test_verus_generate(language_database: LanguageDatabase):
+    verus_lang = language_database.get("verus")
     code = dedent(
         """\
         fn main(value: i32) -> (result: i32)
@@ -24,7 +31,7 @@ def test_verus_generate():
             value * 2
         }
 
-        spec fn test(val: i32) -> (result: i32) 
+        spec fn test(val: i32) -> (result: i32)
         {
             val
         }
@@ -62,9 +69,9 @@ def test_verus_generate():
     assert verus_lang.generate_validators(code, True) == dedent(
         """\
         verus!{
-        spec fn test_valid_pure(val: i32) -> (result: i32) 
+        spec fn test_valid_pure(val: i32) -> (result: i32)
         { let ret = test(val); ret }
-        
+
         fn main_valid(value: i32) -> (result: i32)
             requires
                 value >= 10,
@@ -82,11 +89,11 @@ def test_verus_generate():
     )
 
 
-def test_verus_generate2():
-    verus_lang = LanguageDatabase().get("verus")
+def test_verus_generate2(language_database: LanguageDatabase):
+    verus_lang = language_database.get("verus")
     code = dedent(
         """\
-        spec fn expr_inner_divide_i32_by_usize(qr : (i32, usize), x: i32, d: usize) -> (result:bool) 
+        spec fn expr_inner_divide_i32_by_usize(qr : (i32, usize), x: i32, d: usize) -> (result:bool)
         {
             let (q, r) = qr;
             q == x as int / d as int && r == x as int % d as int
@@ -96,13 +103,14 @@ def test_verus_generate2():
     assert verus_lang.generate_validators(code, True) == dedent(
         """\
         verus!{
-        spec fn expr_inner_divide_i32_by_usize_valid_pure(qr : (i32, usize), x: i32, d: usize) -> (result:bool) 
+        spec fn expr_inner_divide_i32_by_usize_valid_pure(qr : (i32, usize), x: i32, d: usize) -> (result:bool)
         { let ret = expr_inner_divide_i32_by_usize(qr, x, d); ret }
         }"""
     )
 
-def test_verus_generate1_step0():
-    verus_lang = LanguageDatabase().get("verus")
+
+def test_verus_generate1_step0(language_database: LanguageDatabase):
+    verus_lang = language_database.get("verus")
     code = dedent(
         """\
         use vstd::assert_seqs_equal;
@@ -119,7 +127,7 @@ def test_verus_generate1_step0():
             }
         }
         // pure-end
-        
+
         spec fn even(i: int) -> (result:int) {
             2 * i
         }
@@ -139,8 +147,8 @@ def test_verus_generate1_step0():
     )
 
 
-def test_verus_generate1_step1():
-    verus_lang = LanguageDatabase().get("verus")
+def test_verus_generate1_step1(language_database: LanguageDatabase):
+    verus_lang = language_database.get("verus")
     code = dedent(
         """\
         use vstd::assert_seqs_equal;
@@ -161,7 +169,7 @@ def test_verus_generate1_step1():
             // impl-end
         }
         // pure-end
-        
+
         proof fn intersperse_quantified_is_spec(numbers: Seq<u64>, delimiter: u64, interspersed: Seq<u64>)
             // pre-conditions-start
             requires
@@ -215,8 +223,9 @@ def test_verus_generate1_step1():
         }"""
     )
 
-def test_verus_generate1_step2():
-    verus_lang = LanguageDatabase().get("verus")
+
+def test_verus_generate1_step2(language_database: LanguageDatabase):
+    verus_lang = language_database.get("verus")
     code = dedent(
         """\
         use vstd::assert_seqs_equal;
@@ -259,7 +268,7 @@ def test_verus_generate1_step2():
             }
             // impl-end
         }
-        
+
         } // verus!"""
     )
     assert verus_lang.generate_validators(code, True) == dedent(
@@ -275,8 +284,8 @@ def test_verus_generate1_step2():
     )
 
 
-def test_verus_generate1():
-    verus_lang = LanguageDatabase().get("verus")
+def test_verus_generate1(language_database: LanguageDatabase):
+    verus_lang = language_database.get("verus")
     code = dedent(
         """\
 use vstd::assert_seqs_equal;
@@ -420,13 +429,13 @@ fn intersperse(numbers: Vec<u64>, delimiter: u64) -> (result: Vec<u64>)
         spec fn intersperse_spec_valid_pure(numbers: Seq<u64>, delimiter: u64) -> (result:Seq<u64>)
             decreases numbers.len(),
         { let ret = intersperse_spec(numbers, delimiter); ret }
-        
+
         spec fn even_valid_pure(i: int) -> (result:int) { let ret = even(i); ret }
-        
+
         spec fn odd_valid_pure(i: int) -> (result:int) { let ret = odd(i); ret }
-        
+
         spec fn intersperse_quantified_valid_pure(numbers: Seq<u64>, delimiter: u64, interspersed: Seq<u64>) -> (result:bool) { let ret = intersperse_quantified(numbers, delimiter, interspersed); ret }
-        
+
         fn intersperse_valid(numbers: Vec<u64>, delimiter: u64) -> (result: Vec<u64>)
             // post-conditions-start
             ensures
@@ -436,8 +445,9 @@ fn intersperse(numbers: Vec<u64>, delimiter: u64) -> (result: Vec<u64>)
         }"""
     )
 
-def test_remove_line():
-    verus_lang = LanguageDatabase().get("verus")
+
+def test_remove_line(language_database: LanguageDatabase):
+    verus_lang = language_database.get("verus")
     code = dedent(
         """\
         fn main() {
@@ -451,8 +461,8 @@ def test_remove_line():
     )
 
 
-def test_remove_multiline_assert():
-    verus_lang = LanguageDatabase().get("verus")
+def test_remove_multiline_assert(language_database: LanguageDatabase):
+    verus_lang = language_database.get("verus")
 
     code = dedent(
         """\
@@ -471,8 +481,8 @@ def test_remove_multiline_assert():
     )
 
 
-def test_remove_invariants():
-    verus_lang = LanguageDatabase().get("verus")
+def test_remove_invariants(language_database: LanguageDatabase):
+    verus_lang = language_database.get("verus")
 
     code = dedent(
         """\
@@ -496,8 +506,8 @@ def test_remove_invariants():
     )
 
 
-def test_remove_all():
-    verus_lang = LanguageDatabase().get("verus")
+def test_remove_all(language_database: LanguageDatabase):
+    verus_lang = language_database.get("verus")
 
     code = dedent(
         """\
