@@ -2,7 +2,7 @@ use vstd::prelude::*;
 
 verus! {
 
-spec fn spec_fibfib(n: nat) -> nat
+spec fn spec_fibfib(n: nat) -> (ret: nat)
     decreases n,
 {
     if (n == 0) {
@@ -15,6 +15,7 @@ spec fn spec_fibfib(n: nat) -> nat
         spec_fibfib((n - 1) as nat) + spec_fibfib((n - 2) as nat) + spec_fibfib((n - 3) as nat)
     }
 }
+// pure-end
 
 fn fibfib(x: u32) -> (ret: Option<u32>)
     // post-conditions-start

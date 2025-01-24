@@ -46,7 +46,6 @@ proof fn implies_contains(s0: Seq<u8>, s1: Seq<u8>, hs1: Set<u8>)
     // post-conditions-end
 {
     // impl-start
-    // assert-start
     assert forall|i: int|
         #![auto]
         0 <= i < s0.len() && 0 <= s0[i] < 256 && hs1.contains(s0[i]) implies s1.contains(s0[i]) by {
@@ -55,9 +54,9 @@ proof fn implies_contains(s0: Seq<u8>, s1: Seq<u8>, hs1: Set<u8>)
         assert(hs1.contains(x as u8));
         assert(s1.contains(x as u8));
     };
-    // assert-end
     // impl-end
 }
+// pure-end
 
 #[verifier::loop_isolation(false)]
 fn same_chars(s0: &Vec<u8>, s1: &Vec<u8>) -> (same: bool)

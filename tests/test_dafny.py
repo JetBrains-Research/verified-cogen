@@ -2,16 +2,23 @@ from textwrap import dedent
 from verified_cogen.runners.languages import LanguageDatabase, register_basic_languages
 from verified_cogen.runners.languages.language import AnnotationType
 
-register_basic_languages(
-    with_removed=[
-        AnnotationType.INVARIANTS,
-        AnnotationType.ASSERTS,
-    ]
-)
+import pytest
 
 
-def test_dafny_generate():
-    dafny_lang = LanguageDatabase().get("dafny")
+@pytest.fixture()
+def language_database():
+    LanguageDatabase().reset()
+    register_basic_languages(
+        with_removed=[
+            AnnotationType.INVARIANTS,
+            AnnotationType.ASSERTS,
+        ]
+    )
+    return LanguageDatabase()
+
+
+def test_dafny_generate(language_database: LanguageDatabase):
+    dafny_lang = language_database.get("dafny")
     code = dedent(
         """\
         method main(value: int) returns (result: int)
@@ -32,12 +39,12 @@ def test_dafny_generate():
     )
 
 
-def test_dafny_generate_with_helper():
-    dafny_lang = LanguageDatabase().get("dafny")
+def test_dafny_generate_with_helper(language_database: LanguageDatabase):
+    dafny_lang = language_database.get("dafny")
     code = dedent(
         """\
         function abs(n: int) : nat { if n > 0 then n else -n }
-        
+
         method main(value: int) returns (result: int)
             requires value >= 10
             ensures result >= 20
@@ -49,7 +56,7 @@ def test_dafny_generate_with_helper():
     assert dafny_lang.generate_validators(code, True) == dedent(
         """\
         function abs_valid_pure(n: int): nat { abs(n) }
-        
+
         method main_valid(value: int) returns (result: int)
             requires value >= 10
             ensures result >= 20
@@ -58,8 +65,8 @@ def test_dafny_generate_with_helper():
     )
 
 
-def test_dafny_generate_multiple_returns():
-    dafny_lang = LanguageDatabase().get("dafny")
+def test_dafny_generate_multiple_returns(language_database: LanguageDatabase):
+    dafny_lang = language_database.get("dafny")
     code = dedent(
         """\
         method main(value: int) returns (result: int, result2: int)
@@ -83,8 +90,8 @@ def test_dafny_generate_multiple_returns():
     )
 
 
-def test_remove_line():
-    dafny_lang = LanguageDatabase().get("dafny")
+def test_remove_line(language_database: LanguageDatabase):
+    dafny_lang = language_database.get("dafny")
     code = dedent(
         """\
         method main() {
@@ -98,8 +105,8 @@ def test_remove_line():
     )
 
 
-def test_remove_multiline_assert():
-    dafny_lang = LanguageDatabase().get("dafny")
+def test_remove_multiline_assert(language_database: LanguageDatabase):
+    dafny_lang = language_database.get("dafny")
 
     code = dedent(
         """\
@@ -118,8 +125,8 @@ def test_remove_multiline_assert():
     )
 
 
-def test_remove_invariants():
-    dafny_lang = LanguageDatabase().get("dafny")
+def test_remove_invariants(language_database: LanguageDatabase):
+    dafny_lang = language_database.get("dafny")
 
     code = dedent(
         """\
@@ -143,8 +150,8 @@ def test_remove_invariants():
     )
 
 
-def test_remove_all():
-    dafny_lang = LanguageDatabase().get("dafny")
+def test_remove_all(language_database: LanguageDatabase):
+    dafny_lang = language_database.get("dafny")
 
     code = dedent(
         """\
@@ -193,4 +200,3 @@ def test_remove_all():
           }
         }"""
     )
-

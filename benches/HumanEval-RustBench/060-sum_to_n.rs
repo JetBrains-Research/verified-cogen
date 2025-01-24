@@ -2,7 +2,7 @@ use vstd::prelude::*;
 
 verus! {
 
-spec fn spec_sum_to_n(n: nat) -> nat
+spec fn spec_sum_to_n(n: nat) -> (ret:nat)
     decreases n,
 {
     if (n == 0) {
@@ -11,6 +11,7 @@ spec fn spec_sum_to_n(n: nat) -> nat
         n + spec_sum_to_n((n - 1) as nat)
     }
 }
+// pure-end
 
 fn sum_to_n(n: u32) -> (sum: Option<u32>)
     // post-conditions-start

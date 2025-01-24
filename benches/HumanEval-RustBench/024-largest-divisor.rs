@@ -5,12 +5,16 @@ use vstd::prelude::*;
 
 verus! {
 
-pub open spec fn mul(a: nat, b: nat) -> nat {
+spec fn mul(a: nat, b: nat) -> (result:nat) {
     builtin::mul(a, b)
 }
-pub open spec fn divides(factor: nat, candidate: nat) -> bool {
+// pure-end
+
+spec fn divides(factor: nat, candidate: nat) -> (result:bool) {
     exists|k: nat| mul(factor, k) == candidate
 }
+// pure-end
+
 proof fn lemma_mod_zero(a: nat, b: nat)
     // pre-conditions-start
     requires
@@ -24,9 +28,11 @@ proof fn lemma_mod_zero(a: nat, b: nat)
 {
     // impl-start
     lemma_fundamental_div_mod(a as int, b as int);
-    assert(mul(b, (a / b)) == a); // assert-line
+    assert(mul(b, (a / b)) == a);
     // impl-end
 }
+// pure-end
+
 proof fn lemma_mod_zero_reversed(a: nat, b: nat)
     // pre-conditions-start
     requires
@@ -40,14 +46,14 @@ proof fn lemma_mod_zero_reversed(a: nat, b: nat)
 {
     // impl-start
     let k_wit = choose|k: nat| mul(b, k) == a;
-    // assert-start
     assert(k_wit == a / b) by {
         lemma_fundamental_div_mod_converse_div(a as int, b as int, k_wit as int, 0 as int);
     }
-    // assert-end
     lemma_fundamental_div_mod(a as int, b as int);
     // impl-end
 }
+// pure-end
+
 proof fn lemma_one_divides_all()
     // post-conditions-start
     ensures
@@ -55,13 +61,13 @@ proof fn lemma_one_divides_all()
     // post-conditions-end
 {
     // impl-start
-    // assert-start
     assert forall|v: nat| divides(1 as nat, v) by {
         assert(mul(1 as nat, v) == v);
     }
-    // assert-end
     // impl-end
 }
+// pure-end
+
 fn largest_divisor(n: u32) -> (ret: u32)
     // pre-conditions-start
     requires
