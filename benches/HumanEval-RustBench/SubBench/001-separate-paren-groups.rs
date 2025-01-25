@@ -141,7 +141,6 @@ fn separate_paren_groups(input: &Vec<char>) -> (groups: Vec<Vec<char>>)
             assert(current_group@.drop_last() == prev_group);
             assert(ghost_groups.flatten() + current_group@ =~= (ghost_groups.flatten()
                 + prev_group).push('('));
-            ));
             assert(forall|i|
                 0 < i < prev_group.len() ==> #[trigger] current_group@.take(i) == prev_group.take(
                     i,
