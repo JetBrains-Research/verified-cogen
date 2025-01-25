@@ -1,21 +1,4 @@
 from textwrap import dedent
-<<<<<<< HEAD
-from verified_cogen.runners.languages import LanguageDatabase, register_basic_languages
-from verified_cogen.runners.languages.language import AnnotationType
-
-register_basic_languages(
-    with_removed=[
-        AnnotationType.INVARIANTS,
-        AnnotationType.ASSERTS,
-        AnnotationType.IMPLS,
-        AnnotationType.PRE_CONDITIONS,
-        AnnotationType.POST_CONDITIONS,
-    ]
-)
-
-def test_verus_wo_prepost_validators():
-    verus_lang = LanguageDatabase().get("verus")
-=======
 
 import pytest
 
@@ -40,7 +23,6 @@ def language_database():
 
 def test_verus_wo_prepost_validators(language_database: LanguageDatabase):
     verus_lang = language_database.get("verus")
->>>>>>> 8e456dd5261b9a2f388f73c95c79ddcccf47028b
     code = dedent(
         """\
 use vstd::assert_seqs_equal;
@@ -201,13 +183,8 @@ fn intersperse(numbers: Vec<u64>, delimiter: u64) -> (result: Vec<u64>)
     )
 
 
-<<<<<<< HEAD
-def test_verus_wo_prepost_remove():
-    verus_lang = LanguageDatabase().get("verus")
-=======
 def test_verus_wo_prepost_remove(language_database: LanguageDatabase):
     verus_lang = language_database.get("verus")
->>>>>>> 8e456dd5261b9a2f388f73c95c79ddcccf47028b
     code = dedent(
         """\
 use vstd::assert_seqs_equal;
@@ -377,7 +354,3 @@ fn intersperse(numbers: Vec<u64>, delimiter: u64) -> (result: Vec<u64>)
 }
 } // verus!"""
     )
-<<<<<<< HEAD
-
-=======
->>>>>>> 8e456dd5261b9a2f388f73c95c79ddcccf47028b

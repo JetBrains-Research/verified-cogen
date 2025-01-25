@@ -90,19 +90,11 @@ def test_verus_generate(language_database: LanguageDatabase):
     )
 
 
-<<<<<<< HEAD
-def test_verus_generate2():
-    verus_lang = LanguageDatabase().get("verus")
-    code = dedent(
-        """\
-        spec fn expr_inner_divide_i32_by_usize(qr : (i32, usize), x: i32, d: usize) -> (result:bool) 
-=======
 def test_verus_generate2(language_database: LanguageDatabase):
     verus_lang = language_database.get("verus")
     code = dedent(
         """\
         spec fn expr_inner_divide_i32_by_usize(qr : (i32, usize), x: i32, d: usize) -> (result:bool)
->>>>>>> 8e456dd5261b9a2f388f73c95c79ddcccf47028b
         {
             let (q, r) = qr;
             q == x as int / d as int && r == x as int % d as int
@@ -112,23 +104,14 @@ def test_verus_generate2(language_database: LanguageDatabase):
     assert verus_lang.generate_validators(code, True) == dedent(
         """\
         verus!{
-<<<<<<< HEAD
-        spec fn expr_inner_divide_i32_by_usize_valid_pure(qr : (i32, usize), x: i32, d: usize) -> (result:bool) 
-=======
         spec fn expr_inner_divide_i32_by_usize_valid_pure(qr : (i32, usize), x: i32, d: usize) -> (result:bool)
->>>>>>> 8e456dd5261b9a2f388f73c95c79ddcccf47028b
         { let ret = expr_inner_divide_i32_by_usize(qr, x, d); ret }
         }"""
     )
 
-<<<<<<< HEAD
-def test_verus_generate1_step0():
-    verus_lang = LanguageDatabase().get("verus")
-=======
 
 def test_verus_generate1_step0(language_database: LanguageDatabase):
     verus_lang = language_database.get("verus")
->>>>>>> 8e456dd5261b9a2f388f73c95c79ddcccf47028b
     code = dedent(
         """\
         use vstd::assert_seqs_equal;
@@ -145,11 +128,7 @@ def test_verus_generate1_step0(language_database: LanguageDatabase):
             }
         }
         // pure-end
-<<<<<<< HEAD
-        
-=======
 
->>>>>>> 8e456dd5261b9a2f388f73c95c79ddcccf47028b
         spec fn even(i: int) -> (result:int) {
             2 * i
         }
@@ -169,13 +148,8 @@ def test_verus_generate1_step0(language_database: LanguageDatabase):
     )
 
 
-<<<<<<< HEAD
-def test_verus_generate1_step1():
-    verus_lang = LanguageDatabase().get("verus")
-=======
 def test_verus_generate1_step1(language_database: LanguageDatabase):
     verus_lang = language_database.get("verus")
->>>>>>> 8e456dd5261b9a2f388f73c95c79ddcccf47028b
     code = dedent(
         """\
         use vstd::assert_seqs_equal;
@@ -196,11 +170,7 @@ def test_verus_generate1_step1(language_database: LanguageDatabase):
             // impl-end
         }
         // pure-end
-<<<<<<< HEAD
-        
-=======
 
->>>>>>> 8e456dd5261b9a2f388f73c95c79ddcccf47028b
         proof fn intersperse_quantified_is_spec(numbers: Seq<u64>, delimiter: u64, interspersed: Seq<u64>)
             // pre-conditions-start
             requires
@@ -254,14 +224,9 @@ def test_verus_generate1_step1(language_database: LanguageDatabase):
         }"""
     )
 
-<<<<<<< HEAD
-def test_verus_generate1_step2():
-    verus_lang = LanguageDatabase().get("verus")
-=======
 
 def test_verus_generate1_step2(language_database: LanguageDatabase):
     verus_lang = language_database.get("verus")
->>>>>>> 8e456dd5261b9a2f388f73c95c79ddcccf47028b
     code = dedent(
         """\
         use vstd::assert_seqs_equal;
@@ -304,11 +269,7 @@ def test_verus_generate1_step2(language_database: LanguageDatabase):
             }
             // impl-end
         }
-<<<<<<< HEAD
-        
-=======
 
->>>>>>> 8e456dd5261b9a2f388f73c95c79ddcccf47028b
         } // verus!"""
     )
     assert verus_lang.generate_validators(code, True) == dedent(
@@ -324,13 +285,8 @@ def test_verus_generate1_step2(language_database: LanguageDatabase):
     )
 
 
-<<<<<<< HEAD
-def test_verus_generate1():
-    verus_lang = LanguageDatabase().get("verus")
-=======
 def test_verus_generate1(language_database: LanguageDatabase):
     verus_lang = language_database.get("verus")
->>>>>>> 8e456dd5261b9a2f388f73c95c79ddcccf47028b
     code = dedent(
         """\
 use vstd::assert_seqs_equal;
@@ -474,15 +430,6 @@ fn intersperse(numbers: Vec<u64>, delimiter: u64) -> (result: Vec<u64>)
         spec fn intersperse_spec_valid_pure(numbers: Seq<u64>, delimiter: u64) -> (result:Seq<u64>)
             decreases numbers.len(),
         { let ret = intersperse_spec(numbers, delimiter); ret }
-<<<<<<< HEAD
-        
-        spec fn even_valid_pure(i: int) -> (result:int) { let ret = even(i); ret }
-        
-        spec fn odd_valid_pure(i: int) -> (result:int) { let ret = odd(i); ret }
-        
-        spec fn intersperse_quantified_valid_pure(numbers: Seq<u64>, delimiter: u64, interspersed: Seq<u64>) -> (result:bool) { let ret = intersperse_quantified(numbers, delimiter, interspersed); ret }
-        
-=======
 
         spec fn even_valid_pure(i: int) -> (result:int) { let ret = even(i); ret }
 
@@ -490,7 +437,6 @@ fn intersperse(numbers: Vec<u64>, delimiter: u64) -> (result: Vec<u64>)
 
         spec fn intersperse_quantified_valid_pure(numbers: Seq<u64>, delimiter: u64, interspersed: Seq<u64>) -> (result:bool) { let ret = intersperse_quantified(numbers, delimiter, interspersed); ret }
 
->>>>>>> 8e456dd5261b9a2f388f73c95c79ddcccf47028b
         fn intersperse_valid(numbers: Vec<u64>, delimiter: u64) -> (result: Vec<u64>)
             // post-conditions-start
             ensures
@@ -500,14 +446,9 @@ fn intersperse(numbers: Vec<u64>, delimiter: u64) -> (result: Vec<u64>)
         }"""
     )
 
-<<<<<<< HEAD
-def test_remove_line():
-    verus_lang = LanguageDatabase().get("verus")
-=======
 
 def test_remove_line(language_database: LanguageDatabase):
     verus_lang = language_database.get("verus")
->>>>>>> 8e456dd5261b9a2f388f73c95c79ddcccf47028b
     code = dedent(
         """\
         fn main() {
