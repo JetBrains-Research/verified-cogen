@@ -89,9 +89,9 @@ class InvariantRunner(Runner):
             prg, prompt = self.rewriter.rewrite(inv_prg)
 
             if prompt != "":
-                self.logger.info("Manually rewrite:")
+                self.logger.info(f"Manually rewrite for {self.get_name()}:")
                 self.logger.info(inv_prg)
-                self.logger.info("Manual rewriting results:")
+                self.logger.info(f"Manual rewriting results for {self.get_name()}:")
                 self.logger.info(prompt)
                 self.llm.add_user_prompt(prompt)
                 self.llm.add_response("understood")

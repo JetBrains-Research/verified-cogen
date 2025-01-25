@@ -46,7 +46,7 @@ class ValidatingRunner(Runner):
         if self.config.remove_implementations and not self.config.remove_helpers:
             self.pure_non_helpers = self.language.find_pure_non_helpers(prg)
             self.logger.info(
-                "found pure_non_helpers: " + ",".join(self.pure_non_helpers)
+                f"found pure_non_helpers for {self.get_name()}: {','.join(self.pure_non_helpers)}"
             )
         res_prg = self.language.remove_conditions(prg)
         self.wrapped_runner.starting_prg = res_prg
@@ -60,9 +60,11 @@ class ValidatingRunner(Runner):
                 invalid_helpers, inv_prg = self.language.check_helpers(
                     inv_prg, self.pure_non_helpers
                 )
-                self.logger.info("invalid_helpers: " + ",".join(invalid_helpers))
+                self.logger.info(
+                    f"invalid_helpers for {self.get_name()}: {','.join(invalid_helpers)}"
+                )
             except Exception:
-                self.logger.info("pass")
+                self.logger.info(f"pass for {self.get_name()}")
                 pass
             if invalid_helpers:
                 self.llm.add_user_prompt(
