@@ -1,4 +1,5 @@
 import logging
+from http.client import RemoteDisconnected
 from pathlib import Path
 from typing import Optional
 
@@ -8,6 +9,7 @@ from grazie.api.client.endpoints import GrazieApiGatewayUrls
 from grazie.api.client.gateway import (
     AuthType,
     GrazieApiGatewayClient,
+    RequestFailedException,
 )
 from grazie.api.client.llm_parameters import LLMParameters
 from grazie.api.client.parameters import Parameters
@@ -102,12 +104,12 @@ class LLM:
                     LLMParameters.Temperature: Parameters.FloatValue(temperature)
                 },
             )
-        except Exception:
+        except (RemoteDisconnected, RequestFailedException):
             logger.warning("Grazie API is down, retrying...")
             return self._request(temperature, tries - 1)
-        # except RequestFailedException as e:
-        #     self.dump_history(Path("err_dump.txt"))
-        #     raise e
+        except Exception as e:
+            self.dump_history(Path("err_dump.txt"))
+            raise e
 
     def make_request(self) -> str:
         response = self._request().content
