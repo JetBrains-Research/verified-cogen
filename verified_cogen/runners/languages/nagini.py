@@ -12,6 +12,13 @@ def {method_name}_valid({parameters}) -> {returns}:{specs}\
     return ret\
 """
 
+NAGINI_VALIDATOR_TEMPLATE_VOID = """\
+
+def {method_name}_valid({parameters}):{specs}\
+\n
+    {method_name}({param_names})\
+"""
+
 NAGINI_VALIDATOR_TEMPLATE_PURE_COPY = """
 @Pure
 def {method_name}_copy_pure({parameters}) -> {returns}:{specs}\
@@ -47,8 +54,13 @@ class NaginiLanguage(GenericLanguage):
                 r"@Pure\s+def\s+(\w+)\s*\((.*?)\)\s*->\s*(.*?):(.*?)\s+# pure-start(.*?)\s+# pure-end",
                 re.DOTALL,
             ),
+            re.compile(
+                r"def\s+(\w+)\s*\((.*?)\)\s*:(.*?)\s+# (impl-start|pure-start)",
+                re.DOTALL,
+            ),
             NAGINI_VALIDATOR_TEMPLATE,
             NAGINI_VALIDATOR_TEMPLATE_PURE,
+            NAGINI_VALIDATOR_TEMPLATE_PURE_COPY,
             NAGINI_VALIDATOR_TEMPLATE_PURE_COPY,
             AnnotationType.PURE in remove_annotations,
             [

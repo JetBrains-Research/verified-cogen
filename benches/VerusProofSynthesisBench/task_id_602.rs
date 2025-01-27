@@ -1,7 +1,5 @@
 use vstd::prelude::*;
 
-fn main() {}
-
 verus! {
 
 spec fn count_frequency_rcr(seq: Seq<char>, key: char) -> (result: int)
@@ -106,3 +104,5 @@ fn first_repeated_char(str1: &Vec<char>) -> (repeated_char: Option<(usize, char)
 }
 
 } // verus!
+
+fn main() {}

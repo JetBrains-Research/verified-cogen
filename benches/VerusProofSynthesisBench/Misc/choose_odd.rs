@@ -1,5 +1,4 @@
 use vstd::prelude::*;
-fn main() {}
 
 verus!{
 fn choose_odd(v: &Vec<u64>) -> (odd_index: usize)
@@ -30,3 +29,6 @@ fn choose_odd(v: &Vec<u64>) -> (odd_index: usize)
     // impl-end
 }
 }
+
+
+fn main() {}

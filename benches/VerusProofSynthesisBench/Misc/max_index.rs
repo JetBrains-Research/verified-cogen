@@ -1,5 +1,5 @@
 use vstd::prelude::*;
-fn main() {}
+
 verus! {
 
 fn myfun1(x: &Vec<i32>) -> (max_index: usize)
@@ -35,3 +35,6 @@ fn myfun1(x: &Vec<i32>) -> (max_index: usize)
 }
 
 } // verus!
+
+
+fn main() {}

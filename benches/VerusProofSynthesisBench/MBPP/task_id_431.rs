@@ -1,7 +1,5 @@
 use vstd::prelude::*;
 
-fn main() {}
-
 verus! {
 
 fn has_common_element(list1: &Vec<i32>, list2: &Vec<i32>) -> (result: bool)
@@ -41,3 +39,5 @@ fn has_common_element(list1: &Vec<i32>, list2: &Vec<i32>) -> (result: bool)
 }
 
 } // verus!
+
+fn main() {}

@@ -1,7 +1,5 @@
 use vstd::prelude::*;
 
-fn main() {}
-
 verus! {
 
 fn find_first_occurrence(arr: &Vec<i32>, target: i32) -> (index: Option<usize>)
@@ -38,3 +36,5 @@ fn find_first_occurrence(arr: &Vec<i32>, target: i32) -> (index: Option<usize>)
 }
 
 } // verus!
+
+fn main() {}

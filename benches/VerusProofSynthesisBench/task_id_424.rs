@@ -1,7 +1,5 @@
 use vstd::prelude::*;
 
-fn main() {}
-
 verus! {
 
 fn extract_rear_chars(s: &Vec<Vec<char>>) -> (result: Vec<char>)
@@ -36,3 +34,5 @@ fn extract_rear_chars(s: &Vec<Vec<char>>) -> (result: Vec<char>)
 }
 
 } // verus!
+
+fn main() {}

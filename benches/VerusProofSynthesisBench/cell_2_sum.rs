@@ -1,5 +1,5 @@
 use vstd::prelude::*;
-fn main() {}
+
 verus!{
 
 fn myfun(a: &mut Vec<u32>, N: u32) -> (sum: u32)
@@ -49,3 +49,5 @@ fn myfun(a: &mut Vec<u32>, N: u32) -> (sum: u32)
     // impl-end
 }
 }
+
+fn main() {}

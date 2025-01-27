@@ -1,6 +1,5 @@
 use vstd::prelude::*;
 
-fn main() {}
 
 verus! {
 
@@ -32,3 +31,5 @@ fn is_even_at_even_index(arr: &Vec<usize>) -> (result: bool)
 }
 
 } // verus!
+
+fn main() {}

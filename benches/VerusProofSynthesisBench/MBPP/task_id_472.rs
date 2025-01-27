@@ -1,7 +1,5 @@
 use vstd::prelude::*;
 
-fn main() {}
-
 verus! {
 
 fn contains_consecutive_numbers(arr: &Vec<i32>) -> (is_consecutive: bool)
@@ -36,3 +34,5 @@ fn contains_consecutive_numbers(arr: &Vec<i32>) -> (is_consecutive: bool)
 }
 
 } // verus!
+
+fn main() {}

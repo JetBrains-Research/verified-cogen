@@ -1,6 +1,5 @@
 use vstd::prelude::*;
 
-fn main() {}
 
 verus! {
 
@@ -38,3 +37,5 @@ fn square_nums(nums: &Vec<i32>) -> (squared: Vec<i32>)
 }
 
 } // verus!
+
+fn main() {}

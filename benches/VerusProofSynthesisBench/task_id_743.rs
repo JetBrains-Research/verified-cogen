@@ -1,5 +1,4 @@
 use vstd::prelude::*;
-fn main() {}
 
 verus! {
 
@@ -63,3 +62,5 @@ fn rotate_right(list: &Vec<u32>, n: usize) -> (new_list: Vec<u32>)
 }
 
 } // verus!
+
+fn main() {}

@@ -1,7 +1,5 @@
 use vstd::prelude::*;
 
-fn main() {}
-
 verus! {
 
 spec fn inner_expr_replace_blanks_with_chars(str1: &Vec<char>, ch: char, i: int) -> (result: char) {
@@ -49,3 +47,5 @@ fn replace_blanks_with_chars(str1: &Vec<char>, ch: char) -> (result: Vec<char>)
 }
 
 } // verus!
+
+fn main() {}

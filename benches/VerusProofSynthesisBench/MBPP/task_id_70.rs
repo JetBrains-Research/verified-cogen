@@ -1,7 +1,5 @@
 use vstd::prelude::*;
 
-fn main() {}
-
 verus! {
 
 fn all_sequence_equal_length(seq: &Vec<Vec<i32>>) -> (result: bool)
@@ -35,3 +33,6 @@ fn all_sequence_equal_length(seq: &Vec<Vec<i32>>) -> (result: bool)
 }
 
 } // verus!
+
+
+fn main() {}

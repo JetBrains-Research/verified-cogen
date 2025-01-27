@@ -1,6 +1,5 @@
 
 use vstd::prelude::*;
-fn main() {}
 
 verus!{
      
@@ -33,3 +32,5 @@ proof fn lemma_len_intersect<A>(s1: Set<A>, s2: Set<A>)
 }
 // pure-end
 }
+
+fn main() {}

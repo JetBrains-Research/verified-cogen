@@ -1,6 +1,5 @@
 use vstd::prelude::*;
 
-fn main() {}
 
 verus! {
 
@@ -37,3 +36,5 @@ fn smallest_num(nums: &Vec<i32>) -> (min: i32)
 }
 
 } // verus!
+
+fn main() {}

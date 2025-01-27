@@ -1,7 +1,5 @@
 use vstd::prelude::*;
 
-fn main() {}
-
 verus! {
 
 fn insert_before_each(arr: &Vec<i32>, elem: i32) -> (result: Vec<i32>)
@@ -33,3 +31,5 @@ fn insert_before_each(arr: &Vec<i32>, elem: i32) -> (result: Vec<i32>)
 }
 
 } // verus!
+
+fn main() {}

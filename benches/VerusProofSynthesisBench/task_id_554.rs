@@ -1,7 +1,5 @@
 use vstd::prelude::*;
 
-fn main() { }
-
 verus! {
 
 fn find_odd_numbers(arr: &Vec<u32>) -> (odd_numbers: Vec<u32>)
@@ -42,3 +40,5 @@ fn find_odd_numbers(arr: &Vec<u32>) -> (odd_numbers: Vec<u32>)
 }
 
 } // verus!
+
+fn main() { }

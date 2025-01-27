@@ -1,7 +1,4 @@
-
 use vstd::prelude::*;
-
-fn main() { }
 
 verus! {
 
@@ -72,3 +69,5 @@ fn is_sub_array(main: &Vec<i32>, sub: &Vec<i32>) -> (result: bool)
 }
 
 } // verus!
+
+fn main() { }

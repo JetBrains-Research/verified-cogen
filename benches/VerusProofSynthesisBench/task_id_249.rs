@@ -1,7 +1,5 @@
 use vstd::prelude::*;
 
-fn main() {}
-
 verus! {
 
 fn contains(arr: &Vec<i32>, key: i32) -> (result: bool)
@@ -66,3 +64,5 @@ fn intersection(arr1: &Vec<i32>, arr2: &Vec<i32>) -> (result: Vec<i32>)
 }
 
 } // verus!
+
+fn main() {}

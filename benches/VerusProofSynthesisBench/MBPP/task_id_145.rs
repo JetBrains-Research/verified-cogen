@@ -1,7 +1,5 @@
 use vstd::prelude::*;
 
-fn main() {}
-
 verus! {
 
 fn max_difference(arr: &Vec<i32>) -> (diff: i32)
@@ -42,3 +40,6 @@ fn max_difference(arr: &Vec<i32>) -> (diff: i32)
 }
 
 } // verus!
+
+
+fn main() {}
