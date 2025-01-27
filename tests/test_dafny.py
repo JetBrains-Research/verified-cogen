@@ -39,6 +39,7 @@ def test_dafny_generate(language_database: LanguageDatabase):
         """
     )
 
+
 def test_dafny_generate_void(language_database: LanguageDatabase):
     dafny_lang = language_database.get("dafny")
     code = dedent(
@@ -93,6 +94,7 @@ def test_dafny_generate_void(language_database: LanguageDatabase):
         { BubbleSort(a); }
         """
     )
+
 
 def test_dafny_generate_with_helper(language_database: LanguageDatabase):
     dafny_lang = language_database.get("dafny")

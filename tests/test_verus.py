@@ -17,6 +17,7 @@ def language_database():
     )
     return LanguageDatabase()
 
+
 def test_verus_validate_void(language_database: LanguageDatabase):
     verus_lang = language_database.get("verus")
     code = dedent(
@@ -78,6 +79,7 @@ def test_verus_validate_void(language_database: LanguageDatabase):
         { myfun4(x, y); }
         }"""
     )
+
 
 def test_verus_generate(language_database: LanguageDatabase):
     verus_lang = language_database.get("verus")
