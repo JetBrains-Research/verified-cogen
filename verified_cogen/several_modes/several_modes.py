@@ -43,7 +43,6 @@ class ProcessFileConfig:
 class SharedState:
     lock: Lock
     results: "DictProxy[str, int]"
-    results_avg: "DictProxy[int, float]"
 
 
 def process_file(
@@ -78,7 +77,6 @@ def process_file(
     with state.lock:
         if tries is not None:
             state.results[marker_name] = tries
-            state.results_avg[tries] += 1
             logger.info(f"Verified {display_name} in {tries} tries")
         else:
             state.results[marker_name] = -1
@@ -120,10 +118,7 @@ def run_mode(
     with open(json_avg_results, "w") as f:
         json.dump({}, f)
 
-    results_avg: "DictProxy[int, float]" = manager.dict([
-        (i, 0) for i in range(args.tries + 1)
-    ])
-
+    results_avg: "dict[int, float]" = {i: 0 for i in range(args.tries + 1)}
     lock = manager.Lock()
 
     for run in range(args.runs):
@@ -170,7 +165,7 @@ def run_mode(
             extension_from_file_list(files), args.manual_rewriters
         )
 
-        state = SharedState(lock, results, results_avg)
+        state = SharedState(lock, results)
         with mp.Pool(processes=mp.cpu_count()) as pool:
             config = ProcessFileConfig(
                 args, history_dir, json_results, extension_from_file_list(files)
@@ -193,6 +188,9 @@ def run_mode(
                 for file, _, marker_name in files_to_process
             )
             pool.starmap(process_file, arguments)
+
+        for v in state.results.values():
+            results_avg[v] += 1
 
     for key in results_avg.keys():
         results_avg[key] = results_avg[key] / args.runs
