@@ -9,8 +9,10 @@ from typing import Optional
 
 from verified_cogen.llm.llm import LLM
 from verified_cogen.main import construct_rewriter, make_runner_cls
-from verified_cogen.runners import Runner, RunnerConfig
+from verified_cogen.runners import RunnerConfig
 from verified_cogen.runners.languages import register_basic_languages
+from verified_cogen.runners.languages.language import AnnotationType
+from verified_cogen.runners.rewriters import Rewriter
 from verified_cogen.several_modes.args import ProgramArgsMultiple, get_args
 from verified_cogen.several_modes.constants import (
     MODE_MAPPING,
@@ -34,22 +36,35 @@ class ProcessFileConfig:
     args: ProgramArgsMultiple
     history_dir: pathlib.Path
     json_results: pathlib.Path
+    extension: str
 
 
 @dataclass
 class SharedState:
     lock: Lock
     results: "DictProxy[str, int]"
-    results_avg: "DictProxy[int, float]"
 
 
 def process_file(
     file_with_name: tuple[pathlib.Path, str],
-    llm: LLM,
-    runner: Runner,
+    rewriter: Optional[Rewriter],
+    verifier: Verifier,
+    runner_config: RunnerConfig,
     config: ProcessFileConfig,
     state: SharedState,
+    idx: int,
+    all_removed: list[AnnotationType],
 ) -> Optional[int]:
+    register_basic_languages(with_removed=all_removed)
+    llm = LLM(
+        config.args.grazie_token,
+        config.args.llm_profile,
+        config.args.prompts_directory[idx],
+        config.args.temperature,
+    )
+    runner = make_runner_cls(
+        config.args.bench_types[idx], config.extension, runner_config
+    )(llm, logger, verifier, rewriter)
     file, marker_name = file_with_name
     try:
         mode = Mode(config.args.insert_conditions_mode)
@@ -62,7 +77,6 @@ def process_file(
     with state.lock:
         if tries is not None:
             state.results[marker_name] = tries
-            state.results_avg[tries] += 1
             logger.info(f"Verified {display_name} in {tries} tries")
         else:
             state.results[marker_name] = -1
@@ -104,10 +118,7 @@ def run_mode(
     with open(json_avg_results, "w") as f:
         json.dump({}, f)
 
-    results_avg: "DictProxy[int, float]" = manager.dict([
-        (i, 0) for i in range(args.tries + 1)
-    ])
-
+    results_avg: "dict[int, float]" = {i: 0 for i in range(args.tries + 1)}
     lock = manager.Lock()
 
     for run in range(args.runs):
@@ -130,7 +141,7 @@ def run_mode(
         if log_tries is not None:
             log_tries.mkdir(exist_ok=True)
 
-        config = RunnerConfig(
+        runner_config = RunnerConfig(
             log_tries=log_tries,
             include_text_descriptions=TEXT_DESCRIPTIONS[mode],
             remove_implementations=REMOVE_IMPLS_MAPPING[mode],
@@ -150,31 +161,26 @@ def run_mode(
                 continue
             files_to_process.append((file, display_name, marker_name))
 
-        llm = LLM(
-            args.grazie_token,
-            args.llm_profile,
-            args.prompts_directory[idx],
-            args.temperature,
-        )
-
         rewriter = construct_rewriter(
             extension_from_file_list(files), args.manual_rewriters
         )
 
-        runner = make_runner_cls(
-            args.bench_types[idx], extension_from_file_list(files), config
-        )(llm, logger, verifier, rewriter)
-
-        state = SharedState(lock, results, results_avg)
+        state = SharedState(lock, results)
         with mp.Pool(processes=mp.cpu_count()) as pool:
+            config = ProcessFileConfig(
+                args, history_dir, json_results, extension_from_file_list(files)
+            )
 
             def make_arguments(file: pathlib.Path, marker_name: str):
                 return (
                     (file, marker_name),
-                    llm,
-                    runner,
-                    ProcessFileConfig(args, history_dir, json_results),
+                    rewriter,
+                    verifier,
+                    runner_config,
+                    config,
                     state,
+                    idx,
+                    all_removed,
                 )
 
             arguments = (
@@ -182,6 +188,9 @@ def run_mode(
                 for file, _, marker_name in files_to_process
             )
             pool.starmap(process_file, arguments)
+
+        for v in state.results.values():
+            results_avg[v] += 1
 
     for key in results_avg.keys():
         results_avg[key] = results_avg[key] / args.runs
