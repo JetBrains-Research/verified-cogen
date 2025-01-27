@@ -1,6 +1,5 @@
 use vstd::prelude::*;
 
-fn main() {}
 
 verus! {
 
@@ -56,3 +55,5 @@ fn sum_negatives(arr: &Vec<i64>) -> (sum_neg: i128)
 }
 
 } // verus!
+
+fn main() {}

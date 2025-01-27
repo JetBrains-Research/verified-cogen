@@ -1,7 +1,5 @@
 use vstd::prelude::*;
 
-fn main() {}
-
 verus! {
 
 fn contains(arr: &Vec<i32>, key: i32) -> (result: bool)
@@ -67,3 +65,5 @@ fn shared_elements(list1: &Vec<i32>, list2: &Vec<i32>) -> (shared: Vec<i32>)
 }
 
 } // verus!
+
+fn main() {}

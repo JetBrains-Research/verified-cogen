@@ -1,7 +1,5 @@
 use vstd::prelude::*;
 
-fn main() {}
-
 verus! {
 
 spec fn is_even(n: u32) -> (result: bool) {
@@ -34,3 +32,5 @@ fn is_product_even(arr: &Vec<u32>) -> (result: bool)
 }
 
 } // verus!
+
+fn main() {}

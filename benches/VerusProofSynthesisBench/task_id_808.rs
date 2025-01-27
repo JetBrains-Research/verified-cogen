@@ -1,6 +1,5 @@
 use vstd::prelude::*;
 
-fn main() {}
 
 verus! {
 
@@ -29,3 +28,5 @@ fn contains_k(arr: &Vec<i32>, k: i32) -> (result: bool)
 }
 
 } // verus!
+
+fn main() {}

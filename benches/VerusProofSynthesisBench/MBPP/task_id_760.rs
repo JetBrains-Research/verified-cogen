@@ -1,6 +1,5 @@
 use vstd::prelude::*;
 
-fn main() {}
 
 verus! {
 
@@ -35,3 +34,5 @@ fn has_only_one_distinct_element(arr: &Vec<i32>) -> (result: bool)
 }
 
 } // verus!
+
+fn main() {}

@@ -1,7 +1,5 @@
 use vstd::prelude::*;
 
-fn main() {}
-
 verus! {
 
 spec fn is_lower_case(c: char) -> (result: bool) {
@@ -64,3 +62,5 @@ fn count_uppercase(text: &Vec<char>) -> (count: u64)
 }
 
 } // verus!
+
+fn main() {}

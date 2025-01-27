@@ -1,6 +1,5 @@
 use vstd::prelude::*;
 
-fn main() {}
 
 verus! {
 
@@ -37,3 +36,5 @@ fn all_characters_same(char_arr: &Vec<char>) -> (result: bool)
 }
 
 } // verus!
+
+fn main() {}

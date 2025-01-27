@@ -1,5 +1,5 @@
 use vstd::prelude::*;
-fn main() {}
+
 verus!{
 
 proof fn lemma_vec_push<T>(vec: Seq<T>, i: T, l: usize)
@@ -54,3 +54,6 @@ fn remove_all_greater(v: Vec<i32>, e: i32) -> (result: Vec<i32>)
     // impl-end
 }
 }
+
+
+fn main() {}

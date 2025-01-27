@@ -1,7 +1,5 @@
 use vstd::prelude::*;
 
-fn main() {}
-
 verus! {
 
 spec fn is_digit_sepc(c: char) -> (res: bool) {
@@ -43,3 +41,5 @@ fn is_integer(text: &Vec<char>) -> (result: bool)
 }
 
 } // verus!
+
+fn main() {}

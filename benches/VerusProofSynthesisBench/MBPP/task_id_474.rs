@@ -1,7 +1,5 @@
 use vstd::prelude::*;
 
-fn main() {}
-
 verus! {
 
 spec fn inner_epxr_replace_chars(str1: &Vec<char>, old_char: char, new_char: char, i: int) -> (result: char) {
@@ -49,3 +47,5 @@ fn replace_chars(str1: &Vec<char>, old_char: char, new_char: char) -> (result: V
 }
 
 } // verus!
+
+fn main() {}

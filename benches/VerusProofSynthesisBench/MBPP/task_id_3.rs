@@ -1,6 +1,5 @@
 use vstd::prelude::*;
 
-fn main() {}
 
 verus! {
 
@@ -44,3 +43,5 @@ fn is_non_prime(n: u64) -> (result: bool)
 }
 
 } // verus!
+
+fn main() {}

@@ -1,6 +1,5 @@
 use vstd::prelude::*;
 
-fn main() {}
 
 verus! {
 
@@ -59,3 +58,5 @@ fn count_digits(text: &Vec<char>) -> (count: usize)
 }
 
 } // verus!
+
+fn main() {}

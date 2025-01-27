@@ -1,7 +1,5 @@
 use vstd::prelude::*;
 
-fn main() {}
-
 verus! {
 
 fn replace_last_element(first: &Vec<i32>, second: &Vec<i32>) -> (replaced_list: Vec<i32>)
@@ -51,3 +49,6 @@ fn replace_last_element(first: &Vec<i32>, second: &Vec<i32>) -> (replaced_list: 
 }
 
 } // verus!
+
+
+fn main() {}

@@ -1,6 +1,5 @@
 use vstd::prelude::*;
 
-fn main() {}
 
 verus! {
 
@@ -35,3 +34,5 @@ fn is_smaller(arr1: &Vec<i32>, arr2: &Vec<i32>) -> (result: bool)
 }
 
 } // verus!
+
+fn main() {}

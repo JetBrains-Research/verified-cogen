@@ -1,6 +1,5 @@
 use vstd::prelude::*;
 
-fn main() {}
 
 verus! {
 
@@ -87,3 +86,5 @@ fn remove_chars(str1: &Vec<char>, str2: &Vec<char>) -> (result: Vec<char>)
 }
 
 } // verus!
+
+fn main() {}

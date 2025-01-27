@@ -1,5 +1,4 @@
 use vstd::prelude::*;
-fn main() {}
 
 verus!{
 proof fn lemma_seq_take_ascend<T>(v: Seq<T>, i: int)
@@ -74,3 +73,6 @@ fn myfun4(x: &Vec<u64>, y: &mut Vec<u64>)
     // impl-end
 }
 }
+
+
+fn main() {}

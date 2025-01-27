@@ -1,5 +1,4 @@
 use vstd::prelude::*;
-fn main() {}
 
 verus!{
 fn binary_search(v: &Vec<u64>, k: u64) -> (result:usize)
@@ -36,3 +35,5 @@ fn binary_search(v: &Vec<u64>, k: u64) -> (result:usize)
     // impl-end
 }
 }
+
+fn main() {}

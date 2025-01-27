@@ -1,7 +1,5 @@
 use vstd::prelude::*;
 
-fn main() { }
-
 verus! {
 
 proof fn lemma_vec_push<T>(vec: Seq<T>, i: T, l: usize)
@@ -131,3 +129,5 @@ fn find_dissimilar(arr1: &Vec<i32>, arr2: &Vec<i32>) -> (result: Vec<i32>)
 }
 
 } // verus!
+
+fn main() {}

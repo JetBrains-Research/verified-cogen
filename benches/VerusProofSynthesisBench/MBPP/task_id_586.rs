@@ -1,5 +1,4 @@
 use vstd::prelude::*;
-fn main() {}
 
 verus! {
 
@@ -46,3 +45,5 @@ fn split_and_append(list: &Vec<i32>, n: usize) -> (new_list: Vec<i32>)
 }
 
 } // verus!
+
+fn main() {}

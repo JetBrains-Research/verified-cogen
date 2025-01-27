@@ -1,7 +1,5 @@
 use vstd::prelude::*;
 
-fn main() {}
-
 verus! {
 
 fn is_greater(arr: &Vec<i32>, number: i32) -> (result: bool)
@@ -29,3 +27,5 @@ fn is_greater(arr: &Vec<i32>, number: i32) -> (result: bool)
 }
 
 } // verus!
+
+fn main() {}
