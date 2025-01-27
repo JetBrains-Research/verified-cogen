@@ -1,13 +1,15 @@
 use vstd::prelude::*;
 
 verus! {
-spec fn spec_prime_helper(num: int, limit: int) -> bool {
+spec fn spec_prime_helper(num: int, limit: int) -> (ret:bool) {
     forall|j: int| 2 <= j < limit ==> (#[trigger] (num % j)) != 0
 }
+// pure-end
 
-spec fn spec_prime(num: int) -> bool {
+spec fn spec_prime(num: int) -> (ret:bool) {
     spec_prime_helper(num, num)
 }
+// pure-end
 
 fn is_prime(num: u32) -> (result: bool)
     // pre-conditions-start

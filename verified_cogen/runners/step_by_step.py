@@ -69,7 +69,7 @@ class StepByStepRunner(Runner):
             _ = self.llm.make_request()
             if self._config.remove_old_examples:
                 self.llm.wipe_temporary()
-            self.logger.info(f"Step {it + 1} done")
+            self.logger.info(f"Step {it + 1} done for {self.get_name()}")
 
         rewrite_step = Step(pathlib.Path(self.llm.prompt_dir) / "rewrite")
         add_examples(rewrite_step)
@@ -107,7 +107,7 @@ class StepByStepRunner(Runner):
                 self._make_rewrite_prompt(step.question, prg, text_description)
             )
             _ = self.llm.make_request()
-            self.logger.info(f"Step {it + 1} done")
+            self.logger.info(f"Step {it + 1} done for {self.get_name()}")
 
         self.llm.add_user_prompt(
             self._make_rewrite_prompt(rewrite_step.question, prg, text_description)

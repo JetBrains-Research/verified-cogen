@@ -5,5 +5,5 @@ Please try again by taking the Nagini feedback.
 If an error appears in one of method ending with `_valid`, that means annotations of an existing function were altered.
 
 Please fix the error by adding, removing or modifying the implementation, invariants or assertions and return the fixed program.
-Don't add any additional text comments, your response must contain only program with invariants.
+Use extensive comments in the code, but don't explain anything outside of it.
 Do not provide ANY explanations. Don't include markdown backticks. Respond only in Python code, nothing else.

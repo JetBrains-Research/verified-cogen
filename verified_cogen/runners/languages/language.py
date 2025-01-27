@@ -1,6 +1,6 @@
 from abc import abstractmethod
 from enum import Enum
-from typing import Any, Pattern, List, Tuple
+from typing import Any, List, Pattern, Tuple
 
 
 class AnnotationType(Enum):
@@ -66,6 +66,13 @@ class GenericLanguage(Language):
         self.inline_assert_comment = inline_assert_comment
         self.remove_pure = remove_pure
 
+    def split_params(self, parameters: str) -> str:
+        return ", ".join(
+            param.split(":")[0].strip()
+            for param in parameters.split(",")
+            if param.strip()
+        )
+
     def _validators_from(
         self,
         method_name: str,
@@ -80,11 +87,7 @@ class GenericLanguage(Language):
             .replace("{specs}", specs or "\n")
             .replace(
                 "{param_names}",
-                ", ".join(
-                    param.split(":")[0].strip()
-                    for param in parameters.split(",")
-                    if param.strip()
-                ),
+                self.split_params(parameters),
             )
         )
 
@@ -103,11 +106,7 @@ class GenericLanguage(Language):
             .replace("{specs}", specs or "\n")
             .replace(
                 "{param_names}",
-                ", ".join(
-                    param.split(":")[0].strip()
-                    for param in parameters.split(",")
-                    if param.strip()
-                ),
+                self.split_params(parameters),
             )
             .replace("{body}", body)
         )
@@ -127,11 +126,7 @@ class GenericLanguage(Language):
             .replace("{specs}", specs or "\n")
             .replace(
                 "{param_names}",
-                ", ".join(
-                    param.split(":")[0].strip()
-                    for param in parameters.split(",")
-                    if param.strip()
-                ),
+                self.split_params(parameters),
             )
             .replace("{body}", body)
         )
@@ -246,3 +241,7 @@ class LanguageDatabase:
         if name not in self.regularise:
             raise ValueError(f"language {name} not found, has it been registered?")
         return self.languages[self.regularise[name]]
+
+    def reset(self):
+        self.languages = dict()
+        self.regularise = dict()

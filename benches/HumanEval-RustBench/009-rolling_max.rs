@@ -13,6 +13,7 @@ spec fn seq_max(a: Seq<i32>) -> i32
         seq_max(a.drop_last())
     }
 }
+// pure-end
 
 fn rolling_max(numbers: Vec<i32>) -> (result: Vec<i32>)
     // post-conditions-start

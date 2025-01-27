@@ -1,16 +1,28 @@
 from textwrap import dedent
 from typing import List
 
-from verified_cogen.runners.languages import LanguageDatabase, register_basic_languages, AnnotationType
+import pytest
+
+from verified_cogen.runners.languages import (
+    AnnotationType,
+    LanguageDatabase,
+    register_basic_languages,
+)
 from verified_cogen.tools.pureCallsDetectors import detect_and_replace_pure_calls_nagini
 
-register_basic_languages(
-    with_removed=[
-        AnnotationType.INVARIANTS,
-        AnnotationType.ASSERTS,
-        AnnotationType.IMPLS,
-    ]
-)
+
+@pytest.fixture()
+def language_database():
+    LanguageDatabase().reset()
+    register_basic_languages(
+        with_removed=[
+            AnnotationType.INVARIANTS,
+            AnnotationType.ASSERTS,
+            AnnotationType.IMPLS,
+        ]
+    )
+    return LanguageDatabase()
+
 
 def test_simple():
     code = dedent(
@@ -218,7 +230,7 @@ def f(n: int) -> List[int]:
     assert new_code == compare_code
 
 
-def test_find_pure_non_helpers():
+def test_find_pure_non_helpers(language_database: LanguageDatabase):
     code = dedent(
         """\
 from typing import cast, List, Dict, Set, Optional, Union
@@ -269,7 +281,7 @@ def f(n : int) -> List[int]:
     return result"""
     )
 
-    nagini_lang = LanguageDatabase().get("nagini")
+    nagini_lang = language_database.get("nagini")
 
     result: List[str] = ["factorial__spec"]
 

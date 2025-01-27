@@ -1,9 +1,9 @@
-from typing import Tuple, Optional
+from typing import Optional, Tuple
 
 from verified_cogen.runners.rewriters.__init__ import Rewriter
 from verified_cogen.tools.inequality_replacer import (
-    replace_inequalities,
     contains_double_inequality,
+    replace_inequalities,
 )
 
 

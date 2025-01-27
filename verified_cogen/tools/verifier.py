@@ -1,5 +1,4 @@
 import logging
-import os
 import subprocess
 from pathlib import Path
 from typing import Optional
@@ -21,7 +20,7 @@ class Verifier:
                 timeout=self.timeout,
             )
         except subprocess.TimeoutExpired:
-            os.system("killall z3")
+            # os.system("killall z3")
             return None
         return (
             res.returncode == 0,

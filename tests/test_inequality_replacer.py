@@ -1,5 +1,10 @@
 from textwrap import dedent
-from verified_cogen.tools.inequality_replacer import replace_inequalities, contains_double_inequality
+
+from verified_cogen.tools.inequality_replacer import (
+    contains_double_inequality,
+    replace_inequalities,
+)
+
 
 def test_simple_contains1():
     code = dedent(
@@ -11,6 +16,7 @@ def test_simple_contains1():
     )
 
     assert contains_double_inequality(code)
+
 
 def test_simple_contains2():
     code = dedent(
@@ -32,6 +38,7 @@ Invariant(d_4_increasing_ == Forall(int, lambda k: Implies(1 <= k and k < d_6_i_
     assert contains_double_inequality(code)
     assert new_code == compare_code
 
+
 def test_simple_contains3():
     code = dedent(
         """\
@@ -42,6 +49,7 @@ def test_simple_contains3():
     )
 
     assert not contains_double_inequality(code)
+
 
 def test_simple():
     code = dedent(
@@ -63,6 +71,7 @@ def test_simple():
 
     assert new_code == compare_code
 
+
 def test_simple1():
     code = dedent(
         """\
@@ -82,6 +91,7 @@ def test_simple1():
     )
 
     assert new_code == compare_code
+
 
 def test_complicated():
     code = dedent(
@@ -211,8 +221,8 @@ def f(n: int) -> List[int]:
 
     assert new_code == compare_code
 
-def test_complicated1():
 
+def test_complicated1():
     code = dedent("""\
 def BubbleSort(a1 : List[int]) -> List[int]:
     Requires(Acc(list_pred(a1), 1/2))

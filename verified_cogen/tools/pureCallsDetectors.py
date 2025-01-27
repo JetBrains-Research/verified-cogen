@@ -1,5 +1,5 @@
 import ast
-from typing import Tuple, List, cast
+from typing import List, Tuple, cast
 
 
 class PureFunctionCallReplacer(ast.NodeTransformer):

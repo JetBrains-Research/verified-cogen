@@ -1,0 +1,3 @@
+It's time to rewrite the program to contain the implementations for functions. Work on the following program and go step by step through the reasoning process. After that, output the rewritten program in the `<answer>` tag without backticks.
+
+{program}

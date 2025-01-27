@@ -5,13 +5,18 @@ use vstd::seq_lib::lemma_multiset_commutative;
 verus! {
 
 proof fn swap_preserves_multiset_helper(s: Seq<i32>, i: int, j: int)
+    // pre-conditions-start
     requires
         0 <= i < j < s.len(),
+    // pre-conditions-end
+    // post-conditions-start
     ensures
         (s.take(j + 1)).to_multiset() =~= s.take(i).to_multiset().add(
             s.subrange(i + 1, j).to_multiset(),
         ).insert(s.index(j)).insert(s.index(i)),
+    // post-conditions-end
 {
+    // impl-start
     let fst = s.take(i);
     let snd = s.subrange(i + 1, j);
 
@@ -29,16 +34,24 @@ proof fn swap_preserves_multiset_helper(s: Seq<i32>, i: int, j: int)
         lemma_multiset_commutative(s.take(i + 1), s.subrange(i + 1, j + 1));
         assert(s.take(i + 1) + s.subrange(i + 1, j + 1) =~= s.take(j + 1));
     }
+    // impl-end
 }
+// pure-end
+
 proof fn swap_preserves_multiset(s1: Seq<i32>, s2: Seq<i32>, i: int, j: int)
+    // pre-conditions-start
     requires
         0 <= i < j < s1.len() == s2.len(),
         forall|x: int| 0 <= x < s1.len() && x != i && x != j ==> s1.index(x) == s2.index(x),
         s1.index(i) == s2.index(j),
         s1.index(j) == s2.index(i),
+    // pre-conditions-end
+    // post-conditions-start
     ensures
         s1.to_multiset() == s2.to_multiset(),
+    // post-conditions-end
 {
+    // impl-start
     calc! {
         (==)
         s1.to_multiset(); {
@@ -62,17 +75,23 @@ proof fn swap_preserves_multiset(s1: Seq<i32>, s2: Seq<i32>, i: int, j: int)
         }
         s2.to_multiset();
     }
+    // impl-end
 }
+// pure-end
 
 fn sort_seq(s: &Vec<i32>) -> (ret: Vec<i32>)
+    // post-conditions-start
     ensures
         forall|i: int, j: int| 0 <= i < j < ret@.len() ==> ret@.index(i) <= ret@.index(j),
         ret@.len() == s@.len(),
         s@.to_multiset() == ret@.to_multiset(),
+    // post-conditions-end
 {
+    // impl-start
     let mut sorted = s.clone();
     let mut i: usize = 0;
     while i < sorted.len()
+        // invariants-start
         invariant
             i <= sorted.len(),
             forall|j: int, k: int| 0 <= j < k < i ==> sorted@.index(j) <= sorted@.index(k),
@@ -80,13 +99,16 @@ fn sort_seq(s: &Vec<i32>) -> (ret: Vec<i32>)
             forall|j: int, k: int|
                 0 <= j < i <= k < sorted@.len() ==> sorted@.index(j) <= sorted@.index(k),
             sorted@.len() == s@.len(),
+        // invariants-end
     {
         let mut min_index: usize = i;
         let mut j: usize = i + 1;
         while j < sorted.len()
+            // invariants-start
             invariant
                 i <= min_index < j <= sorted.len(),
                 forall|k: int| i <= k < j ==> sorted@.index(min_index as int) <= sorted@.index(k),
+            // invariants-end
         {
             if sorted[j] < sorted[min_index] {
                 min_index = j;
@@ -101,15 +123,19 @@ fn sort_seq(s: &Vec<i32>) -> (ret: Vec<i32>)
 
             sorted.set(min_index, curr_val);
 
+            // assert-start
             proof {
                 swap_preserves_multiset(old_sorted, sorted@, i as int, min_index as int);
                 assert(old_sorted.to_multiset() =~= sorted@.to_multiset());
             }
+            // assert-end
         }
         i += 1;
     }
     sorted
+    // impl-end
 }
+
 fn strange_sort_list_helper(s: &Vec<i32>) -> (ret: (Vec<i32>, Vec<i32>))
     // post-conditions-start
     ensures

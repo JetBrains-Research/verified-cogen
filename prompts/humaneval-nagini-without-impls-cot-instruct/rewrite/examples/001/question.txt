@@ -1,0 +1,21 @@
+It's time to rewrite the program to contain the implementations for functions. Work on the following program and go step by step through the reasoning process. After that, output the rewritten program in the `<answer>` tag without backticks.
+
+```
+from typing import cast, List, Dict, Set, Optional, Union
+from nagini_contracts.contracts import *
+
+@Pure
+def Sum(a : List[int], s : int, t : int) -> int :
+    Requires(Acc(list_pred(a)))
+    Requires(((0) <= (s)) and ((s) <= (t)) and ((t) <= (len(a))))
+
+    if s == t:
+        return 0
+    else:
+        return (a)[t - 1] + (Sum(a, s, t - 1))
+
+def sum_loop(numbers: List[int]) -> int:
+    Requires(Acc(list_pred(numbers)))
+    Ensures(Acc(list_pred(numbers)))
+    Ensures(Result() == Sum(numbers, 0, len(numbers)))
+```

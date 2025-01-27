@@ -1,5 +1,6 @@
-from verified_cogen.runners.chain_of_thought import Step
 import pathlib
+
+from verified_cogen.runners.chain_of_thought import Step
 
 
 def test_step_file():

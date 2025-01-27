@@ -1,5 +1,5 @@
 import re
-from typing import Pattern, List, Tuple
+from typing import List, Pattern, Tuple
 
 from verified_cogen.runners.languages.language import AnnotationType, GenericLanguage
 from verified_cogen.tools.pureCallsDetectors import detect_and_replace_pure_calls_nagini
