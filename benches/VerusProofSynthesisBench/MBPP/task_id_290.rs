@@ -1,6 +1,5 @@
 use vstd::prelude::*;
 
-fn main() {}
 
 verus! {
 
@@ -38,3 +37,5 @@ fn max_length_list(seq: &Vec<Vec<i32>>) -> (max_list: &Vec<i32>)
 }
 
 } // verus!
+
+fn main() {}

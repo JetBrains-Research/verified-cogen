@@ -1,6 +1,5 @@
 use vstd::prelude::*;
 
-fn main() {}
 
 verus! {
 
@@ -48,3 +47,5 @@ fn min_second_value_first(arr: &Vec<Vec<i32>>) -> (first_of_min_second: i32)
 }
 
 } // verus!
+
+fn main() {}

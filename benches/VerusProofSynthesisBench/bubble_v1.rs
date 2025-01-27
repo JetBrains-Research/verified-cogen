@@ -1,5 +1,5 @@
 use vstd::prelude::*;
-fn main() {}
+
 
 verus! {
     spec fn sorted_between(a: Seq<u32>, from: int, to: int) -> (result:bool) {
@@ -65,3 +65,5 @@ verus! {
         // impl-end
     }
 }
+
+fn main() {}

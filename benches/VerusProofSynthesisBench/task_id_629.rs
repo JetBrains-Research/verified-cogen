@@ -1,6 +1,5 @@
 use vstd::prelude::*;
 
-fn main() {}
 
 verus! {
 
@@ -42,3 +41,5 @@ fn find_even_numbers(arr: &Vec<u32>) -> (even_numbers: Vec<u32>)
 }
 
 } // verus!
+
+fn main() {}

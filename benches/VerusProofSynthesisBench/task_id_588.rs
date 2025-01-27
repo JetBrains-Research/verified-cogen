@@ -2,8 +2,6 @@
 use vstd::math::*;
 use vstd::prelude::*;
 
-fn main() {}
-
 verus! {
 
 spec fn max_rcur(seq: Seq<i32>) -> (result: int)
@@ -72,3 +70,5 @@ fn difference_max_min(arr: &Vec<i32>) -> (diff: i32)
 }
 
 } // verus!
+
+fn main() {}

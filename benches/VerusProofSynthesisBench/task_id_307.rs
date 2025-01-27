@@ -1,7 +1,5 @@
 use vstd::prelude::*;
 
-fn main() {}
-
 verus! {
 
 fn list_deep_clone(arr: &Vec<u64>) -> (copied: Vec<u64>)
@@ -30,3 +28,5 @@ fn list_deep_clone(arr: &Vec<u64>) -> (copied: Vec<u64>)
 }
 
 } // verus!
+
+fn main() {}

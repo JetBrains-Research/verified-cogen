@@ -1,7 +1,5 @@
 use vstd::prelude::*;
 
-fn main() {}
-
 verus! {
 
 fn get_first_elements(arr: &Vec<Vec<i32>>) -> (result: Vec<i32>)
@@ -39,3 +37,5 @@ fn get_first_elements(arr: &Vec<Vec<i32>>) -> (result: Vec<i32>)
 }
 
 } // verus!
+
+fn main() {}

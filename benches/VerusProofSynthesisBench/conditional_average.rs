@@ -1,5 +1,4 @@
 use vstd::prelude::*;
-fn main() {}
 
 verus!{
 fn conditional_average(vals_1: &Vec<u64>, vals_2: &Vec<u64>, conds_1: &Vec<bool>, conds_2: &Vec<bool>, avgs: &mut Vec<u64>) 
@@ -62,3 +61,5 @@ fn conditional_average(vals_1: &Vec<u64>, vals_2: &Vec<u64>, conds_1: &Vec<bool>
     // impl-end
 }
 }
+
+fn main() {}

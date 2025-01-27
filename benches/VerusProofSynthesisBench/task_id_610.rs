@@ -1,5 +1,4 @@
 use vstd::prelude::*;
-fn main() {}
 
 verus! {
 
@@ -53,3 +52,6 @@ fn remove_kth_element(list: &Vec<i32>, k: usize) -> (new_list: Vec<i32>)
 }
 
 } // verus!
+
+fn main() {}
+

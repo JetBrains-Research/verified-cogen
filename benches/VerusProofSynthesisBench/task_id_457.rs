@@ -1,7 +1,5 @@
 use vstd::prelude::*;
 
-fn main() {}
-
 verus! {
 
 fn min_sublist(seq: &Vec<Vec<i32>>) -> (min_list: &Vec<i32>)
@@ -38,3 +36,5 @@ fn min_sublist(seq: &Vec<Vec<i32>>) -> (min_list: &Vec<i32>)
 }
 
 } // verus!
+
+fn main() {}

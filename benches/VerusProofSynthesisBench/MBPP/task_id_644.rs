@@ -1,5 +1,4 @@
 use vstd::prelude::*;
-fn main() {}
 
 verus! {
 
@@ -49,3 +48,5 @@ fn reverse_to_k(list: &Vec<i32>, n: usize) -> (reversed_list: Vec<i32>)
 }
 
 } // verus!
+
+fn main() {}

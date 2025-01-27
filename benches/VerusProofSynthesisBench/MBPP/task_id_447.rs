@@ -1,7 +1,5 @@
 use vstd::prelude::*;
 
-fn main() {}
-
 verus! {
 
 fn cube_element(nums: &Vec<i32>) -> (cubed: Vec<i32>)
@@ -46,3 +44,6 @@ fn cube_element(nums: &Vec<i32>) -> (cubed: Vec<i32>)
 }
 
 } // verus!
+
+fn main() {}
+

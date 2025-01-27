@@ -1,5 +1,5 @@
 use vstd::prelude::*;
-fn main() {}
+
 
 verus!{
 spec fn triangle(n: nat) -> (result: nat)
@@ -58,3 +58,5 @@ fn tail_triangle(n: u32, idx: u32, sum: &mut u32)
     // impl-end
 }
 }
+
+fn main() {}

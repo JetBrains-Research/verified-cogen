@@ -1,6 +1,5 @@
 use vstd::prelude::*;
 
-fn main() {}
 
 verus! {
 
@@ -47,3 +46,5 @@ fn find_first_odd(arr: &Vec<u32>) -> (index: Option<usize>)
 }
 
 } // verus!
+
+fn main() {}

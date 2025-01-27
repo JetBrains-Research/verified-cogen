@@ -1,7 +1,6 @@
 #[allow(unused_imports)]
 use vstd::prelude::*;
 
-fn main() {}
 
 verus!{
 spec fn f(seq: Seq<u64>, i: int) -> (result: bool) {
@@ -31,3 +30,5 @@ fn get_element_check_property(arr: Vec<u64>, i: usize) -> (ret: u64)
     // impl-end
 }
 }
+
+fn main() {}

@@ -1,7 +1,5 @@
 use vstd::prelude::*;
 
-fn main() {}
-
 verus! {
 
 spec fn count_frequency_rcr(seq: Seq<i32>, key: i32) -> (result: int)
@@ -94,3 +92,5 @@ fn remove_duplicates(arr: &Vec<i32>) -> (unique_arr: Vec<i32>)
 }
 
 } // verus!
+
+fn main() {}

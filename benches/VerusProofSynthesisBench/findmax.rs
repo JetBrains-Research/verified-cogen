@@ -1,6 +1,5 @@
 #[allow(unused_imports)]
 use vstd::prelude::*;
-fn main() {}
 
 verus! {
 fn find_max(nums: Vec<i32>) -> (ret:i32)
@@ -32,5 +31,7 @@ fn find_max(nums: Vec<i32>) -> (ret:i32)
     max
     // impl-end
 }
-// pure-end
 }
+
+
+fn main() {}

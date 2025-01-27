@@ -1,7 +1,5 @@
 use vstd::prelude::*;
 
-fn main() {}
-
 verus! {
 
 spec fn is_space_comma_dot_spec(c: char) -> (result: bool) {
@@ -54,3 +52,5 @@ fn replace_with_colon(str1: &Vec<char>) -> (result: Vec<char>)
 }
 
 } // verus!
+
+fn main() {}

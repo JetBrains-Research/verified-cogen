@@ -1,5 +1,5 @@
 use vstd::prelude::*;
-fn main() {}
+
 verus!{
 fn myfun2(x: &mut Vec<i32>) 
     // pre-conditions-start
@@ -30,3 +30,5 @@ fn myfun2(x: &mut Vec<i32>)
     // impl-end
 }
 }
+
+fn main() {}

@@ -1,5 +1,5 @@
 use vstd::prelude::*;
-fn main() {}
+
 verus!{
 fn simple_nested(a: &mut Vec<i32>, b: &Vec<i32>, N: i32) -> (sum: i32)
     // pre-conditions-start
@@ -48,3 +48,6 @@ fn simple_nested(a: &mut Vec<i32>, b: &Vec<i32>, N: i32) -> (sum: i32)
     // impl-end
 }
 }
+
+
+fn main() {}

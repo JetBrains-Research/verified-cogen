@@ -1,7 +1,5 @@
 use vstd::prelude::*;
 
-fn main() {}
-
 verus! {
 
 fn remove_odds(arr: &Vec<u32>) -> (even_list: Vec<u32>)
@@ -40,3 +38,5 @@ fn remove_odds(arr: &Vec<u32>) -> (even_list: Vec<u32>)
 }
 
 } // verus!
+
+fn main() {}

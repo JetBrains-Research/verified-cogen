@@ -1,7 +1,5 @@
 use vstd::prelude::*;
 
-fn main() {}
-
 verus! {
 
 fn contains_z(text: &Vec<char>) -> (result: bool)
@@ -29,3 +27,5 @@ fn contains_z(text: &Vec<char>) -> (result: bool)
 }
 
 } // verus!
+
+fn main() {}

@@ -1,7 +1,5 @@
 use vstd::prelude::*;
 
-fn main() {}
-
 verus! {
 
 spec fn is_upper_case(c: char) -> (result:bool) {
@@ -74,3 +72,5 @@ fn to_toggle_case(str1: &Vec<char>) -> (toggle_case: Vec<char>)
 }
 
 } // verus!
+
+fn main() {}

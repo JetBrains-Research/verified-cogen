@@ -1,5 +1,4 @@
 use vstd::prelude::*;
-fn main() {}
 
 verus! {
 spec fn fibo(n: int) -> (result:nat)
@@ -78,3 +77,5 @@ fn fibonacci(n: usize) -> (ret: Vec<i32>)
     // impl-end
 }
 }
+
+fn main() {}

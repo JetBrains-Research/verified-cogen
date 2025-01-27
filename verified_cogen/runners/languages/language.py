@@ -48,9 +48,11 @@ class GenericLanguage(Language):
         self,
         method_regex: Pattern[str],
         pure_regex: Pattern[str],
+        void_regex: Pattern[str],
         validator_template: str,
         validator_template_pure: str,
         validator_template_pure_copy: str,
+        validator_template_void: str,
         remove_pure: bool,
         check_patterns: list[str],
         inline_assert_comment: str,
@@ -59,9 +61,11 @@ class GenericLanguage(Language):
         self.simple_comment = simple_comment
         self.method_regex = method_regex
         self.pure_regex = pure_regex
+        self.void_regex = void_regex
         self.validator_template = validator_template
         self.validator_template_pure = validator_template_pure
         self.validator_template_pure_copy = validator_template_pure_copy
+        self.validator_template_void = validator_template_void
         self.check_patterns = check_patterns
         self.inline_assert_comment = inline_assert_comment
         self.remove_pure = remove_pure
@@ -84,6 +88,22 @@ class GenericLanguage(Language):
             self.validator_template.replace("{method_name}", method_name)
             .replace("{parameters}", parameters or "")
             .replace("{returns}", returns or "")
+            .replace("{specs}", specs or "\n")
+            .replace(
+                "{param_names}",
+                self.split_params(parameters),
+            )
+        )
+
+    def _validators_from_void(
+        self,
+        method_name: str,
+        parameters: str,
+        specs: str,
+    ) -> str:
+        return (
+            self.validator_template_void.replace("{method_name}", method_name)
+            .replace("{parameters}", parameters or "")
             .replace("{specs}", specs or "\n")
             .replace(
                 "{param_names}",
@@ -139,6 +159,7 @@ class GenericLanguage(Language):
     def generate_validators(self, code: str, validate_helpers: bool) -> str:
         pure_methods = list(self.pure_regex.finditer(code))
         methods = list(self.method_regex.finditer(code))
+        void_methods = list(self.void_regex.finditer(code))
 
         validators: list[str] = []
         pure_names: list[str] = []
@@ -197,6 +218,27 @@ class GenericLanguage(Language):
 
             validators.append(
                 self._validators_from(method_name, parameters, returns, specs)
+            )
+
+        for match in void_methods:
+            method_name, parameters, specs = (
+                match.group(1),
+                match.group(2),
+                match.group(3),
+            )
+
+            if (
+                method_name in pure_names
+                or any(m.group(1) == method_name for m in methods)
+                or method_name == "main"
+            ):
+                continue
+
+            if self.remove_pure:
+                specs = self.replace_pure(specs, pure_names)
+
+            validators.append(
+                self._validators_from_void(method_name, parameters, specs)
             )
 
         return "\n".join(validators)

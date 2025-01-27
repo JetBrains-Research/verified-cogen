@@ -1,5 +1,4 @@
 use vstd::prelude::*;
-fn main() {}
 
 verus!{
 fn myfun4(x: &Vec<u64>, y: &mut Vec<u64>)
@@ -42,3 +41,5 @@ fn myfun4(x: &Vec<u64>, y: &mut Vec<u64>)
     // impl-end
 }
 }
+
+fn main() {}

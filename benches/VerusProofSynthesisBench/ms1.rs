@@ -1,5 +1,5 @@
 use vstd::prelude::*;
-fn main() {}
+
 verus!{
 
 fn myfun(a: &mut Vec<usize>, sum: &mut Vec<usize>, N: usize) 
@@ -48,3 +48,5 @@ fn myfun(a: &mut Vec<usize>, sum: &mut Vec<usize>, N: usize)
 	// impl-end
 }
 }
+
+fn main() {}

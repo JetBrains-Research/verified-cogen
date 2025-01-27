@@ -1,7 +1,5 @@
 use vstd::prelude::*;
 
-fn main() {}
-
 verus! {
 
 spec fn sum_to(arr: Seq<i64>) -> (result: int)
@@ -57,3 +55,5 @@ fn sum_range_list(arr: &Vec<i64>, start: usize, end: usize) -> (sum: i128)
 }
 
 } // verus!
+
+fn main() {}

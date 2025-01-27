@@ -1,5 +1,4 @@
 use vstd::prelude::*;
-fn main() {}
 
 verus! {
 
@@ -47,7 +46,7 @@ fn second_smallest(numbers: &Vec<i32>) -> (indices: (usize, usize))
         min_index = 1;
         second_min_index = 0;
     }
-    let mut index = 2;
+    let mut index: usize = 2;
     while index < numbers.len()
         // invariants-start
         invariant
@@ -84,3 +83,5 @@ fn second_smallest(numbers: &Vec<i32>) -> (indices: (usize, usize))
 }
 
 } // verus!
+
+fn main() {}

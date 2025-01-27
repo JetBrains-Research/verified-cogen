@@ -1,6 +1,5 @@
 use vstd::prelude::*;
 
-fn main() {}
 
 verus! {
 
@@ -38,3 +37,6 @@ fn smallest_list_length(list: &Vec<Vec<i32>>) -> (min: usize)
 }
 
 } // verus!
+
+
+fn main() {}

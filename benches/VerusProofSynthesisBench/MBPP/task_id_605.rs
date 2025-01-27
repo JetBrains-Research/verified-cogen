@@ -1,7 +1,5 @@
 use vstd::prelude::*;
 
-fn main() {}
-
 verus! {
 
 spec fn is_divisible(n: int, divisor: int) -> (result: bool) {
@@ -44,3 +42,5 @@ fn prime_num(n: u64) -> (result: bool)
 }
 
 } // verus!
+
+fn main() {}

@@ -8,6 +8,11 @@ method {method_name}_valid({parameters}) returns ({returns}){specs}\
 { var {return_values} := {method_name}({param_names}); return {return_values}; }
 """
 
+DAFNY_VALIDATOR_TEMPLATE_VOID = """\
+method {method_name}_valid({parameters}){specs}\
+{ {method_name}({param_names}); }
+"""
+
 DAFNY_VALIDATOR_TEMPLATE_PURE_COPY = """\
 function {method_name}_copy_pure({parameters}):{returns} {specs}\
 { 
@@ -41,9 +46,11 @@ class DafnyLanguage(GenericLanguage):
                 r"function\s+(\w+)\s*\((.*?)\) *: *(.*?)\s*(.*?)\{(.*?)}",
                 re.DOTALL,
             ),
+            re.compile(r"method\s+(\w+)\s*\((.*?)\)(.*?)\{", re.DOTALL),
             DAFNY_VALIDATOR_TEMPLATE,
             DAFNY_VALIDATOR_TEMPLATE_PURE,
             DAFNY_VALIDATOR_TEMPLATE_PURE_COPY,
+            DAFNY_VALIDATOR_TEMPLATE_VOID,
             AnnotationType.PURE in remove_annotations,
             [
                 annotation_by_type[annotation_type]

@@ -1,7 +1,5 @@
 use vstd::prelude::*;
 
-fn main() {}
-
 verus! {
 
 fn find_negative_numbers(arr: &Vec<i32>) -> (negative_list: Vec<i32>)
@@ -42,3 +40,5 @@ fn find_negative_numbers(arr: &Vec<i32>) -> (negative_list: Vec<i32>)
 }
 
 } // verus!
+
+fn main() {}

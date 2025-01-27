@@ -1,7 +1,5 @@
 use vstd::prelude::*;
 
-fn main() {}
-
 verus! {
 
 fn is_sorted(arr: &Vec<i32>) -> (is_sorted: bool)
@@ -33,3 +31,5 @@ fn is_sorted(arr: &Vec<i32>) -> (is_sorted: bool)
 }
 
 } // verus!
+
+fn main() {}

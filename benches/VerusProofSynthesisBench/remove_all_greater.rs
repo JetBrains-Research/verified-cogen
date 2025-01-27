@@ -1,5 +1,5 @@
 use vstd::prelude::*;
-fn main() {}
+
 verus!{
 fn remove_all_greater(v: Vec<i32>, e: i32) -> (result: Vec<i32>)
     // pre-conditions-start
@@ -37,3 +37,5 @@ fn remove_all_greater(v: Vec<i32>, e: i32) -> (result: Vec<i32>)
     // impl-end
 }
 }
+
+fn main() {}
