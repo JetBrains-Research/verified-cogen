@@ -1,4 +1,5 @@
 import logging
+import os
 import subprocess
 from pathlib import Path
 from typing import Optional
@@ -12,15 +13,22 @@ class Verifier:
         self.timeout = timeout
 
     def verify(self, file_path: Path) -> Optional[tuple[bool, str, str]]:
+        process = subprocess.Popen(
+            '{} "{}"'.format(self.verifier_cmd, file_path),
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            shell=True,
+        )
         try:
-            res = subprocess.run(
-                '{} "{}"'.format(self.verifier_cmd, file_path),
-                capture_output=True,
-                shell=True,
-                timeout=self.timeout,
+            stdout, stderr = process.communicate(timeout=self.timeout)
+            res = subprocess.CompletedProcess(
+                args=process.args,
+                returncode=process.returncode,
+                stdout=stdout,
+                stderr=stderr,
             )
         except subprocess.TimeoutExpired:
-            # os.system("killall z3")
+            os.system(f"pkill -9 -P {process.pid}")
             return None
         return (
             res.returncode == 0,
