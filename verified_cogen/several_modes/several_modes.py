@@ -190,7 +190,8 @@ def run_mode(
             pool.starmap(process_file, arguments)
 
         for v in state.results.values():
-            results_avg[v] += 1
+            if v != -1:
+                results_avg[v] += 1
 
     for key in results_avg.keys():
         results_avg[key] = results_avg[key] / args.runs
