@@ -28,8 +28,14 @@ class Verifier:
                 stderr=stderr,
             )
         except subprocess.TimeoutExpired:
-            os.system(f"pkill -9 -P {process.pid}")
             return None
+
+        command: str = (
+            f"ps -eo pid,etimes,comm | awk '$2 > {self.timeout + 10} && $3 ~ /z3/"
+            + " {print $1}' | xargs -r kill -9"
+        )
+        os.system(command)
+
         return (
             res.returncode == 0,
             res.stdout.decode("utf-8"),
