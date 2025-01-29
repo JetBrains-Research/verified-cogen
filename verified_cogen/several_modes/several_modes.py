@@ -166,7 +166,7 @@ def run_mode(
         )
 
         state = SharedState(lock, results)
-        with mp.Pool(processes=mp.cpu_count()) as pool:
+        with mp.Pool(processes=min(args.max_jobs, mp.cpu_count())) as pool:
             config = ProcessFileConfig(
                 args, history_dir, json_results, extension_from_file_list(files)
             )
