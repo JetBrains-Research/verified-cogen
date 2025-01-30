@@ -17,19 +17,12 @@ class ValidatingRunner(Runner):
         self,
         wrapping: Runner,
         language: Language,
+        summarizer_llm: LLM,
     ):
         super().__init__(
             wrapping.llm, wrapping.logger, wrapping.verifier, wrapping.config
         )
-        token = wrapping.llm.grazie._grazie_jwt_token  # type: ignore
-        self.summarizer_llm = LLM(
-            grazie_token=token,
-            profile=wrapping.llm.profile.name,
-            prompt_dir=wrapping.llm.prompt_dir,
-            system_prompt="You are an expert in dafny errors. You will be summarising errors. Don't include the errors you were given\
-            in the responses, only summarise them.",
-            temperature=0.3,
-        )
+        self.summarizer_llm = summarizer_llm
         self.wrapped_runner = wrapping
         self.language = language
         self.pure_non_helpers = []
@@ -110,8 +103,7 @@ class ValidatingRunner(Runner):
                 "Here are the errors you need to summarize:\n" + validator,
             )
             validator_summary = self.summarizer_llm.make_request()
-            self.summarizer_llm.user_prompts = []
-            self.summarizer_llm.responses = []
+            self.summarizer_llm.wipe_all()
             result += (
                 "Also, hidden validation errors occurred, here is the summary:\n"
                 + validator_summary

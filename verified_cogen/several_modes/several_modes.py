@@ -2,12 +2,13 @@ import json
 import logging
 import multiprocessing as mp
 import pathlib
+from copy import deepcopy
 from dataclasses import dataclass
 from multiprocessing.managers import DictProxy, SyncManager
 from threading import Lock
 from typing import Optional
 
-from verified_cogen.llm.llm import LLM
+from verified_cogen.llm.llm import LLM, LLMGrazie
 from verified_cogen.main import construct_rewriter, make_runner_cls
 from verified_cogen.runners import RunnerConfig
 from verified_cogen.runners.languages import register_basic_languages
@@ -49,6 +50,7 @@ def process_file(
     file_with_name: tuple[pathlib.Path, str],
     rewriter: Optional[Rewriter],
     verifier: Verifier,
+    summarizing_llm: Optional[LLM],
     runner_config: RunnerConfig,
     config: ProcessFileConfig,
     state: SharedState,
@@ -56,14 +58,15 @@ def process_file(
     all_removed: list[AnnotationType],
 ) -> Optional[int]:
     register_basic_languages(with_removed=all_removed)
-    llm = LLM(
+    summarizing_llm = deepcopy(summarizing_llm)
+    llm = LLMGrazie(
         config.args.grazie_token,
         config.args.llm_profile,
         config.args.prompts_directory[idx],
         config.args.temperature,
     )
     runner = make_runner_cls(
-        config.args.bench_types[idx], config.extension, runner_config
+        config.args.bench_types[idx], config.extension, runner_config, summarizing_llm
     )(llm, logger, verifier, rewriter)
     file, marker_name = file_with_name
     try:
@@ -148,6 +151,13 @@ def run_mode(
             remove_helpers=(mode == "mode6"),
         )
 
+        summarizing_llm = LLMGrazie(
+            args.grazie_token,
+            args.llm_profile,
+            args.prompts_directory[idx],
+            args.temperature,
+        )
+
         files_to_process: list[tuple[pathlib.Path, str, str]] = []
         for file in files:
             display_name = rename_file(file)
@@ -176,6 +186,7 @@ def run_mode(
                     (file, marker_name),
                     rewriter,
                     verifier,
+                    summarizing_llm,
                     runner_config,
                     config,
                     state,

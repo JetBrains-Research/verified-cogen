@@ -3,7 +3,7 @@ import json
 import logging
 from typing import Optional, no_type_check
 
-from verified_cogen.llm import LLM
+from verified_cogen.llm import LLMGrazie
 from verified_cogen.runners import LLM_GENERATED_DIR
 from verified_cogen.tools import basename
 from verified_cogen.tools.verifier import Verifier
@@ -117,7 +117,7 @@ def collect_invariants(args: ProgramArgs, prg: str) -> list[str]:
     func = basename(args.program)[:-3]
     result_invariants: list[str] = []
     for temperature in [0.0, 0.1, 0.3, 0.4, 0.5, 0.7, 1.0]:
-        llm = LLM(
+        llm = LLMGrazie(
             grazie_token=args.grazie_token,
             profile=args.profile,
             prompt_dir=args.prompt_dir,
@@ -140,7 +140,7 @@ def collect_invariants(args: ProgramArgs, prg: str) -> list[str]:
 
 
 def remove_failed_invariants(
-    llm: LLM, invariants: list[str], err: str
+    llm: LLMGrazie, invariants: list[str], err: str
 ) -> Optional[list[str]]:
     llm.add_user_prompt(REMOVE_FAILED_INVARIANTS_PROMPT.format(error=err))
     response = llm.make_request()
@@ -160,7 +160,7 @@ def houdini(
     func = basename(args.program).strip(".rs")
     log.info(f"Starting Houdini for {func} in file {args.program}")
     while len(invariants) > 0:
-        llm = LLM(
+        llm = LLMGrazie(
             grazie_token=args.grazie_token,
             profile=args.profile,
             prompt_dir=args.prompt_dir,

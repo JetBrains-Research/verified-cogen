@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Callable, List, Optional
 
 from verified_cogen.args import ProgramArgs, get_args
-from verified_cogen.llm import LLM
+from verified_cogen.llm import LLM, LLMGrazie
 from verified_cogen.runners import Runner, RunnerConfig
 from verified_cogen.runners.flush import FlushRunner
 from verified_cogen.runners.generate import GenerateRunner
@@ -39,7 +39,7 @@ logger = logging.getLogger(__name__)
 def run_once(
     files: list[Path],
     args: ProgramArgs,
-    runner_cls: Callable[[LLM, Logger, Verifier, Optional[Rewriter]], Runner],
+    runner_cls: Callable[[LLMGrazie, Logger, Verifier, Optional[Rewriter]], Runner],
     verifier: Verifier,
     mode: Mode,
     rewriter: Optional[Rewriter],
@@ -51,7 +51,7 @@ def run_once(
     cnt: dict[str, int] = dict()
 
     for file in files:
-        llm = LLM(
+        llm = LLMGrazie(
             args.grazie_token,
             args.llm_profile,
             args.prompts_directory,
@@ -128,8 +128,13 @@ def construct_rewriter(extension: str, runner_types: List[str]) -> Optional[Rewr
 
 
 def make_runner_cls(
-    bench_type: str, extension: str, config: RunnerConfig
+    bench_type: str,
+    extension: str,
+    config: RunnerConfig,
+    summarizing_llm: Optional[LLM] = None,
 ) -> Callable[[LLM, Logger, Verifier, Optional[Rewriter]], Runner]:
+    from copy import deepcopy
+
     def runner_cls(
         llm: LLM,
         logger: Logger,
@@ -143,18 +148,29 @@ def make_runner_cls(
         elif bench_type == "generate":
             return GenerateRunner(llm, logger, verifier, config)
         elif bench_type == "validating":
+            assert summarizing_llm is not None, (
+                "Summarizing LLM must be provided for ValidatingRunner"
+            )
             return ValidatingRunner(
                 InvariantRunner(llm, logger, verifier, config, rewriter),
                 LanguageDatabase().get(extension),
+                deepcopy(summarizing_llm),
             )
         elif bench_type == "step-by-step":
+            assert summarizing_llm is not None, (
+                "Summarizing LLM must be provided for ValidatingRunner"
+            )
             return ValidatingRunner(
                 StepByStepRunner(
                     InvariantRunner(llm, logger, verifier, config, rewriter)
                 ),
                 LanguageDatabase().get(extension),
+                deepcopy(summarizing_llm),
             )
         elif bench_type == "step-by-step-flush":
+            assert summarizing_llm is not None, (
+                "Summarizing LLM must be provided for ValidatingRunner"
+            )
             return ValidatingRunner(
                 FlushRunner(
                     StepByStepRunner(
@@ -162,6 +178,7 @@ def make_runner_cls(
                     )
                 ),
                 LanguageDatabase().get(extension),
+                deepcopy(summarizing_llm),
             )
         else:
             raise ValueError(f"Unexpected bench_type: {bench_type}")
@@ -204,14 +221,22 @@ def main():
     )
     if args.dir is not None:
         files = sorted(list(pathlib.Path(args.dir).glob(ext_glob(args.filter_by_ext))))
+        summarizing_llm = LLMGrazie(
+            args.grazie_token,
+            args.llm_profile,
+            args.prompts_directory,
+            args.temperature,
+            system_prompt="You are an expert in verification errors. You will be summarising errors. Don't include the errors you were given\
+            in the responses, only summarise them.",
+        )
         runner_cls = make_runner_cls(
-            args.bench_type, extension_from_file_list(files), config
+            args.bench_type, extension_from_file_list(files), config, summarizing_llm
         )
         rewriter = construct_rewriter(
             extension_from_file_list(files), args.manual_rewriters
         )
         runner = runner_cls(
-            LLM(
+            LLMGrazie(
                 args.grazie_token,
                 args.llm_profile,
                 args.prompts_directory,
@@ -260,7 +285,7 @@ def main():
             json.dump({k: v / args.runs for k, v in total_cnt.items()}, f)
     else:
         assert args.input is not None, "input file must be specified"
-        llm = LLM(
+        llm = LLMGrazie(
             args.grazie_token,
             args.llm_profile,
             args.prompts_directory,
