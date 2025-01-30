@@ -6,12 +6,16 @@ use vstd::seq_lib::lemma_seq_contains_after_push;
 verus! {
 
 proof fn swap_preserves_multiset_helper(s: Seq<i32>, i: int, j: int)
+    // pre-conditions-start
     requires
         0 <= i < j < s.len(),
+    // pre-conditions-end
+    // post-conditions-start
     ensures
         (s.take(j + 1)).to_multiset() =~= s.take(i).to_multiset().add(
             s.subrange(i + 1, j).to_multiset(),
         ).insert(s.index(j)).insert(s.index(i)),
+    // post-conditions-end
 {
     // impl-start
     let fst = s.take(i);
@@ -36,13 +40,17 @@ proof fn swap_preserves_multiset_helper(s: Seq<i32>, i: int, j: int)
 // pure-end
 
 proof fn swap_preserves_multiset(s1: Seq<i32>, s2: Seq<i32>, i: int, j: int)
+    // pre-conditions-start
     requires
         0 <= i < j < s1.len() == s2.len(),
         forall|x: int| 0 <= x < s1.len() && x != i && x != j ==> s1.index(x) == s2.index(x),
         s1.index(i) == s2.index(j),
         s1.index(j) == s2.index(i),
+    // pre-conditions-end
+    // post-conditions-start
     ensures
         s1.to_multiset() == s2.to_multiset(),
+    // post-conditions-end
 {
     // impl-start
     calc! {
