@@ -72,9 +72,17 @@ class ValidatingRunner(Runner):
                     .replace("{helpers}", ",".join(self.pure_non_helpers))
                 )
                 self.llm.add_response("understood")
-        return self._add_validators(
-            self.starting_prg, self.wrapped_runner.postprocess(inv_prg)
-        )
+        return self.wrapped_runner.postprocess(inv_prg)
+        # return self._add_validators(
+        #     self.starting_prg, self.wrapped_runner.postprocess(inv_prg)
+        # )
+
+    def verify_program(self, name: str, try_n: int, prg: str, tag: str = ""):
+        base_verif = super(ValidatingRunner, self).verify_program(name, try_n, prg, tag)
+        if not base_verif[0]:
+            return base_verif
+        valid_prg = self._add_validators(self.starting_prg, prg)
+        return super(ValidatingRunner, self).verify_program(name, try_n, valid_prg, f"{tag}_valid")
 
     def rewrite(
         self,
@@ -82,7 +90,7 @@ class ValidatingRunner(Runner):
         text_description: Optional[str] = None,
         additional_prompt: str = "",
     ) -> str:
-        if self.config.remove_implementations:
+        if self.config.remove_implementations and self.pure_non_helpers:
             additional_prompt += prompts.helpers_prompt(self.llm.prompt_dir).replace(
                 "{helpers}", ",".join(self.pure_non_helpers)
             )

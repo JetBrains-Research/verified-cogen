@@ -31,7 +31,7 @@ class DafnyLanguage(GenericLanguage):
             AnnotationType.PRE_CONDITIONS: r" *// pre-conditions-start.*?// pre-conditions-end\n",
             AnnotationType.POST_CONDITIONS: r" *// post-conditions-start.*?// post-conditions-end\n",
             AnnotationType.IMPLS: r" *// impl-start.*?// impl-end\n",
-            AnnotationType.PURE: r"function.*?// pure-end\n",
+            AnnotationType.PURE: r"(function|lemma|predicate|class).*?// pure-end\n",
         }
         super().__init__(
             re.compile(
