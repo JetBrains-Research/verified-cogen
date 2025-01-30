@@ -1,4 +1,5 @@
 import argparse
+import multiprocessing
 import os
 from typing import List, Optional, no_type_check
 
@@ -25,6 +26,7 @@ class ProgramArgsMultiple:
     log_tries: Optional[str]
     output_logging: bool
     manual_rewriters: List[str]
+    max_jobs: int
 
     @no_type_check
     def __init__(self, args):
@@ -47,6 +49,7 @@ class ProgramArgsMultiple:
         self.output_logging = args.output_logging
         self.manual_rewriters = args.manual_rewriters
         self.modes = args.modes
+        self.max_jobs = args.max_jobs
 
 
 def get_default_parser_multiple():
@@ -55,6 +58,13 @@ def get_default_parser_multiple():
     parser.add_argument("-d", "--dir", help="directory to run on", required=False)
 
     parser.add_argument("-r", "--runs", help="number of runs", default=1, type=int)
+    parser.add_argument(
+        "-j",
+        "--max-jobs",
+        help="maximum number of parallel jobs",
+        default=multiprocessing.cpu_count(),
+        type=int,
+    )
 
     parser.add_argument(
         "--insert-conditions-mode",
