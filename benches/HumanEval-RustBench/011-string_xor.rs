@@ -2,7 +2,7 @@ use vstd::prelude::*;
 use vstd::slice::*;
 
 verus! {
-spec fn is_binary_digit(c: char) -> bool {
+spec fn is_binary_digit(c: char) -> (ret: bool) {
     c == '0' || c == '1'
 }
 // pure-end
