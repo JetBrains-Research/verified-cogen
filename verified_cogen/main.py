@@ -148,6 +148,7 @@ def run_mode(
             include_text_descriptions=TEXT_DESCRIPTIONS[mode],
             remove_implementations=REMOVE_IMPLS_MAPPING[mode],
             remove_helpers=(mode == "mode6"),
+
         )
 
         files_to_process: list[tuple[pathlib.Path, str]] = []

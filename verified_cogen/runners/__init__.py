@@ -85,16 +85,16 @@ class Runner:
         self.logger.info(f"Invocation done for {self.get_name()}")
         return inv_prg
 
-    def _verification_file(self, name: str, try_n: int) -> pathlib.Path:
+    def _verification_file(self, name: str, try_n: int, tag: str = "") -> pathlib.Path:
         if self.config.log_tries is not None:
             base, extension = name.rsplit(".", 1)
-            return self.config.log_tries / f"{base}_{try_n}.{extension}"
+            return self.config.log_tries / f"{base}{tag}_{try_n}.{extension}"
         else:
             return LLM_GENERATED_DIR / name
 
-    def verify_program(self, name: str, try_n: int, prg: str):
+    def verify_program(self, name: str, try_n: int, prg: str, tag: str = ""):
         LLM_GENERATED_DIR.mkdir(parents=True, exist_ok=True)
-        output = self._verification_file(name, try_n)
+        output = self._verification_file(name, try_n, tag)
         with open(output, "w") as f:
             f.write(prg)
         return self.verifier.verify(output)
