@@ -56,16 +56,18 @@ def process_file(
     all_removed: list[AnnotationType],
 ) -> Optional[int]:
     register_basic_languages(with_removed=all_removed)
+    file, marker_name = file_with_name
+
     llm = LLM(
         config.args.grazie_token,
         config.args.llm_profile,
         config.args.prompts_directory[idx],
         config.args.temperature,
+        history=config.history_dir / f"{file.stem}.txt",
     )
     runner = make_runner_cls(
         config.args.bench_types[idx], config.extension, runner_config
     )(llm, logger, verifier, rewriter)
-    file, marker_name = file_with_name
     try:
         mode = Mode(config.args.insert_conditions_mode)
         tries = runner.run_on_file(mode, config.args.tries, str(file))
@@ -152,13 +154,17 @@ def run_mode(
         for file in files:
             display_name = rename_file(file)
             marker_name = str(file.relative_to(directory))
-            if (
-                marker_name in results
-                and isinstance(results[marker_name], int)
-                and results[marker_name] != -1
-            ):
-                logger.info(f"Skipping: {display_name} as it has already been verified")
-                continue
+            if marker_name in results and isinstance(results[marker_name], int):
+                if results[marker_name] != -1:
+                    logger.info(
+                        f"Skipping: {display_name} as it has already been verified"
+                    )
+                    continue
+                elif results[marker_name] == -1 and args.skip_failed:
+                    logger.info(
+                        f"Skipping: {display_name} as it has not been verified and is marked as failed"
+                    )
+                    continue
             files_to_process.append((file, display_name, marker_name))
 
         rewriter = construct_rewriter(

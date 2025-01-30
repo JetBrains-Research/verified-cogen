@@ -17,6 +17,7 @@ class ProgramArgsMultiple:
     verifier_timeout: int
     prompts_directory: List[str]
     modes: List[str]
+    skip_failed: bool
     grazie_token: str
     llm_profile: str
     tries: int
@@ -49,6 +50,7 @@ class ProgramArgsMultiple:
         self.output_logging = args.output_logging
         self.manual_rewriters = args.manual_rewriters
         self.modes = args.modes
+        self.skip_failed = args.skip_failed
         self.max_jobs = args.max_jobs
 
 
@@ -99,6 +101,12 @@ def get_default_parser_multiple():
         help="directories containing prompts",
         default=[],
         nargs="+",
+    )
+    parser.add_argument(
+        "--skip-failed",
+        help="Skip failed files",
+        default=False,
+        action="store_true",
     )
     parser.add_argument(
         "--grazie-token", help="Grazie JWT token", default=os.getenv("GRAZIE_JWT_TOKEN")
