@@ -29,6 +29,7 @@ class LLM:
         prompt_dir: str,
         temperature: float,
         system_prompt: Optional[str] = None,
+        history: Optional[Path] = None,
     ):
         self.grazie = GrazieApiGatewayClient(
             url=GrazieApiGatewayUrls.STAGING,
@@ -45,6 +46,7 @@ class LLM:
         self.had_errors = False
         self.temperature = temperature
         self.system_prompt = system_prompt if system_prompt else prompts.sys_prompt(self.prompt_dir)
+        self.history = history
 
     def add_user_prompt(self, prompt: str, temporary: bool = False):
         self.user_prompts.append(prompt)
@@ -84,14 +86,21 @@ class LLM:
                 prompt = prompt.add_assistant(self.responses[current_response])
                 current_response += 1
 
+        if self.history is not None:
+            self.dump_history(self.history)
+
         try:
+            parameters: dict[Parameters.Key, Parameters.Value] = {}
+            if self.profile.name != "openai-o1":
+                parameters[LLMParameters.Temperature] = Parameters.FloatValue(temperature)
             return self.grazie.chat(
                 chat=prompt,
                 profile=self.profile,
-                parameters={LLMParameters.Temperature: Parameters.FloatValue(temperature)},
+                parameters=parameters,
             )
-        except (RemoteDisconnected, RequestFailedException):
+        except (RemoteDisconnected, RequestFailedException) as e:
             logger.warning("Grazie API is down, retrying...")
+            logger.warning(f"Error: {e}")
             return self._request(temperature, tries - 1)
         except Exception as e:
             self.dump_history(Path("err_dump.txt"))

@@ -12,9 +12,11 @@ spec fn product(numbers: Seq<u32>) -> (result:int) {
 // pure-end
 
 proof fn sum_bound(numbers: Seq<u32>)
+    // post-conditions-start
     ensures
         sum(numbers) <= numbers.len() * u32::MAX,
     decreases numbers.len(),
+    // post-conditions-end
 {
     // impl-start
     if numbers.len() == 0 {

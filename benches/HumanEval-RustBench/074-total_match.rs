@@ -8,18 +8,24 @@ spec fn spec_sum(s: Seq<nat>) -> (ret: int) {
 // pure-end
 
 proof fn lemma_increasing_sum(s: Seq<nat>, i: int, j: int)
+    // pre-conditions-start
     requires
         0 <= i <= j <= s.len(),
+    // pre-conditions-end
+    // post-conditions-start
     ensures
         spec_sum(s.subrange(0, i)) <= spec_sum(s.subrange(0, j)),
     decreases j - i,
+    // post-conditions-end
 {
+    // impl-start
     if (i < j) {
         assert(spec_sum(s.subrange(0, j - 1)) <= spec_sum(s.subrange(0, j))) by {
             assert(s.subrange(0, j).drop_last() == s.subrange(0, j - 1));
         }
         lemma_increasing_sum(s, i, j - 1);
     }
+    // impl-end
 }
 // pure-end
 

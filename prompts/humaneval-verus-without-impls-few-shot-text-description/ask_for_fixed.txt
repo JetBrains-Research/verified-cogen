@@ -2,6 +2,6 @@ The following errors occurred during verification:
 {error}
 
 Please fix the error by adding, removing or modifying the implementation, invariants or assertions and return the fixed program.
-You should not modify any helper functions (annotated with @Pure), remember they are here to help you with verification.
+You should not modify any helper functions (annotated with spec fn or proof fn), remember they are here to help you with verification.
 Don't add any additional text comments, your response must contain only program with invariants.
-Do not provide ANY explanations. Don't include markdown backticks. Respond only in Python code, nothing else.
+Do not provide ANY explanations. Don't include markdown backticks. Respond only in Verus code, nothing else.
