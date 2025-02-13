@@ -80,9 +80,7 @@ class InvariantRunner(Runner):
             if while_count == 0:
                 raise ValueError("No loops in program")
             if while_count > 1:
-                raise ValueError(
-                    "Multiple loops in program, not supported in regex mode"
-                )
+                raise ValueError("Multiple loops in program, not supported in regex mode")
 
     def postprocess(self, inv_prg: str) -> str:
         if self.rewriter is not None:

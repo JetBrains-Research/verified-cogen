@@ -39,9 +39,7 @@ class DafnyLanguage(GenericLanguage):
             AnnotationType.PURE: r"function.*?// pure-end\n",
         }
         super().__init__(
-            re.compile(
-                r"method\s+(\w+)\s*\((.*?)\)\s*returns\s*\((.*?)\)(.*?)\{", re.DOTALL
-            ),
+            re.compile(r"method\s+(\w+)\s*\((.*?)\)\s*returns\s*\((.*?)\)(.*?)\{", re.DOTALL),
             re.compile(
                 r"function\s+(\w+)\s*\((.*?)\) *: *(.*?)\s*(.*?)\{(.*?)}",
                 re.DOTALL,
@@ -52,17 +50,12 @@ class DafnyLanguage(GenericLanguage):
             DAFNY_VALIDATOR_TEMPLATE_PURE_COPY,
             DAFNY_VALIDATOR_TEMPLATE_VOID,
             AnnotationType.PURE in remove_annotations,
-            [
-                annotation_by_type[annotation_type]
-                for annotation_type in remove_annotations
-            ],
+            [annotation_by_type[annotation_type] for annotation_type in remove_annotations],
             "// assert-line",
             "//",
         )
 
-    def _validators_from(
-        self, method_name: str, parameters: str, returns: str, specs: str
-    ) -> str:
+    def _validators_from(self, method_name: str, parameters: str, returns: str, specs: str) -> str:
         result = super()._validators_from(method_name, parameters, returns, specs)
         result = result.replace(
             "{return_values}",
@@ -72,12 +65,8 @@ class DafnyLanguage(GenericLanguage):
 
     def separate_validator_errors(self, errors: str) -> tuple[str, str]:
         lines = errors.split("\n")
-        lines = [
-            line for line in lines if "Dafny program verifier finished" not in line
-        ]
-        line_with_ret0 = next(
-            (i for i, line in enumerate(lines) if "ret0" in line), None
-        )
+        lines = [line for line in lines if "Dafny program verifier finished" not in line]
+        line_with_ret0 = next((i for i, line in enumerate(lines) if "ret0" in line), None)
         if line_with_ret0 is None:
             return "\n".join(lines), ""
         else:

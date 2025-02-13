@@ -24,9 +24,7 @@ class FlushRunner(Runner):
         assert self.starting_prg is not None
         self.llm.wipe_all()
         self.previous_error = ""
-        self.logger.info(
-            f"Encountered same error for {self.wrapped_runner.get_name()}. Rewrite"
-        )
+        self.logger.info(f"Encountered same error for {self.wrapped_runner.get_name()}. Rewrite")
         return self.rewrite(self.starting_prg)
 
     def ask_for_timeout(self) -> str:

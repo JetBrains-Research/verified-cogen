@@ -11,8 +11,7 @@ log = logging.getLogger(__name__)
 def cleanup_z3_processes(timeout: int = 60):
     if platform.startswith("linux"):
         command: str = (
-            f"ps -eo pid,etimes,comm | awk '$2 > {timeout + 10} && $3 ~ /z3/"
-            + " {print $1}' | xargs -r kill -9"
+            f"ps -eo pid,etimes,comm | awk '$2 > {timeout + 10} && $3 ~ /z3/" + " {print $1}' | xargs -r kill -9"
         )
         os.system(command)
 

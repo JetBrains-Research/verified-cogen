@@ -94,9 +94,7 @@ def run_once(
             if len(failed) > 0:
                 print(f"Failed: {failed_tabbed}")
 
-        pprint_stat(
-            "Verified without modification", len(success_zero_tries), len(files)
-        )
+        pprint_stat("Verified without modification", len(success_zero_tries), len(files))
         pprint_stat("Verified with modification", len(success), len(files))
         pprint_stat("Failed", len(failed), len(files))
 
@@ -121,9 +119,7 @@ def construct_rewriter(extension: str, runner_types: List[str]) -> Optional[Rewr
     if extension == "py":
         return construct_nagini_rewriter(runner_types)
     if runner_types:
-        raise ValueError(
-            f"Not implemented rewriters for language: {LanguageDatabase().regularise[extension]}"
-        )
+        raise ValueError(f"Not implemented rewriters for language: {LanguageDatabase().regularise[extension]}")
     return None
 
 
@@ -149,18 +145,12 @@ def make_runner_cls(
             )
         elif bench_type == "step-by-step":
             return ValidatingRunner(
-                StepByStepRunner(
-                    InvariantRunner(llm, logger, verifier, config, rewriter)
-                ),
+                StepByStepRunner(InvariantRunner(llm, logger, verifier, config, rewriter)),
                 LanguageDatabase().get(extension),
             )
         elif bench_type == "step-by-step-flush":
             return ValidatingRunner(
-                FlushRunner(
-                    StepByStepRunner(
-                        InvariantRunner(llm, logger, verifier, config, rewriter)
-                    )
-                ),
+                FlushRunner(StepByStepRunner(InvariantRunner(llm, logger, verifier, config, rewriter))),
                 LanguageDatabase().get(extension),
             )
         else:
@@ -204,12 +194,8 @@ def main():
     )
     if args.dir is not None:
         files = sorted(list(pathlib.Path(args.dir).glob(ext_glob(args.filter_by_ext))))
-        runner_cls = make_runner_cls(
-            args.bench_type, extension_from_file_list(files), config
-        )
-        rewriter = construct_rewriter(
-            extension_from_file_list(files), args.manual_rewriters
-        )
+        runner_cls = make_runner_cls(args.bench_type, extension_from_file_list(files), config)
+        rewriter = construct_rewriter(extension_from_file_list(files), args.manual_rewriters)
         runner = runner_cls(
             LLM(
                 args.grazie_token,
@@ -226,16 +212,12 @@ def main():
                 runner.precheck(f.read(), mode)
 
         if args.runs == 1:
-            _, _, _, total_cnt = run_once(
-                files, args, runner_cls, verifier, mode, rewriter, is_once=True
-            )
+            _, _, _, total_cnt = run_once(files, args, runner_cls, verifier, mode, rewriter, is_once=True)
         else:
             success_zero_tries, success, failed = 0, 0, 0
             total_cnt = {rename_file(f): 0 for f in files}
             for _ in range(args.runs):
-                s0, s, f, cnt = run_once(
-                    files, args, runner_cls, verifier, mode, rewriter, is_once=False
-                )
+                s0, s, f, cnt = run_once(files, args, runner_cls, verifier, mode, rewriter, is_once=False)
                 success_zero_tries += s0
                 success += s
                 failed += f
@@ -266,9 +248,7 @@ def main():
             args.prompts_directory,
             args.temperature,
         )
-        runner = make_runner_cls(args.bench_type, Path(args.input).suffix[1:], config)(
-            llm, logger, verifier, None
-        )
+        runner = make_runner_cls(args.bench_type, Path(args.input).suffix[1:], config)(llm, logger, verifier, None)
         tries = runner.run_on_file(mode, args.tries, args.input)
         if tries == 0:
             print("Verified without modification")

@@ -7,6 +7,4 @@ from verified_cogen.runners.languages.verus import VerusLanguage
 def register_basic_languages(with_removed: list[AnnotationType]):
     LanguageDatabase().register("dafny", ["dfy"], DafnyLanguage(with_removed))
     LanguageDatabase().register("verus", ["rs"], VerusLanguage(with_removed))
-    LanguageDatabase().register(
-        "nagini", ["py", "python"], NaginiLanguage(with_removed)
-    )
+    LanguageDatabase().register("nagini", ["py", "python"], NaginiLanguage(with_removed))

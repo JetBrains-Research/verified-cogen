@@ -28,9 +28,7 @@ class Language:
     def separate_validator_errors(self, errors: str) -> tuple[str, str]: ...
 
     @abstractmethod
-    def check_helpers(
-        self, code: str, pure_non_helpers: List[str]
-    ) -> Tuple[List[str], str]: ...
+    def check_helpers(self, code: str, pure_non_helpers: List[str]) -> Tuple[List[str], str]: ...
 
     @abstractmethod
     def find_pure_non_helpers(self, code: str) -> List[str]: ...
@@ -71,11 +69,7 @@ class GenericLanguage(Language):
         self.remove_pure = remove_pure
 
     def split_params(self, parameters: str) -> str:
-        return ", ".join(
-            param.split(":")[0].strip()
-            for param in parameters.split(",")
-            if param.strip()
-        )
+        return ", ".join(param.split(":")[0].strip() for param in parameters.split(",") if param.strip())
 
     def _validators_from(
         self,
@@ -181,11 +175,7 @@ class GenericLanguage(Language):
                 specs = self.replace_pure(specs, pure_names)
                 body = self.replace_pure(body, pure_names)
 
-                validators.append(
-                    self._validators_from_pure_copy(
-                        method_name, parameters, returns, specs, body
-                    )
-                )
+                validators.append(self._validators_from_pure_copy(method_name, parameters, returns, specs, body))
 
         if validate_helpers:
             for pure_match in pure_methods:
@@ -196,11 +186,7 @@ class GenericLanguage(Language):
                     pure_match.group(4),
                     pure_match.group(5),
                 )
-                validators.append(
-                    self._validators_from_pure(
-                        method_name, parameters, returns, specs, body
-                    )
-                )
+                validators.append(self._validators_from_pure(method_name, parameters, returns, specs, body))
 
         for match in methods:
             method_name, parameters, returns, specs = (
@@ -216,9 +202,7 @@ class GenericLanguage(Language):
             if self.remove_pure:
                 specs = self.replace_pure(specs, pure_names)
 
-            validators.append(
-                self._validators_from(method_name, parameters, returns, specs)
-            )
+            validators.append(self._validators_from(method_name, parameters, returns, specs))
 
         for match in void_methods:
             method_name, parameters, specs = (
@@ -227,19 +211,13 @@ class GenericLanguage(Language):
                 match.group(3),
             )
 
-            if (
-                method_name in pure_names
-                or any(m.group(1) == method_name for m in methods)
-                or method_name == "main"
-            ):
+            if method_name in pure_names or any(m.group(1) == method_name for m in methods) or method_name == "main":
                 continue
 
             if self.remove_pure:
                 specs = self.replace_pure(specs, pure_names)
 
-            validators.append(
-                self._validators_from_void(method_name, parameters, specs)
-            )
+            validators.append(self._validators_from_void(method_name, parameters, specs))
 
         return "\n".join(validators)
 
@@ -254,9 +232,7 @@ class GenericLanguage(Language):
         lines = [line for line in lines if self.inline_assert_comment not in line]
         return "\n".join(lines).strip()
 
-    def check_helpers(
-        self, code: str, pure_non_helpers: List[str]
-    ) -> Tuple[List[str], str]:
+    def check_helpers(self, code: str, pure_non_helpers: List[str]) -> Tuple[List[str], str]:
         return [], code
 
     def find_pure_non_helpers(self, code: str) -> List[str]:

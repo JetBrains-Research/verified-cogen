@@ -62,9 +62,9 @@ def process_file(
         config.args.prompts_directory[idx],
         config.args.temperature,
     )
-    runner = make_runner_cls(
-        config.args.bench_types[idx], config.extension, runner_config
-    )(llm, logger, verifier, rewriter)
+    runner = make_runner_cls(config.args.bench_types[idx], config.extension, runner_config)(
+        llm, logger, verifier, rewriter
+    )
     file, marker_name = file_with_name
     try:
         mode = Mode(config.args.insert_conditions_mode)
@@ -104,16 +104,12 @@ def run_mode(
     register_basic_languages(with_removed=all_removed)
 
     logger.info(mode)
-    log_tries_mode = (
-        log_tries_dir / f"{idx}_{mode}" if log_tries_dir is not None else None
-    )
+    log_tries_mode = log_tries_dir / f"{idx}_{mode}" if log_tries_dir is not None else None
 
     if log_tries_mode is not None:
         log_tries_mode.mkdir(exist_ok=True)
 
-    json_avg_results = (
-        results_directory / f"tries_{directory.name}_{idx}_{mode}_avg.json"
-    )
+    json_avg_results = results_directory / f"tries_{directory.name}_{idx}_{mode}_avg.json"
 
     with open(json_avg_results, "w") as f:
         json.dump({}, f)
@@ -126,9 +122,7 @@ def run_mode(
 
         history_dir = results_directory / f"history_{directory.name}_{idx}_{mode}_{run}"
         history_dir.mkdir(exist_ok=True)
-        json_results = (
-            results_directory / f"tries_{directory.name}_{idx}_{mode}_{run}.json"
-        )
+        json_results = results_directory / f"tries_{directory.name}_{idx}_{mode}_{run}.json"
 
         if not json_results.exists():
             with open(json_results, "w") as f:
@@ -152,24 +146,16 @@ def run_mode(
         for file in files:
             display_name = rename_file(file)
             marker_name = str(file.relative_to(directory))
-            if (
-                marker_name in results
-                and isinstance(results[marker_name], int)
-                and results[marker_name] != -1
-            ):
+            if marker_name in results and isinstance(results[marker_name], int) and results[marker_name] != -1:
                 logger.info(f"Skipping: {display_name} as it has already been verified")
                 continue
             files_to_process.append((file, display_name, marker_name))
 
-        rewriter = construct_rewriter(
-            extension_from_file_list(files), args.manual_rewriters
-        )
+        rewriter = construct_rewriter(extension_from_file_list(files), args.manual_rewriters)
 
         state = SharedState(lock, results)
         with mp.Pool(processes=min(args.max_jobs, mp.cpu_count())) as pool:
-            config = ProcessFileConfig(
-                args, history_dir, json_results, extension_from_file_list(files)
-            )
+            config = ProcessFileConfig(args, history_dir, json_results, extension_from_file_list(files))
 
             def make_arguments(file: pathlib.Path, marker_name: str):
                 return (
@@ -183,10 +169,7 @@ def run_mode(
                     all_removed,
                 )
 
-            arguments = (
-                make_arguments(file, marker_name)
-                for file, _, marker_name in files_to_process
-            )
+            arguments = (make_arguments(file, marker_name) for file, _, marker_name in files_to_process)
             pool.starmap(process_file, arguments)
 
         for v in state.results.values():
