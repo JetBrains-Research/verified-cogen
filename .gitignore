@@ -27,3 +27,4 @@ scripts/processed
 scripts/processed/*
 *dump.txt
 **/.verus-log
+.env
