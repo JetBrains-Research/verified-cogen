@@ -20,9 +20,7 @@ class StepByStepRunner(Runner):
     _config: StepByStepConfig
 
     def __init__(self, wrapping: Runner, config: Optional[StepByStepConfig] = None):
-        super().__init__(
-            wrapping.llm, wrapping.logger, wrapping.verifier, wrapping.config
-        )
+        super().__init__(wrapping.llm, wrapping.logger, wrapping.verifier, wrapping.config)
         self.wrapped_runner = wrapping
         self._config = StepByStepConfig.default() if config is None else config
 
@@ -41,9 +39,7 @@ class StepByStepRunner(Runner):
             else self.rewrite_step_by_step(prg, text_description)
         )
 
-    def _make_rewrite_prompt(
-        self, template: str, program: str, text_description: Optional[str]
-    ) -> str:
+    def _make_rewrite_prompt(self, template: str, program: str, text_description: Optional[str]) -> str:
         result = template.replace("{program}", program)
         if text_description is not None and "{text_description}" in result:
             result = result.replace("{text_description}", text_description)
@@ -52,9 +48,7 @@ class StepByStepRunner(Runner):
     def rewrite_step_by_step(self, prg: str, text_description: Optional[str]) -> str:
         def add_examples(step: Step):
             for sub_step in step.examples:
-                self.llm.add_user_prompt(
-                    sub_step.question, self._config.remove_old_examples
-                )
+                self.llm.add_user_prompt(sub_step.question, self._config.remove_old_examples)
                 self.llm.add_response(sub_step.answer, self._config.remove_old_examples)
 
         steps: list[Step] = []
@@ -63,9 +57,7 @@ class StepByStepRunner(Runner):
             steps.append(Step(step))
         for it, step in enumerate(steps):
             add_examples(step)
-            self.llm.add_user_prompt(
-                self._make_rewrite_prompt(step.question, prg, text_description)
-            )
+            self.llm.add_user_prompt(self._make_rewrite_prompt(step.question, prg, text_description))
             _ = self.llm.make_request()
             if self._config.remove_old_examples:
                 self.llm.wipe_temporary()
@@ -73,9 +65,7 @@ class StepByStepRunner(Runner):
 
         rewrite_step = Step(pathlib.Path(self.llm.prompt_dir) / "rewrite")
         add_examples(rewrite_step)
-        self.llm.add_user_prompt(
-            self._make_rewrite_prompt(rewrite_step.question, prg, text_description)
-        )
+        self.llm.add_user_prompt(self._make_rewrite_prompt(rewrite_step.question, prg, text_description))
         response = self.llm.make_request()
         if self._config.remove_old_examples:
             self.llm.wipe_temporary()
@@ -93,9 +83,7 @@ class StepByStepRunner(Runner):
         rewrite_step = Step(pathlib.Path(self.llm.prompt_dir) / "rewrite")
         assert len(steps) == 0 or len(rewrite_step.examples) == len(steps[0].examples)
 
-        examples: list[list[Substep]] = list(
-            zip(*([step.examples for step in steps] + [rewrite_step.examples]))
-        )
+        examples: list[list[Substep]] = list(zip(*([step.examples for step in steps] + [rewrite_step.examples])))
 
         for example in examples:
             for sub_step in example:
@@ -103,15 +91,11 @@ class StepByStepRunner(Runner):
                 self.llm.add_response(sub_step.answer)
 
         for it, step in enumerate(steps):
-            self.llm.add_user_prompt(
-                self._make_rewrite_prompt(step.question, prg, text_description)
-            )
+            self.llm.add_user_prompt(self._make_rewrite_prompt(step.question, prg, text_description))
             _ = self.llm.make_request()
             self.logger.info(f"Step {it + 1} done for {self.get_name()}")
 
-        self.llm.add_user_prompt(
-            self._make_rewrite_prompt(rewrite_step.question, prg, text_description)
-        )
+        self.llm.add_user_prompt(self._make_rewrite_prompt(rewrite_step.question, prg, text_description))
         response = self.llm.make_request()
 
         return response

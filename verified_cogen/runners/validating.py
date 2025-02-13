@@ -18,9 +18,7 @@ class ValidatingRunner(Runner):
         wrapping: Runner,
         language: Language,
     ):
-        super().__init__(
-            wrapping.llm, wrapping.logger, wrapping.verifier, wrapping.config
-        )
+        super().__init__(wrapping.llm, wrapping.logger, wrapping.verifier, wrapping.config)
         token = wrapping.llm.grazie._grazie_jwt_token  # type: ignore
         self.summarizer_llm = LLM(
             grazie_token=token,
@@ -35,9 +33,7 @@ class ValidatingRunner(Runner):
         self.pure_non_helpers = []
 
     def _add_validators(self, prg: str, inv_prg: str):
-        validators = self.language.generate_validators(
-            prg, not self.config.remove_helpers
-        )
+        validators = self.language.generate_validators(prg, not self.config.remove_helpers)
         comment = self.language.simple_comment
         val_prg = inv_prg + "\n" + comment + " ==== verifiers ==== \n" + validators
         return val_prg
@@ -45,9 +41,7 @@ class ValidatingRunner(Runner):
     def preprocess(self, prg: str, mode: Mode) -> str:
         if self.config.remove_implementations and not self.config.remove_helpers:
             self.pure_non_helpers = self.language.find_pure_non_helpers(prg)
-            self.logger.info(
-                f"found pure_non_helpers for {self.get_name()}: {','.join(self.pure_non_helpers)}"
-            )
+            self.logger.info(f"found pure_non_helpers for {self.get_name()}: {','.join(self.pure_non_helpers)}")
         res_prg = self.language.remove_conditions(prg)
         self.wrapped_runner.starting_prg = res_prg
         return res_prg
@@ -57,12 +51,8 @@ class ValidatingRunner(Runner):
         if self.config.remove_implementations:
             invalid_helpers: List[str] = []
             try:
-                invalid_helpers, inv_prg = self.language.check_helpers(
-                    inv_prg, self.pure_non_helpers
-                )
-                self.logger.info(
-                    f"invalid_helpers for {self.get_name()}: {','.join(invalid_helpers)}"
-                )
+                invalid_helpers, inv_prg = self.language.check_helpers(inv_prg, self.pure_non_helpers)
+                self.logger.info(f"invalid_helpers for {self.get_name()}: {','.join(invalid_helpers)}")
             except Exception:
                 self.logger.info(f"pass for {self.get_name()}")
                 pass
@@ -74,9 +64,7 @@ class ValidatingRunner(Runner):
                     .replace("{helpers}", ",".join(self.pure_non_helpers))
                 )
                 self.llm.add_response("understood")
-        return self._add_validators(
-            self.starting_prg, self.wrapped_runner.postprocess(inv_prg)
-        )
+        return self._add_validators(self.starting_prg, self.wrapped_runner.postprocess(inv_prg))
 
     def rewrite(
         self,
@@ -112,10 +100,7 @@ class ValidatingRunner(Runner):
             validator_summary = self.summarizer_llm.make_request()
             self.summarizer_llm.user_prompts = []
             self.summarizer_llm.responses = []
-            result += (
-                "Also, hidden validation errors occurred, here is the summary:\n"
-                + validator_summary
-            )
+            result += "Also, hidden validation errors occurred, here is the summary:\n" + validator_summary
         return self.wrapped_runner.ask_for_fixed(result)
 
     def precheck(self, prg: str, mode: Mode):

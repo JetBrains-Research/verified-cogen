@@ -17,12 +17,7 @@ class NaginiRewriterFixing(Rewriter):
             if prg[i : i + 3] == "==>":
                 cnt = 0
                 for j in range(i - 1, -1, -1):
-                    if cnt == 0 and (
-                        prg[j] == ":"
-                        or prg[j] == "("
-                        or j >= 2
-                        and prg[j - 2 : j + 1] == "==>"
-                    ):
+                    if cnt == 0 and (prg[j] == ":" or prg[j] == "(" or j >= 2 and prg[j - 2 : j + 1] == "==>"):
                         indices.append((j, "Implies("))
                         break
                     if prg[j] == "(":

@@ -63,26 +63,17 @@ class NaginiLanguage(GenericLanguage):
             NAGINI_VALIDATOR_TEMPLATE_PURE_COPY,
             NAGINI_VALIDATOR_TEMPLATE_PURE_COPY,
             AnnotationType.PURE in remove_annotations,
-            [
-                annotation_by_type[annotation_type]
-                for annotation_type in remove_annotations
-            ],
+            [annotation_by_type[annotation_type] for annotation_type in remove_annotations],
             "# assert-line",
             "#",
         )
 
     def separate_validator_errors(self, errors: str) -> tuple[str, str]:
         lines = errors.split("\n")
-        lines = [
-            line
-            for line in lines
-            if "Verification successful" not in line and "Verification took" not in line
-        ]
+        lines = [line for line in lines if "Verification successful" not in line and "Verification took" not in line]
         return "\n".join(lines), ""
 
-    def check_helpers(
-        self, code: str, pure_non_helpers: List[str]
-    ) -> Tuple[List[str], str]:
+    def check_helpers(self, code: str, pure_non_helpers: List[str]) -> Tuple[List[str], str]:
         return detect_and_replace_pure_calls_nagini(code, pure_non_helpers)
 
     def find_pure_non_helpers(self, code: str) -> List[str]:

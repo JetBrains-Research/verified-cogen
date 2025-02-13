@@ -32,9 +32,7 @@ logger = logging.getLogger(__name__)
 
 def main():
     parser = get_default_parser()
-    parser.add_argument(
-        "--ignore-failed", help="Ignore failed files", action="store_true"
-    )
+    parser.add_argument("--ignore-failed", help="Ignore failed files", action="store_true")
     args = IncrementalRunArgs(parser.parse_args())
     print(args.manual_rewriters)
 
@@ -89,27 +87,17 @@ def main():
             args.prompts_directory,
             args.temperature,
         )
-        rewriter = construct_rewriter(
-            extension_from_file_list([file]), args.manual_rewriters
+        rewriter = construct_rewriter(extension_from_file_list([file]), args.manual_rewriters)
+        runner = make_runner_cls(args.bench_type, extension_from_file_list([file]), config)(
+            llm, logger, verifier, rewriter
         )
-        runner = make_runner_cls(
-            args.bench_type, extension_from_file_list([file]), config
-        )(llm, logger, verifier, rewriter)
         display_name = rename_file(file)
         marker_name = str(file.relative_to(directory))
-        if (
-            marker_name in results
-            and isinstance(results[marker_name], int)
-            and results[marker_name] != -1
-        ):
+        if marker_name in results and isinstance(results[marker_name], int) and results[marker_name] != -1:
             logger.info(f"Skipping: {display_name} as it has already been verified")
             continue
-        elif (
-            marker_name in results and results[marker_name] == -1 and args.ignore_failed
-        ):
-            logger.info(
-                f"Skipping: {display_name} as it failed previously and ignore_failed is set"
-            )
+        elif marker_name in results and results[marker_name] == -1 and args.ignore_failed:
+            logger.info(f"Skipping: {display_name} as it failed previously and ignore_failed is set")
             continue
         logger.info(f"Processing: {display_name}")
         try:
