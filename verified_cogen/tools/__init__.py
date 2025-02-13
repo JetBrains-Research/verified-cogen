@@ -27,9 +27,7 @@ def ext_glob(filter_by_ext: Optional[str]) -> str:
 
 def extension_from_file_list(files: list[pathlib.Path]) -> str:
     extension = files[0].suffix[1:]
-    if (
-        different := next((f for f in files if f.suffix[1:] != extension), None)
-    ) is not None:
+    if (different := next((f for f in files if f.suffix[1:] != extension), None)) is not None:
         raise ValueError(
             f"Found files different extensions: {files[0].name} and {different.name}, please use a single extension"
         )

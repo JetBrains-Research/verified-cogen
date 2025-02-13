@@ -15,7 +15,9 @@ class NaginiRewriter(Rewriter):
         if len(pos_implications) == 0:
             return prg, ""
 
-        prompt = "Manual inspection revealed occurrences of `==>` operator for implication on the following positions:\n"
+        prompt = (
+            "Manual inspection revealed occurrences of `==>` operator for implication on the following positions:\n"
+        )
         prompt += ", ".join(f"({a}, {b})" for a, b in pos_implications) + "\n"
         prompt += "`==>` operator does not exist in Nagini. All occurrences of `==>` operator should be replaced with `Implies(a, b)` operator, that is used to express implication in Nagini\n"
 

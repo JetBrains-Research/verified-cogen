@@ -34,7 +34,7 @@ fn is_prime(n: u32) -> (result: bool)
     // impl-end
 }
 
-spec fn is_prime_pred(n: u32) -> bool {
+spec fn is_prime_pred(n: u32) -> (ret: bool) {
     forall|k: int| 2 <= k < n ==> #[trigger] (n as int % k) != 0
 }
 

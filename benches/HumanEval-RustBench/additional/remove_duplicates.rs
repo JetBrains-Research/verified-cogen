@@ -2,7 +2,7 @@ use vstd::prelude::*;
 
 verus! {
 
-spec fn in_array(a: Seq<i32>, x: i32) -> bool {
+spec fn in_array(a: Seq<i32>, x: i32) -> (ret: bool) {
     exists|i: int| 0 <= i < a.len() && a[i] == x
 }
 

@@ -124,9 +124,7 @@ def collect_invariants(args: ProgramArgs, prg: str) -> list[str]:
             temperature=temperature,
         )
 
-        llm.add_user_prompt(
-            INVARIANTS_JSON_PROMPT.replace("{program}", prg).replace("{function}", func)
-        )
+        llm.add_user_prompt(INVARIANTS_JSON_PROMPT.replace("{program}", prg).replace("{function}", func))
         response = llm.make_request()
         try:
             invariants = json.loads(response)
@@ -139,9 +137,7 @@ def collect_invariants(args: ProgramArgs, prg: str) -> list[str]:
     return list(set(result_invariants))
 
 
-def remove_failed_invariants(
-    llm: LLM, invariants: list[str], err: str
-) -> Optional[list[str]]:
+def remove_failed_invariants(llm: LLM, invariants: list[str], err: str) -> Optional[list[str]]:
     llm.add_user_prompt(REMOVE_FAILED_INVARIANTS_PROMPT.format(error=err))
     response = llm.make_request()
     try:
@@ -154,9 +150,7 @@ def remove_failed_invariants(
         return None
 
 
-def houdini(
-    args: ProgramArgs, verifier: Verifier, prg: str, invariants: list[str]
-) -> Optional[list[str]]:
+def houdini(args: ProgramArgs, verifier: Verifier, prg: str, invariants: list[str]) -> Optional[list[str]]:
     func = basename(args.program).strip(".rs")
     log.info(f"Starting Houdini for {func} in file {args.program}")
     while len(invariants) > 0:
@@ -165,9 +159,7 @@ def houdini(
             profile=args.profile,
             prompt_dir=args.prompt_dir,
             temperature=0.0,
-            system_prompt=HOUDINI_SYS_PROMPT.replace("{program}", prg).replace(
-                "{function}", func
-            ),
+            system_prompt=HOUDINI_SYS_PROMPT.replace("{program}", prg).replace("{function}", func),
         )
 
         prg_with_invariants = llm.add(prg, "\n".join(invariants), func)
@@ -195,18 +187,12 @@ def houdini(
             for inv in set(new_invariants):
                 if inv not in inv_set:
                     is_subset = False
-                    log.error(
-                        f"New invariant {inv} is not a subset of the old invariants"
-                    )
+                    log.error(f"New invariant {inv} is not a subset of the old invariants")
             if not is_subset:
                 log.error("New invariants are not a subset of the old invariants")
                 log.error("Old invariants: {}".format(json.dumps(invariants, indent=2)))
-                log.error(
-                    "New invariants: {}".format(json.dumps(new_invariants, indent=2))
-                )
-                raise ValueError(
-                    "New invariants are not a subset of the old invariants"
-                )
+                log.error("New invariants: {}".format(json.dumps(new_invariants, indent=2)))
+                raise ValueError("New invariants are not a subset of the old invariants")
             invariants = new_invariants
 
 

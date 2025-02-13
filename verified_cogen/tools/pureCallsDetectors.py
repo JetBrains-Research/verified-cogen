@@ -12,10 +12,7 @@ class PureFunctionCallReplacer(ast.NodeTransformer):
         self.pure_non_helpers = pure_non_helpers
 
     def visit_FunctionDef(self, node: ast.FunctionDef):
-        is_pure = any(
-            isinstance(decorator, ast.Name) and decorator.id == "Pure"
-            for decorator in node.decorator_list
-        )
+        is_pure = any(isinstance(decorator, ast.Name) and decorator.id == "Pure" for decorator in node.decorator_list)
         if is_pure and node.name not in self.pure_non_helpers:
             self.pure_functions.append(node.name)
 
@@ -74,9 +71,7 @@ class PureFunctionCallReplacer(ast.NodeTransformer):
         return node
 
 
-def detect_and_replace_pure_calls_nagini(
-    code: str, pure_non_helpers: List[str]
-) -> Tuple[List[str], str]:
+def detect_and_replace_pure_calls_nagini(code: str, pure_non_helpers: List[str]) -> Tuple[List[str], str]:
     tree = ast.parse(code)
     replacer = PureFunctionCallReplacer(pure_non_helpers)
     modified_tree = replacer.visit(tree)
