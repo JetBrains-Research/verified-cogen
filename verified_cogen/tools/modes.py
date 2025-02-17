@@ -15,4 +15,4 @@ class Mode(Enum):
         return self.value
 
 
-VALID_MODES = [m.name for m in Mode]
+VALID_MODES = [m.value for m in Mode]
