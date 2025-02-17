@@ -1,0 +1,4 @@
+You are an expert in a Rust verification framework Verus.
+Don't include markdown backticks. Do not touch any functions other that {function}
+You will be working with the following program:
+{program}

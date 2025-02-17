@@ -1,0 +1,21 @@
+Given the following Rust program, and a set of Verus invariants, output the program with invariants inserted into the correct place.
+Here's an example of correctly inserted invariants:
+```rust
+while i < a.len()
+    invariant
+        0 <= i <= a.len(),
+        forall|k: int, l: int|
+            #![trigger result[k], result[l]]
+            0 <= k && k < l && l < result.len() ==> result[k] < result[l],
+        forall|k: int|
+            #![trigger result[k]]
+            0 <= k && k < result.len() ==> exists|m: int| 0 <= m < i && result[k] == a[m],
+```
+
+You have to return the FULL PROGRAM. Make sure to put it in the <answer><answer/> tags.
+
+The program:
+{program}
+–
+The invariants:
+{checks}

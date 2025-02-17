@@ -1,0 +1,7 @@
+Some of the provided invariants either have syntax errors or failed to verify.
+Could you please remove the invariants that failed to verify and provide the rest again as a JSON array of strings?
+DO NOT MODIFY THE INVARIANTS OR ADD NEW ONES.
+Put the resulting array inside the <answer><answer/> tags
+
+Here's an error from the verifier:
+{error}
