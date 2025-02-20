@@ -123,7 +123,7 @@ def run_mode(
         with open(json_avg_results, "w") as f:
             json.dump({}, f)
 
-        results_avg: "dict[int, float]" = {i: 0 for i in range(config.tries + 1)}
+        results_avg: dict[int, float] = {i: 0 for i in range(config.tries + 1)}
         lock = manager.Lock()
 
         for run in range(config.runs):
@@ -137,7 +137,7 @@ def run_mode(
                 with open(json_results, "w") as f:
                     json.dump({}, f)
 
-            with open(json_results, "r") as f:
+            with open(json_results) as f:
                 results = manager.dict(json.load(f))
 
             log_tries = log_tries_mode and (log_tries_mode / f"run_{run}")
@@ -186,7 +186,7 @@ def run_mode(
                 if v != -1:
                     results_avg[v] += 1
 
-        for key in results_avg.keys():
+        for key in results_avg:
             results_avg[key] = results_avg[key] / config.runs
 
         with open(json_avg_results, "w") as f:

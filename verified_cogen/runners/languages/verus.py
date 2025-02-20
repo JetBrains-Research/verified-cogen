@@ -1,5 +1,5 @@
 import re
-from typing import Pattern
+from re import Pattern
 
 from verified_cogen.runners.languages.language import AnnotationType, GenericLanguage
 
@@ -66,7 +66,7 @@ class VerusLanguage(GenericLanguage):
 
     def generate_validators(self, code: str, validate_helpers: bool) -> str:
         result = super().generate_validators(code, validate_helpers)
-        return "verus!{{\n{}}}".format(result)
+        return f"verus!{{\n{result}}}"
 
     def separate_validator_errors(self, errors: str) -> tuple[str, str]:
         lines = errors.split("\n")

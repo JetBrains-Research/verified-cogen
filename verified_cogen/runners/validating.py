@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from subprocess import CalledProcessError, run
-from typing import List, Optional
+from typing import Optional
 
 from verified_cogen.llm import prompts
 from verified_cogen.llm.llm import LLM
@@ -49,7 +49,7 @@ class ValidatingRunner(Runner):
     validator: Validator
     language: Language
     summarizer_llm: LLM
-    pure_non_helpers: List[str]
+    pure_non_helpers: list[str]
 
     def __init__(
         self,
@@ -83,7 +83,7 @@ class ValidatingRunner(Runner):
     def postprocess(self, inv_prg: str) -> str:
         assert self.starting_prg is not None
         if self.config.remove_implementations:
-            invalid_helpers: List[str] = []
+            invalid_helpers: list[str] = []
             try:
                 invalid_helpers, inv_prg = self.language.check_helpers(inv_prg, self.pure_non_helpers)
                 self.logger.info(f"invalid_helpers for {self.get_name()}: {','.join(invalid_helpers)}")

@@ -63,7 +63,7 @@ def remove_failed_invariants(llm: LLM, invariants: list[str], err: str, prompt_d
     response = extract_code_from_llm_output(llm.make_request())
     try:
         new_invariants = json.loads(response)
-        log.debug("REMOVED: {}".format(set(invariants).difference(set(new_invariants))))
+        log.debug(f"REMOVED: {set(invariants).difference(set(new_invariants))}")
         return new_invariants
     except json.JSONDecodeError:
         print("Error parsing response as JSON")
@@ -99,7 +99,7 @@ def houdini(args: ProgramArgs, verifier: Verifier, prg: str, invariants: list[st
             return invariants
         else:
             log.info("Failed to verify invariants")
-            log.debug("Error: {}".format(err))
+            log.debug(f"Error: {err}")
 
             new_invariants = remove_failed_invariants(llm, invariants, out + err, args.prompt_dir)
             if new_invariants is None or new_invariants == invariants:
@@ -112,8 +112,8 @@ def houdini(args: ProgramArgs, verifier: Verifier, prg: str, invariants: list[st
                     log.error(f"New invariant {inv} is not a subset of the old invariants")
             if not is_subset:
                 log.warning("New invariants are not a subset of the old invariants")
-                log.warning("Old invariants: {}".format(json.dumps(invariants, indent=2)))
-                log.warning("New invariants: {}".format(json.dumps(new_invariants, indent=2)))
+                log.warning(f"Old invariants: {json.dumps(invariants, indent=2)}")
+                log.warning(f"New invariants: {json.dumps(new_invariants, indent=2)}")
                 log.warning("Setting new invariants to be an intersection")
                 new_invariants = list(set(new_invariants) & set(invariants))
             invariants = new_invariants
@@ -136,9 +136,9 @@ def main(
     register_basic_languages(with_removed=[AnnotationType.INVARIANTS])
     args = ProgramArgs(grazie_token, profile, prompt_dir, program, verifier_command)
 
-    log.info("Running on program: {}".format(args.program))
+    log.info(f"Running on program: {args.program}")
 
-    with open(args.program, "r") as f:
+    with open(args.program) as f:
         prg = f.read()
 
     extension = extension_from_file_list([Path(args.program)])
@@ -146,8 +146,8 @@ def main(
 
     prg = language.remove_conditions(prg)
     invariants = collect_invariants(args, prg)
-    log.info("Collected {} invariants".format(len(invariants)))
-    log.info("Invariants: {}".format(json.dumps(invariants, indent=4)))
+    log.info(f"Collected {len(invariants)} invariants")
+    log.info(f"Invariants: {json.dumps(invariants, indent=4)}")
 
     verifier = Verifier(args.verifier_command)
     result = houdini(args, verifier, prg, invariants)

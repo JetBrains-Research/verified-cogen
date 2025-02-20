@@ -1,5 +1,5 @@
 import re
-from typing import Pattern
+from re import Pattern
 
 from verified_cogen.runners.languages.language import AnnotationType, GenericLanguage
 
