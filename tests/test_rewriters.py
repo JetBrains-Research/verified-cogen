@@ -384,9 +384,7 @@ Next, we run verifier on this program. Using the following verdict, you should p
     """
     )
 
-    _, prompt = NaginiRewriterFixingAST(NaginiRewriterFixing(NaginiRewriter())).rewrite(
-        code
-    )
+    _, prompt = NaginiRewriterFixingAST(NaginiRewriterFixing(NaginiRewriter())).rewrite(code)
     assert prompt == error
 
 
@@ -414,9 +412,7 @@ def test_rewriter7():
         """
     )
 
-    prg, prompt = NaginiRewriterFixingAST(
-        NaginiRewriterFixing(NaginiRewriter())
-    ).rewrite(code)
+    prg, prompt = NaginiRewriterFixingAST(NaginiRewriterFixing(NaginiRewriter())).rewrite(code)
 
     assert prompt == ""
     assert prg == dedent(

@@ -2,7 +2,7 @@ use vstd::prelude::*;
 
 verus! {
 
-spec fn seq_max(a: Seq<i32>) -> i32
+spec fn seq_max(a: Seq<i32>) -> (ret: i32)
     decreases a.len(),
 {
     if a.len() == 0 {

@@ -1,3 +1,5 @@
+from abc import ABC, abstractmethod
+from subprocess import CalledProcessError, run
 from typing import List, Optional
 
 from verified_cogen.llm import prompts
@@ -7,8 +9,44 @@ from verified_cogen.runners.languages.language import Language
 from verified_cogen.tools.modes import Mode
 
 
+class Validator(ABC):
+    @abstractmethod
+    def add_validators(self, prg: str, inv_prg: str) -> str: ...
+
+
+class LanguageValidator(Validator):
+    language: Language
+    remove_helpers: bool
+
+    def __init__(self, language: Language, remove_helpers: bool):
+        self.language = language
+        self.remove_helpers = remove_helpers
+
+    def add_validators(self, prg: str, inv_prg: str) -> str:
+        validators = self.language.generate_validators(prg, not self.remove_helpers)
+        comment = self.language.simple_comment
+        val_prg = inv_prg + "\n" + comment + " ==== verifiers ==== \n" + validators
+        return val_prg
+
+
+class ShellValidator(Validator):
+    cli_command: list[str]
+
+    def __init__(self, cli_command: list[str]):
+        self.cli_command = cli_command
+
+    def add_validators(self, prg: str, inv_prg: str) -> str:
+        try:
+            command = self.cli_command + [prg, inv_prg]
+            result = run(command, capture_output=True, timeout=10, check=True).stdout.decode()
+            return result
+        except (CalledProcessError, TimeoutError):
+            return inv_prg
+
+
 class ValidatingRunner(Runner):
     wrapped_runner: Runner
+    validator: Validator
     language: Language
     summarizer_llm: LLM
     pure_non_helpers: List[str]
@@ -17,10 +55,9 @@ class ValidatingRunner(Runner):
         self,
         wrapping: Runner,
         language: Language,
+        validator: Optional[Validator] = None,
     ):
-        super().__init__(
-            wrapping.llm, wrapping.logger, wrapping.verifier, wrapping.config
-        )
+        super().__init__(wrapping.llm, wrapping.logger, wrapping.verifier, wrapping.config)
         token = wrapping.llm.grazie._grazie_jwt_token  # type: ignore
         self.summarizer_llm = LLM(
             grazie_token=token,
@@ -31,23 +68,14 @@ class ValidatingRunner(Runner):
             temperature=0.3,
         )
         self.wrapped_runner = wrapping
+        self.validator = validator or LanguageValidator(language, self.config.remove_helpers)
         self.language = language
         self.pure_non_helpers = []
-
-    def _add_validators(self, prg: str, inv_prg: str):
-        validators = self.language.generate_validators(
-            prg, not self.config.remove_helpers
-        )
-        comment = self.language.simple_comment
-        val_prg = inv_prg + "\n" + comment + " ==== verifiers ==== \n" + validators
-        return val_prg
 
     def preprocess(self, prg: str, mode: Mode) -> str:
         if self.config.remove_implementations and not self.config.remove_helpers:
             self.pure_non_helpers = self.language.find_pure_non_helpers(prg)
-            self.logger.info(
-                f"found pure_non_helpers for {self.get_name()}: {','.join(self.pure_non_helpers)}"
-            )
+            self.logger.info(f"found pure_non_helpers for {self.get_name()}: {','.join(self.pure_non_helpers)}")
         res_prg = self.language.remove_conditions(prg)
         self.wrapped_runner.starting_prg = res_prg
         return res_prg
@@ -57,12 +85,8 @@ class ValidatingRunner(Runner):
         if self.config.remove_implementations:
             invalid_helpers: List[str] = []
             try:
-                invalid_helpers, inv_prg = self.language.check_helpers(
-                    inv_prg, self.pure_non_helpers
-                )
-                self.logger.info(
-                    f"invalid_helpers for {self.get_name()}: {','.join(invalid_helpers)}"
-                )
+                invalid_helpers, inv_prg = self.language.check_helpers(inv_prg, self.pure_non_helpers)
+                self.logger.info(f"invalid_helpers for {self.get_name()}: {','.join(invalid_helpers)}")
             except Exception:
                 self.logger.info(f"pass for {self.get_name()}")
                 pass
@@ -74,9 +98,7 @@ class ValidatingRunner(Runner):
                     .replace("{helpers}", ",".join(self.pure_non_helpers))
                 )
                 self.llm.add_response("understood")
-        return self._add_validators(
-            self.starting_prg, self.wrapped_runner.postprocess(inv_prg)
-        )
+        return self.validator.add_validators(self.starting_prg, self.wrapped_runner.postprocess(inv_prg))
 
     def rewrite(
         self,
@@ -112,10 +134,7 @@ class ValidatingRunner(Runner):
             validator_summary = self.summarizer_llm.make_request()
             self.summarizer_llm.user_prompts = []
             self.summarizer_llm.responses = []
-            result += (
-                "Also, hidden validation errors occurred, here is the summary:\n"
-                + validator_summary
-            )
+            result += "Also, hidden validation errors occurred, here is the summary:\n" + validator_summary
         return self.wrapped_runner.ask_for_fixed(result)
 
     def precheck(self, prg: str, mode: Mode):

@@ -29,6 +29,7 @@ class LLM:
         prompt_dir: str,
         temperature: float,
         system_prompt: Optional[str] = None,
+        history: Optional[Path] = None,
     ):
         self.grazie = GrazieApiGatewayClient(
             url=GrazieApiGatewayUrls.STAGING,
@@ -44,9 +45,8 @@ class LLM:
         self.is_response_temporary: list[bool] = []
         self.had_errors = False
         self.temperature = temperature
-        self.system_prompt = (
-            system_prompt if system_prompt else prompts.sys_prompt(self.prompt_dir)
-        )
+        self.system_prompt = system_prompt if system_prompt else prompts.sys_prompt(self.prompt_dir)
+        self.history = history
 
     def add_user_prompt(self, prompt: str, temporary: bool = False):
         self.user_prompts.append(prompt)
@@ -64,21 +64,13 @@ class LLM:
 
     def wipe_temporary(self):
         self.user_prompts = [
-            prompt
-            for prompt, temporary in zip(
-                self.user_prompts, self.is_user_prompt_temporary
-            )
-            if not temporary
+            prompt for prompt, temporary in zip(self.user_prompts, self.is_user_prompt_temporary) if not temporary
         ]
         self.responses = [
-            response
-            for response, temporary in zip(self.responses, self.is_response_temporary)
-            if not temporary
+            response for response, temporary in zip(self.responses, self.is_response_temporary) if not temporary
         ]
 
-    def _request(
-        self, temperature: Optional[float] = None, tries: int = 5
-    ) -> ChatResponse:
+    def _request(self, temperature: Optional[float] = None, tries: int = 5) -> ChatResponse:
         if tries == 0:
             raise Exception("Exhausted tries to get response from Grazie API")
         if temperature is None:
@@ -86,9 +78,7 @@ class LLM:
         prompt = ChatPrompt().add_system(self.system_prompt)
         current_prompt_user = 0
         current_response = 0
-        while current_prompt_user < len(self.user_prompts) or current_response < len(
-            self.responses
-        ):
+        while current_prompt_user < len(self.user_prompts) or current_response < len(self.responses):
             if current_prompt_user < len(self.user_prompts):
                 prompt = prompt.add_user(self.user_prompts[current_prompt_user])
                 current_prompt_user += 1
@@ -96,16 +86,21 @@ class LLM:
                 prompt = prompt.add_assistant(self.responses[current_response])
                 current_response += 1
 
+        if self.history is not None:
+            self.dump_history(self.history)
+
         try:
+            parameters: dict[Parameters.Key, Parameters.Value] = {}
+            if self.profile.name != "openai-o1":
+                parameters[LLMParameters.Temperature] = Parameters.FloatValue(temperature)
             return self.grazie.chat(
                 chat=prompt,
                 profile=self.profile,
-                parameters={
-                    LLMParameters.Temperature: Parameters.FloatValue(temperature)
-                },
+                parameters=parameters,
             )
-        except (RemoteDisconnected, RequestFailedException):
+        except (RemoteDisconnected, RequestFailedException) as e:
             logger.warning("Grazie API is down, retrying...")
+            logger.warning(f"Error: {e}")
             return self._request(temperature, tries - 1)
         except Exception as e:
             self.dump_history(Path("err_dump.txt"))
@@ -117,9 +112,7 @@ class LLM:
         return extract_code_from_llm_output(response)
 
     def produce(self, prg: str) -> str:
-        self.add_user_prompt(
-            prompts.produce_prompt(self.prompt_dir).format(program=prg)
-        )
+        self.add_user_prompt(prompts.produce_prompt(self.prompt_dir).format(program=prg))
         return self.make_request()
 
     def add(self, prg: str, checks: str, function: Optional[str] = None) -> str:
@@ -159,9 +152,7 @@ class LLM:
         with open(file, "w") as f:
             current_prompt_user = 0
             current_response = 0
-            while current_prompt_user < len(
-                self.user_prompts
-            ) or current_response < len(self.responses):
+            while current_prompt_user < len(self.user_prompts) or current_response < len(self.responses):
                 if current_prompt_user < len(self.user_prompts):
                     user_prompt = self.user_prompts[current_prompt_user]
                     f.write(f"User: {user_prompt}\n\n")

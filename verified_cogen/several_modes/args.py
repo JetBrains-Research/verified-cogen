@@ -17,6 +17,7 @@ class ProgramArgsMultiple:
     verifier_timeout: int
     prompts_directory: List[str]
     modes: List[str]
+    skip_failed: bool
     grazie_token: str
     llm_profile: str
     tries: int
@@ -49,6 +50,7 @@ class ProgramArgsMultiple:
         self.output_logging = args.output_logging
         self.manual_rewriters = args.manual_rewriters
         self.modes = args.modes
+        self.skip_failed = args.skip_failed
         self.max_jobs = args.max_jobs
 
 
@@ -101,20 +103,18 @@ def get_default_parser_multiple():
         nargs="+",
     )
     parser.add_argument(
-        "--grazie-token", help="Grazie JWT token", default=os.getenv("GRAZIE_JWT_TOKEN")
+        "--skip-failed",
+        help="Skip failed files",
+        default=False,
+        action="store_true",
     )
-    parser.add_argument(
-        "--llm-profile", help="llm profile", default="gpt-4-1106-preview"
-    )
+    parser.add_argument("--grazie-token", help="Grazie JWT token", default=os.getenv("GRAZIE_JWT_TOKEN"))
+    parser.add_argument("--llm-profile", help="llm profile", default="gpt-4-1106-preview")
     parser.add_argument("--tries", help="number of tries", default=1, type=int)
     parser.add_argument("--retries", help="number of retries", default=0, type=int)
-    parser.add_argument(
-        "-s", "--output-style", choices=["stats", "full"], default="full"
-    )
+    parser.add_argument("-s", "--output-style", choices=["stats", "full"], default="full")
     parser.add_argument("--filter-by-ext", help="filter by extension", required=False)
-    parser.add_argument(
-        "--log-tries", help="Save output of every try to given dir", required=False
-    )
+    parser.add_argument("--log-tries", help="Save output of every try to given dir", required=False)
     parser.add_argument(
         "--output-logging",
         help="Print logs to standard output",

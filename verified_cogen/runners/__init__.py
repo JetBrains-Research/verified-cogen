@@ -38,9 +38,7 @@ class Runner:
     name: Optional[str] = None
     config: RunnerConfig
 
-    def __init__(
-        self, llm: LLM, logger: Logger, verifier: Verifier, config: RunnerConfig
-    ):
+    def __init__(self, llm: LLM, logger: Logger, verifier: Verifier, config: RunnerConfig):
         self.llm = llm
         self.logger = logger
         self.verifier = verifier
@@ -85,9 +83,7 @@ class Runner:
     def get_name(self) -> str:
         return self.name or "unknown"
 
-    def invoke(
-        self, prg: str, mode: Mode, text_description: Optional[str] = None
-    ) -> str:
+    def invoke(self, prg: str, mode: Mode, text_description: Optional[str] = None) -> str:
         self.logger.info(f"Invoking LLM for {self.get_name()}")
         if mode == Mode.LLM_SINGLE_STEP:
             inv_prg = self.rewrite(prg, text_description)
@@ -121,9 +117,7 @@ class Runner:
     ) -> Optional[int]:
         tries = total_tries
         while tries > 0:
-            verification_result = self.verify_program(
-                name, total_tries - tries + 1, inv_prg
-            )
+            verification_result = self.verify_program(name, total_tries - tries + 1, inv_prg)
             if verification_result is None:
                 self.logger.info(f"Verification timed out for {self.get_name()}")
                 tries -= 1
@@ -139,12 +133,8 @@ class Runner:
                     self.logger.info(err_inv)
                     tries -= 1
                     if tries > 0:
-                        self.logger.info(
-                            f"Retrying {self.get_name()} with {tries} tries left..."
-                        )
-                        inv_prg = self.postprocess(
-                            self.ask_for_fixed(out_inv + err_inv)
-                        )
+                        self.logger.info(f"Retrying {self.get_name()} with {tries} tries left...")
+                        inv_prg = self.postprocess(self.ask_for_fixed(out_inv + err_inv))
         return None
 
     def run_on_file(
@@ -162,9 +152,7 @@ class Runner:
 
         text_description = None
         if self.config.include_text_descriptions:
-            text_description_file = (
-                file_path.parent / "text-descriptions" / f"{file_path.stem}.txt"
-            )
+            text_description_file = file_path.parent / "text-descriptions" / f"{file_path.stem}.txt"
             text_description = text_description_file.read_text()
             self.logger.info(f"Text description for {name}: {text_description}")
 
