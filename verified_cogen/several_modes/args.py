@@ -28,6 +28,7 @@ class ProgramArgsMultiple:
     output_logging: bool
     manual_rewriters: List[str]
     max_jobs: int
+    shell_validator: List[str]
 
     @no_type_check
     def __init__(self, args):
@@ -52,6 +53,7 @@ class ProgramArgsMultiple:
         self.modes = args.modes
         self.skip_failed = args.skip_failed
         self.max_jobs = args.max_jobs
+        self.shell_validator = args.shell_validator
 
 
 def get_default_parser_multiple():
@@ -124,6 +126,12 @@ def get_default_parser_multiple():
     parser.add_argument(
         "--manual-rewriters",
         help="Manual rewriters for additional program modifications",
+        default=[],
+        nargs="+",
+    )
+    parser.add_argument(
+        "--shell-validator",
+        help="Shell arguments to run validator",
         default=[],
         nargs="+",
     )

@@ -11,8 +11,9 @@ from verified_cogen.llm.llm import LLM
 from verified_cogen.main import construct_rewriter, make_runner_cls
 from verified_cogen.runners import RunnerConfig
 from verified_cogen.runners.languages import register_basic_languages
-from verified_cogen.runners.languages.language import AnnotationType
+from verified_cogen.runners.languages.language import AnnotationType, LanguageDatabase
 from verified_cogen.runners.rewriters import Rewriter
+from verified_cogen.runners.validating import ShellValidator
 from verified_cogen.several_modes.args import ProgramArgsMultiple, get_args
 from verified_cogen.several_modes.constants import (
     MODE_MAPPING,
@@ -65,8 +66,18 @@ def process_file(
         config.args.temperature,
         history=config.history_dir / f"{file.stem}.txt",
     )
+    validator = (
+        ShellValidator(
+            config.args.shell_validator,
+            LanguageDatabase().get(file.suffix.lstrip(".")),
+            runner_config.remove_helpers,
+            file.stem + file.suffix,
+        )
+        if config.args.shell_validator
+        else None
+    )
     runner = make_runner_cls(config.args.bench_types[idx], config.extension, runner_config)(
-        llm, logger, verifier, rewriter
+        llm, logger, verifier, rewriter, validator
     )
     try:
         mode = Mode(config.args.insert_conditions_mode)

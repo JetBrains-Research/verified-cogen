@@ -89,7 +89,7 @@ def main():
         )
         rewriter = construct_rewriter(extension_from_file_list([file]), args.manual_rewriters)
         runner = make_runner_cls(args.bench_type, extension_from_file_list([file]), config)(
-            llm, logger, verifier, rewriter
+            llm, logger, verifier, rewriter, None
         )
         display_name = rename_file(file)
         marker_name = str(file.relative_to(directory))
