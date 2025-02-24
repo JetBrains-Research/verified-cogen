@@ -9,16 +9,16 @@ from verified_cogen.runners.rewriters.nagini_rewriter_fixing_ast import NaginiRe
 from verified_cogen.runners.rewriters.verus_rewriter import VerusRewriter
 
 
-def construct_nagini_rewriter(runner_types: list[str], llm: tuple[LLMConfig, int]) -> Optional[Rewriter]:
+def construct_nagini_rewriter(runner_types: list[str]) -> Optional[Rewriter]:
     runner = None
     for runner_type in runner_types:
         match runner_type:
             case "NaginiRewriter":
-                runner = NaginiRewriter(llm)
+                runner = NaginiRewriter()
             case "NaginiRewriterFixing":
-                runner = NaginiRewriterFixing(llm, runner)
+                runner = NaginiRewriterFixing(runner)
             case "NaginiRewriterFixingAST":
-                runner = NaginiRewriterFixingAST(llm, runner)
+                runner = NaginiRewriterFixingAST(runner)
             case _:
                 raise ValueError(f"Unexpected nagini rewriter type: {runner_type}")
     return runner
@@ -38,7 +38,7 @@ def construct_verus_rewriter(runner_types: list[str], llm: tuple[LLMConfig, int]
 def construct_rewriter(extension: str, llm: tuple[LLMConfig, int], runner_types: list[str]) -> Optional[Rewriter]:
     match extension:
         case "py":
-            return construct_nagini_rewriter(runner_types, llm)
+            return construct_nagini_rewriter(runner_types)
         case "rs":
             return construct_verus_rewriter(runner_types, llm)
         case _ if runner_types:
