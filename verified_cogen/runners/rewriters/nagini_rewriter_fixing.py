@@ -1,13 +1,14 @@
 from typing import Optional
 
+from verified_cogen.args import LLMConfig
 from verified_cogen.runners.rewriters.__init__ import Rewriter
 
 
 class NaginiRewriterFixing(Rewriter):
     wrapped_rewriter: Optional[Rewriter]
 
-    def __init__(self, rewriter: Optional[Rewriter] = None):
-        super().__init__()
+    def __init__(self, llm: tuple[LLMConfig, int], rewriter: Optional[Rewriter] = None):
+        super().__init__(llm)
         self.wrapped_rewriter = rewriter
 
     def replace_impl(self, prg: str):
@@ -56,7 +57,7 @@ class NaginiRewriterFixing(Rewriter):
 
         return new_prg
 
-    def rewrite(self, prg: str) -> tuple[str, str]:
+    def rewrite(self, prg: str, error: Optional[str] = None) -> tuple[str, str]:
         prompt: str = ""
 
         if self.wrapped_rewriter is not None:
