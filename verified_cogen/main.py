@@ -39,7 +39,7 @@ logger = logging.getLogger(__name__)
 def run_once(
     files: list[Path],
     args: ProgramArgs,
-    runner_cls: Callable[[LLM, Logger, Verifier, Optional[Rewriter]], Runner],
+    runner_cls: Callable[[LLM, Logger, Verifier, Optional[Rewriter], Optional[Validator]], Runner],
     verifier: Verifier,
     mode: Mode,
     rewriter: Optional[Rewriter],
@@ -58,7 +58,7 @@ def run_once(
             args.temperature,
         )
 
-        runner = runner_cls(llm, logger, verifier, rewriter)
+        runner = runner_cls(llm, logger, verifier, rewriter, None)
 
         retries = args.retries + 1
         tries = None
@@ -125,7 +125,7 @@ def construct_rewriter(extension: str, runner_types: List[str]) -> Optional[Rewr
 
 def make_runner_cls(
     bench_type: str, extension: str, config: RunnerConfig
-) -> Callable[[LLM, Logger, Verifier, Optional[Rewriter]], Runner]:
+) -> Callable[[LLM, Logger, Verifier, Optional[Rewriter], Optional[Validator]], Runner]:
     def runner_cls(
         llm: LLM,
         logger: Logger,
@@ -208,6 +208,7 @@ def main():
             logger,
             verifier,
             rewriter,
+            None,
         )
         for file in files:
             with open(file) as f:
@@ -250,7 +251,9 @@ def main():
             args.prompts_directory,
             args.temperature,
         )
-        runner = make_runner_cls(args.bench_type, Path(args.input).suffix[1:], config)(llm, logger, verifier, None)
+        runner = make_runner_cls(args.bench_type, Path(args.input).suffix[1:], config)(
+            llm, logger, verifier, None, None
+        )
         tries = runner.run_on_file(mode, args.tries, args.input)
         if tries == 0:
             print("Verified without modification")
