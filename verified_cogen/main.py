@@ -20,7 +20,7 @@ from verified_cogen.runners.rewriters.nagini_rewriter_fixing_ast import (
     NaginiRewriterFixingAST,
 )
 from verified_cogen.runners.step_by_step import StepByStepRunner
-from verified_cogen.runners.validating import ValidatingRunner
+from verified_cogen.runners.validating import ValidatingRunner, Validator
 from verified_cogen.tools import (
     ext_glob,
     extension_from_file_list,
@@ -131,6 +131,7 @@ def make_runner_cls(
         logger: Logger,
         verifier: Verifier,
         rewriter: Optional[Rewriter] = None,
+        validator: Optional[Validator] = None,
     ):
         if bench_type == "invariants":
             return InvariantRunner(llm, logger, verifier, config)
@@ -142,6 +143,7 @@ def make_runner_cls(
             return ValidatingRunner(
                 InvariantRunner(llm, logger, verifier, config, rewriter),
                 LanguageDatabase().get(extension),
+                validator,
             )
         elif bench_type == "step-by-step":
             return ValidatingRunner(

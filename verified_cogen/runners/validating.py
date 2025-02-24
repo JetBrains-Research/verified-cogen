@@ -1,7 +1,9 @@
+import pathlib
 from abc import ABC, abstractmethod
 from subprocess import CalledProcessError, run
 from typing import List, Optional
 
+from verified_cogen import get_cache_dir
 from verified_cogen.llm import prompts
 from verified_cogen.llm.llm import LLM
 from verified_cogen.runners import Runner
@@ -10,11 +12,6 @@ from verified_cogen.tools.modes import Mode
 
 
 class Validator(ABC):
-    @abstractmethod
-    def add_validators(self, prg: str, inv_prg: str) -> str: ...
-
-
-class LanguageValidator(Validator):
     language: Language
     remove_helpers: bool
 
@@ -22,6 +19,11 @@ class LanguageValidator(Validator):
         self.language = language
         self.remove_helpers = remove_helpers
 
+    @abstractmethod
+    def add_validators(self, prg: str, inv_prg: str) -> str: ...
+
+
+class LanguageValidator(Validator):
     def add_validators(self, prg: str, inv_prg: str) -> str:
         validators = self.language.generate_validators(prg, not self.remove_helpers)
         comment = self.language.simple_comment
@@ -31,14 +33,26 @@ class LanguageValidator(Validator):
 
 class ShellValidator(Validator):
     cli_command: list[str]
+    LLM_GENERATED_VAL_DIR = pathlib.Path(get_cache_dir()) / "llm-generated-val"
+    tries = 0
+    cur_name: str
 
-    def __init__(self, cli_command: list[str]):
+    def __init__(self, cli_command: list[str], language: Language, remove_helpers: bool, cur_name: str):
+        super().__init__(language, remove_helpers)
         self.cli_command = cli_command
+        self.LLM_GENERATED_VAL_DIR.mkdir(parents=True, exist_ok=True)
+        self.cur_name = cur_name
+
+    def _validation_file(self, name: str, try_n: int) -> pathlib.Path:
+        base, extension = name.rsplit(".", 1)
+        return self.LLM_GENERATED_VAL_DIR / f"{base}_{try_n}.{extension}"
 
     def add_validators(self, prg: str, inv_prg: str) -> str:
         try:
-            command = self.cli_command + [prg, inv_prg]
-            result = run(command, capture_output=True, timeout=10, check=True).stdout.decode()
+            output: pathlib.Path = self._validation_file(self.cur_name, self.tries)
+            self.tries += 1
+            command = self.cli_command + [prg, inv_prg, str(output)]
+            result = run(command, capture_output=True, timeout=30, check=True).stdout.decode()
             return result
         except (CalledProcessError, TimeoutError):
             return inv_prg
