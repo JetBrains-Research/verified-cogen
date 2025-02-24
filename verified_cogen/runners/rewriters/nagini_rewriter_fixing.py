@@ -56,7 +56,7 @@ class NaginiRewriterFixing(Rewriter):
 
         return new_prg
 
-    def rewrite(self, prg: str) -> tuple[str, str]:
+    def rewrite(self, prg: str, error: Optional[str] = None) -> tuple[str, str]:
         prompt: str = ""
 
         if self.wrapped_rewriter is not None:

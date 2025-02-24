@@ -12,7 +12,7 @@ class LLMConfig:
     llm_profile: str
     prompts_directory: list[str]
 
-    def build(self, idx: int, history: Optional[Path]) -> LLM:
+    def build(self, idx: int, history: Optional[Path] = None) -> LLM:
         return LLM(
             self.grazie_token,
             self.llm_profile,

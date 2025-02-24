@@ -10,7 +10,7 @@ from typing import Optional
 
 import click
 
-from verified_cogen.args import IOConfig, LLMConfig, ProgramConfig
+from verified_cogen.config import IOConfig, LLMConfig, ProgramConfig
 from verified_cogen.runners import RunnerConfig
 from verified_cogen.runners.languages import register_basic_languages
 from verified_cogen.runners.languages.language import AnnotationType
@@ -164,7 +164,11 @@ def run_mode(
                         continue
                 files_to_process.append((file, marker_name))
 
-            rewriter = construct_rewriter(extension_from_file_list(files), config.manual_rewriters)
+            rewriter = construct_rewriter(
+                extension_from_file_list(files),
+                (config.llm, idx),
+                config.manual_rewriters,
+            )
 
             state = SharedState(lock, results)
             with mp.Pool(processes=min(config.io.max_jobs, mp.cpu_count())) as pool:
