@@ -1,5 +1,6 @@
 from typing import Optional
 
+from verified_cogen.args import LLMConfig
 from verified_cogen.runners.rewriters import Rewriter
 from verified_cogen.tools import extract_code_from_llm_output
 
@@ -40,8 +41,13 @@ To help you we also include the error from the verifier. Don't rely on it too mu
 
 
 class VerusRewriter(Rewriter):
+    def __init__(self, llm: Optional[tuple[LLMConfig, int]] = None):
+        super().__init__(llm)
+        assert self.llm_with_idx is not None, "VerusRewriter requires LLM be set"
+
     def rewrite(self, prg: str, error: Optional[str] = None) -> tuple[str, str]:
         assert error is not None, "VerusRewriter requires error message"
+        assert self.llm_with_idx is not None
 
         llm_config, idx = self.llm_with_idx
         llm = llm_config.build(idx)
