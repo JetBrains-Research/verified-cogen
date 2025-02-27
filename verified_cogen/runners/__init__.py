@@ -1,4 +1,5 @@
 import pathlib
+from dataclasses import dataclass
 from logging import Logger
 from pathlib import Path
 from typing import Optional
@@ -11,23 +12,12 @@ from verified_cogen.tools.verifier import Verifier
 LLM_GENERATED_DIR = pathlib.Path(get_cache_dir()) / "llm-generated"
 
 
+@dataclass
 class RunnerConfig:
     log_tries: Optional[pathlib.Path] = None
     include_text_descriptions: bool = False
     remove_implementations: bool = False
     remove_helpers: bool = False
-
-    def __init__(
-        self,
-        log_tries: Optional[pathlib.Path] = None,
-        include_text_descriptions: bool = False,
-        remove_implementations: bool = False,
-        remove_helpers: bool = False,
-    ):
-        self.log_tries = log_tries
-        self.include_text_descriptions = include_text_descriptions
-        self.remove_implementations = remove_implementations
-        self.remove_helpers = remove_helpers
 
 
 class Runner:

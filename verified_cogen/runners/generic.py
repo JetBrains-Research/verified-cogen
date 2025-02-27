@@ -1,6 +1,5 @@
 import logging
-
-from typing_extensions import Optional
+from typing import Optional
 
 from verified_cogen.runners import Runner
 from verified_cogen.tools.modes import Mode

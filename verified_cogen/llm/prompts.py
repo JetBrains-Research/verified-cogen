@@ -1,7 +1,7 @@
 from typing import Any, Optional
 
 
-class Singleton(object):
+class Singleton:
     _instance = None
 
     def __new__(cls, *args: list[Any], **kwargs: dict[str, Any]):

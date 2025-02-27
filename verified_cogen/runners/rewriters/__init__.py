@@ -1,5 +1,2 @@
-from typing import Tuple
-
-
 class Rewriter:
-    def rewrite(self, prg: str) -> Tuple[str, str]: ...
+    def rewrite(self, prg: str) -> tuple[str, str]: ...

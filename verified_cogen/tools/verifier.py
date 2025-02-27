@@ -23,7 +23,7 @@ class Verifier:
 
     def verify(self, file_path: Path) -> Optional[tuple[bool, str, str]]:
         process = subprocess.Popen(
-            '{} "{}"'.format(self.verifier_cmd, file_path),
+            f'{self.verifier_cmd} "{file_path}"',
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             shell=True,

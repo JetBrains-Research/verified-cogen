@@ -7,15 +7,14 @@ readme = "README.md"
 
 [tool.poetry.scripts]
 verified-cogen = "verified_cogen.main:main"
-incremental_run = "verified_cogen.experiments.incremental_run:main"
-several_modes = "verified_cogen.several_modes:main"
 
 [tool.ruff]
 preview = true
 line-length = 120
 
 [tool.ruff.lint]
-extend-select = ["I"]
+extend-select = ["E", "F", "UP", "B", "SIM", "I"]
+ignore = ["E501"]
 
 [tool.pyright]
 typeCheckingMode = "strict"

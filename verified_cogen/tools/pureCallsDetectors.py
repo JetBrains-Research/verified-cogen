@@ -1,11 +1,11 @@
 import ast
-from typing import List, Tuple, cast
+from typing import cast
 
 
 class PureFunctionCallReplacer(ast.NodeTransformer):
-    def __init__(self, pure_non_helpers: List[str]):
-        self.pure_functions: List[str] = list()
-        self.detected_calls: List[str] = list()
+    def __init__(self, pure_non_helpers: list[str]):
+        self.pure_functions: list[str] = list()
+        self.detected_calls: list[str] = list()
         self.current_function = None
         self.in_pure_function = False
         self.in_condition = False
@@ -71,7 +71,7 @@ class PureFunctionCallReplacer(ast.NodeTransformer):
         return node
 
 
-def detect_and_replace_pure_calls_nagini(code: str, pure_non_helpers: List[str]) -> Tuple[List[str], str]:
+def detect_and_replace_pure_calls_nagini(code: str, pure_non_helpers: list[str]) -> tuple[list[str], str]:
     tree = ast.parse(code)
     replacer = PureFunctionCallReplacer(pure_non_helpers)
     modified_tree = replacer.visit(tree)

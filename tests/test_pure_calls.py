@@ -1,5 +1,4 @@
 from textwrap import dedent
-from typing import List
 
 import pytest
 
@@ -283,6 +282,6 @@ def f(n : int) -> List[int]:
 
     nagini_lang = language_database.get("nagini")
 
-    result: List[str] = ["factorial__spec"]
+    result: list[str] = ["factorial__spec"]
 
     assert nagini_lang.find_pure_non_helpers(code) == result

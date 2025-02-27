@@ -1,5 +1,5 @@
 import re
-from typing import List, Pattern, Tuple
+from re import Pattern
 
 from verified_cogen.runners.languages.language import AnnotationType, GenericLanguage
 from verified_cogen.tools.pureCallsDetectors import detect_and_replace_pure_calls_nagini
@@ -73,10 +73,10 @@ class NaginiLanguage(GenericLanguage):
         lines = [line for line in lines if "Verification successful" not in line and "Verification took" not in line]
         return "\n".join(lines), ""
 
-    def check_helpers(self, code: str, pure_non_helpers: List[str]) -> Tuple[List[str], str]:
+    def check_helpers(self, code: str, pure_non_helpers: list[str]) -> tuple[list[str], str]:
         return detect_and_replace_pure_calls_nagini(code, pure_non_helpers)
 
-    def find_pure_non_helpers(self, code: str) -> List[str]:
+    def find_pure_non_helpers(self, code: str) -> list[str]:
         pattern: Pattern[str] = re.compile(
             r"#use-as-unpure\s+@Pure\s+def\s+(\w+)\s*\((.*?)\)\s*->\s*(.*?):",
             re.DOTALL,
