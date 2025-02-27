@@ -33,6 +33,7 @@ class LanguageValidator(Validator):
 
 class ShellValidator(Validator):
     cli_command: list[str]
+    LLM_GENERATED_CODE_DIR = pathlib.Path(get_cache_dir()) / "llm-generated-code"
     LLM_GENERATED_VAL_DIR = pathlib.Path(get_cache_dir()) / "llm-generated-val"
     tries = 0
     cur_name: str
@@ -40,8 +41,13 @@ class ShellValidator(Validator):
     def __init__(self, cli_command: list[str], language: Language, remove_helpers: bool, cur_name: str):
         super().__init__(language, remove_helpers)
         self.cli_command = cli_command
+        self.LLM_GENERATED_CODE_DIR.mkdir(parents=True, exist_ok=True)
         self.LLM_GENERATED_VAL_DIR.mkdir(parents=True, exist_ok=True)
         self.cur_name = cur_name
+
+    def _code_file(self, name: str, try_n: int) -> pathlib.Path:
+        base, extension = name.rsplit(".", 1)
+        return self.LLM_GENERATED_CODE_DIR / f"{base}_{try_n}.{extension}"
 
     def _validation_file(self, name: str, try_n: int) -> pathlib.Path:
         base, extension = name.rsplit(".", 1)
@@ -50,8 +56,15 @@ class ShellValidator(Validator):
     def add_validators(self, prg: str, inv_prg: str) -> str:
         try:
             output: pathlib.Path = self._validation_file(self.cur_name, self.tries)
+            with open(output, "w") as f:
+                f.write(prg)
+
+            code: pathlib.Path = self._code_file(self.cur_name, self.tries)
+            with open(code, "w") as f:
+                f.write(inv_prg)
+
             self.tries += 1
-            command = self.cli_command + [prg, inv_prg, str(output)]
+            command = self.cli_command + [str(code), str(output)]
             result = run(command, capture_output=True, timeout=30, check=True).stdout.decode()
             return result
         except (CalledProcessError, TimeoutError):
