@@ -1,6 +1,6 @@
 import time
 from multiprocessing.managers import SyncManager
-from typing import no_type_check
+from typing import Optional, no_type_check
 
 
 class Throttle:
@@ -13,21 +13,25 @@ class Throttle:
             cls._instance = super().__new__(cls)
         return cls._instance
 
-    def __init__(self, manager: SyncManager, rate_limit_per_minute: int = 10):
+    def __init__(self, manager: SyncManager, rate_limit: Optional[int] = None, rate_window: Optional[int] = None):
         if not Throttle._initialized:
             self.request_times = manager.list()
             self.lock = manager.Lock()
-            self.window = 60
-            self.rate_limit = rate_limit_per_minute
+            self.window = rate_window
+            self.rate_limit = rate_limit
             Throttle._initialized = True
 
     def _cleanup_old(self, now: float):
+        assert self.window is not None, "Rate window must be set"
         cutoff = now - self.window
         with self.lock:
             while len(self.request_times) > 0 and self.request_times[0] < cutoff:
                 self.request_times.pop(0)
 
     def wait(self) -> None:
+        if self.rate_limit is None or self.window is None:
+            return
+
         while True:
             now = time.time()
             self._cleanup_old(now)

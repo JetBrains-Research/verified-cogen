@@ -38,7 +38,7 @@ def collect_invariants(args: ProgramArgs, prg: str) -> list[str]:
     invariants_prompt = produce_prompt(args.prompt_dir)
 
     with mp.Manager() as manager:
-        throttle = Throttle(manager)
+        throttle = Throttle(manager, 10, 60)  # Using default values
         for temperature in [0.0, 0.1, 0.3, 0.4, 0.5, 0.7, 1.0]:
             llm = LLM(
                 throttle=throttle,

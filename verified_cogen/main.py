@@ -226,6 +226,8 @@ def run_mode(
 @click.option("--skip-failed", is_flag=True, default=False)
 @click.option("--log-tries")
 @click.option("--output-logging", is_flag=True, default=False)
+@click.option("--rate-limit", help="Number of requests allowed per window", type=Optional[int], default=None)
+@click.option("--rate-window", help="Time window in seconds for rate limiting", type=Optional[int], default=None)
 def main(
     dir: str,
     filter_by_ext: Optional[str],
@@ -245,6 +247,8 @@ def main(
     skip_failed: bool,
     log_tries: Optional[str],
     output_logging: bool,
+    rate_limit: Optional[int],
+    rate_window: Optional[int],
 ):
     assert insert_conditions_mode != Mode.REGEX
 
@@ -266,7 +270,7 @@ def main(
     verifier = Verifier(verifier_command, verifier_timeout)
 
     with mp.Manager() as manager:
-        throttle = Throttle(manager)
+        throttle = Throttle(manager, rate_limit, rate_window)
         config = ProgramConfig(
             directory,
             tries,
