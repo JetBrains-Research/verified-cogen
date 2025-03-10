@@ -165,7 +165,11 @@ def run_mode(
                     continue
             files_to_process.append((file, marker_name))
 
-        rewriter = construct_rewriter(extension_from_file_list(files), config.manual_rewriters)
+        rewriter = construct_rewriter(
+            extension_from_file_list(files),
+            (config.llm, idx),
+            config.manual_rewriters,
+        )
 
         state = SharedState(lock, results)
         with mp.Pool(processes=min(config.io.max_jobs, mp.cpu_count())) as pool:
@@ -233,8 +237,8 @@ def run_mode(
 @click.option("--skip-failed", is_flag=True, default=False)
 @click.option("--log-tries")
 @click.option("--output-logging", is_flag=True, default=False)
-@click.option("--rate-limit", help="Number of requests allowed per window", type=Optional[int], default=None)
-@click.option("--rate-window", help="Time window in seconds for rate limiting", type=Optional[int], default=None)
+@click.option("--rate-limit", help="Number of requests allowed per window", type=int, default=None)
+@click.option("--rate-window", help="Time window in seconds for rate limiting", type=int, default=None)
 def main(
     dir: str,
     filter_by_ext: Optional[str],

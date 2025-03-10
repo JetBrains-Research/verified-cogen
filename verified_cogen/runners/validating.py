@@ -82,7 +82,7 @@ class ValidatingRunner(Runner):
         self.wrapped_runner.starting_prg = res_prg
         return res_prg
 
-    def postprocess(self, inv_prg: str) -> str:
+    def postprocess(self, inv_prg: str, error: Optional[str] = None) -> str:
         assert self.starting_prg is not None
         if self.config.remove_implementations:
             invalid_helpers: list[str] = []

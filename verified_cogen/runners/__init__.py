@@ -88,7 +88,7 @@ class Runner:
     def preprocess(self, prg: str, mode: Mode) -> str:
         return prg
 
-    def postprocess(self, inv_prg: str) -> str:
+    def postprocess(self, inv_prg: str, error: Optional[str] = None) -> str:
         return inv_prg
 
     def get_name(self) -> str:
@@ -177,7 +177,7 @@ class Runner:
                     tries -= 1
                     if tries > 0:
                         self.logger.info(f"Retrying {self.get_name()} with {tries} tries left...")
-                        inv_prg = self.postprocess(self.ask_for_fixed(out_inv + err_inv))
+                        inv_prg = self.postprocess(self.ask_for_fixed(out_inv + err_inv), out_inv + err_inv)
         return None
 
     def prepare_file(self, file: Path, prg: str):

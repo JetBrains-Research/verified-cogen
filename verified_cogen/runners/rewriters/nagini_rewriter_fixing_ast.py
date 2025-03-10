@@ -14,7 +14,7 @@ class NaginiRewriterFixingAST(Rewriter):
         super().__init__()
         self.wrapped_rewriter = rewriter
 
-    def rewrite(self, prg: str) -> tuple[str, str]:
+    def rewrite(self, prg: str, error: Optional[str] = None) -> tuple[str, str]:
         prompt: str = ""
 
         if self.wrapped_rewriter is not None:

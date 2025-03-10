@@ -100,8 +100,8 @@ class StepByStepRunner(Runner):
 
         return response
 
-    def postprocess(self, inv_prg: str) -> str:
-        return self.wrapped_runner.postprocess(inv_prg)
+    def postprocess(self, inv_prg: str, error: Optional[str] = None) -> str:
+        return self.wrapped_runner.postprocess(inv_prg, error)
 
     def produce(self, prg: str) -> str:
         return self.wrapped_runner.produce(prg)
