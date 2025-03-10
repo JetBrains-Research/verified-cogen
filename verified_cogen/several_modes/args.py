@@ -13,6 +13,7 @@ class ProgramArgsMultiple:
     bench_type: str
     temperature: float
     verifier_command: str
+    test_command: str
     verifier_timeout: int
     prompts_directory: List[str]
     modes: List[str]
@@ -76,6 +77,11 @@ def get_default_parser_multiple():
         "--verifier-command",
         help="command to run (cmd [file_path]) to verify a file",
         default=os.getenv("VERIFIER_COMMAND"),
+    )
+    parser.add_argument(
+        "--test-command",
+        help="command to run (cmd [file_path]) to test a file",
+        default=os.getenv("TEST_COMMAND"),
     )
     parser.add_argument(
         "--verifier-timeout",

@@ -30,6 +30,7 @@ def main():
     assert args.dir is not None
 
     mode_mapping = {
+        "mode0": [],
         "mode1": [AnnotationType.INVARIANTS, AnnotationType.ASSERTS],
         "mode2": [
             AnnotationType.INVARIANTS,
@@ -65,6 +66,7 @@ def main():
     }
 
     remove_impls_mapping = {
+        "mode0": False,
         "mode1": False,
         "mode2": False,
         "mode3": True,
@@ -74,6 +76,7 @@ def main():
     }
 
     text_descriptions = {
+        "mode0": False,
         "mode1": False,
         "mode2": False,
         "mode3": False,
@@ -99,7 +102,7 @@ def main():
     results_directory = pathlib.Path("results")
     results_directory.mkdir(exist_ok=True)
 
-    verifier = Verifier(args.verifier_command)
+    verifier = Verifier(args.verifier_command, args.test_command)
 
     for idx, mode in enumerate(args.modes):
         all_removed = mode_mapping[mode]
@@ -140,6 +143,7 @@ def main():
                 include_text_descriptions=text_descriptions[mode],
                 remove_implementations=remove_impls_mapping[mode],
                 remove_helpers=mode == "mode6",
+                record_history=True
             )
 
             for file in files:
@@ -187,6 +191,8 @@ def main():
                     json.dump(results, f, indent=2)
 
                 llm.dump_history(history_dir / f"{file.stem}.txt")
+                runner.dump_history(history_dir / f"{file.stem}_verification.json")
+
 
         for key in results_avg.keys():
             results_avg[key] = results_avg[key] / args.runs

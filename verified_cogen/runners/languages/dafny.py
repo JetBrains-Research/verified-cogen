@@ -49,7 +49,7 @@ class DafnyLanguage(GenericLanguage):
                 annotation_by_type[annotation_type]
                 for annotation_type in remove_annotations
             ],
-            "// assert-line",
+            "// assert-line" if AnnotationType.ASSERTS in remove_annotations else None,
             "//",
         )
 

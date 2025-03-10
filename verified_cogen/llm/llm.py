@@ -103,9 +103,9 @@ class LLM:
             return self.grazie.chat(
                 chat=prompt,
                 profile=self.profile,
-                parameters={
-                    LLMParameters.Temperature: Parameters.FloatValue(temperature)
-                },
+                # parameters={
+                #     LLMParameters.Temperature: Parameters.FloatValue(temperature)
+                # },
             )
         except Exception:
             logger.warning("Grazie API is down, retrying...")

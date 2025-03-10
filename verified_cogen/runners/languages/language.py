@@ -1,6 +1,6 @@
 from abc import abstractmethod
 from enum import Enum
-from typing import Any, Pattern, List, Tuple
+from typing import Any, Pattern, List, Tuple, Optional
 
 
 class AnnotationType(Enum):
@@ -41,7 +41,7 @@ class GenericLanguage(Language):
     pure_regex: Pattern[str]
     validator_template: str
     check_patterns: list[str]
-    inline_assert_comment: str
+    inline_assert_comment: Optional[str]
     remove_pure: bool
 
     def __init__(  # type: ignore
@@ -214,7 +214,7 @@ class GenericLanguage(Language):
             cleaned_code = re.sub(pattern, "", cleaned_code, flags=re.DOTALL)
         cleaned_code = re.sub(r"\n\s*\n", "\n", cleaned_code)
         lines = cleaned_code.split("\n")
-        lines = [line for line in lines if self.inline_assert_comment not in line]
+        lines = [line for line in lines if self.inline_assert_comment is None or self.inline_assert_comment not in line]
         return "\n".join(lines).strip()
 
     def check_helpers(
