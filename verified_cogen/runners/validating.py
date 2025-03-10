@@ -60,6 +60,7 @@ class ValidatingRunner(Runner):
         super().__init__(wrapping.llm, wrapping.logger, wrapping.verifier, wrapping.config)
         token = wrapping.llm.grazie._grazie_jwt_token  # type: ignore
         self.summarizer_llm = LLM(
+            throttle=wrapping.llm.throttle,
             grazie_token=token,
             profile=wrapping.llm.profile.name,
             prompt_dir=wrapping.llm.prompt_dir,
