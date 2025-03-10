@@ -44,8 +44,8 @@ class FlushRunner(Runner):
     def preprocess(self, prg: str, mode: Mode) -> str:
         return self.wrapped_runner.preprocess(prg, mode)
 
-    def postprocess(self, inv_prg: str) -> str:
-        return self.wrapped_runner.postprocess(inv_prg)
+    def postprocess(self, inv_prg: str, error: Optional[str] = None) -> str:
+        return self.wrapped_runner.postprocess(inv_prg, error)
 
     def rewrite(
         self,

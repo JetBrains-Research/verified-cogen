@@ -29,8 +29,14 @@ class GoogleChatGeminiFlash2ThinkingProfile(LLMProfile):
     name: str = "google-chat-gemini-thinking-flash-2.0"
 
 
+@attrs.define(auto_attribs=True, frozen=True)
+class AnthropicClaude37SonnetProfile(LLMProfile):
+    name: str = "anthropic-claude-3.7-sonnet"
+
+
 class ExtendedProfile(Profile):
     GOOGLE_CHAT_GEMINI_FLASH_2 = GoogleChatGeminiFlash2ThinkingProfile()
+    ANTHROPIC_CLAUDE_37_SONNET = AnthropicClaude37SonnetProfile()
 
     @classmethod
     def get_by_name(cls, name: str) -> LLMProfile:

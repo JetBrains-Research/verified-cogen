@@ -81,7 +81,7 @@ class ValidatingRunner(Runner):
         self.wrapped_runner.starting_prg = res_prg
         return res_prg
 
-    def postprocess(self, inv_prg: str) -> str:
+    def postprocess(self, inv_prg: str, error: Optional[str] = None) -> str:
         assert self.starting_prg is not None
         if self.config.remove_implementations:
             invalid_helpers: list[str] = []
@@ -99,7 +99,7 @@ class ValidatingRunner(Runner):
                     .replace("{helpers}", ",".join(self.pure_non_helpers))
                 )
                 self.llm.add_response("understood")
-        return self.validator.add_validators(self.starting_prg, self.wrapped_runner.postprocess(inv_prg))
+        return self.validator.add_validators(self.starting_prg, self.wrapped_runner.postprocess(inv_prg, error))
 
     def rewrite(
         self,
