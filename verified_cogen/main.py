@@ -4,7 +4,7 @@ import multiprocessing as mp
 import os
 import pathlib
 from dataclasses import dataclass
-from multiprocessing.managers import DictProxy
+from multiprocessing.managers import DictProxy, SyncManager
 from threading import Lock
 from typing import Optional
 
@@ -31,6 +31,7 @@ from verified_cogen.tools import (
     rename_file,
 )
 from verified_cogen.tools.modes import VALID_MODES, Mode
+from verified_cogen.tools.throttle import Throttle
 from verified_cogen.tools.verifier import Verifier
 
 logger = logging.getLogger(__name__)
@@ -100,103 +101,101 @@ def process_file(
 
 
 def run_mode(
+    manager: SyncManager,
     config: ProgramConfig,
     idx: int,
     mode: str,
     files: list[pathlib.Path],
     verifier: Verifier,
 ):
-    with mp.Manager() as manager:
-        all_removed = MODE_MAPPING[mode]
-        register_basic_languages(with_removed=all_removed)
+    all_removed = MODE_MAPPING[mode]
+    register_basic_languages(with_removed=all_removed)
 
-        logger.info(mode)
-        log_tries_mode = (
-            config.log_tries_directory / f"{idx}_{mode}" if config.log_tries_directory is not None else None
+    logger.info(mode)
+    log_tries_mode = config.log_tries_directory / f"{idx}_{mode}" if config.log_tries_directory is not None else None
+
+    if log_tries_mode is not None:
+        log_tries_mode.mkdir(exist_ok=True)
+
+    json_avg_results = config.results_directory / f"tries_{config.directory.name}_{idx}_{mode}_avg.json"
+
+    with open(json_avg_results, "w") as f:
+        json.dump({}, f)
+
+    results_avg: dict[int, float] = {i: 0 for i in range(config.tries + 1)}
+    lock = manager.Lock()
+
+    for run in range(config.runs):
+        logger.info(f"Run {run}")
+
+        history_dir = config.results_directory / f"history_{config.directory.name}_{idx}_{mode}_{run}"
+        history_dir.mkdir(exist_ok=True)
+        json_results = config.results_directory / f"tries_{config.directory.name}_{idx}_{mode}_{run}.json"
+
+        if not json_results.exists():
+            with open(json_results, "w") as f:
+                json.dump({}, f)
+
+        with open(json_results) as f:
+            results = manager.dict(json.load(f))
+
+        log_tries = log_tries_mode and (log_tries_mode / f"run_{run}")
+        if log_tries is not None:
+            log_tries.mkdir(exist_ok=True)
+
+        runner_config = RunnerConfig(
+            log_tries=log_tries,
+            include_text_descriptions=TEXT_DESCRIPTIONS[mode],
+            remove_implementations=REMOVE_IMPLS_MAPPING[mode],
+            remove_helpers=(mode == "mode6"),
         )
 
-        if log_tries_mode is not None:
-            log_tries_mode.mkdir(exist_ok=True)
+        files_to_process: list[tuple[pathlib.Path, str]] = []
+        for file in files:
+            display_name = rename_file(file)
+            marker_name = str(file.relative_to(config.directory))
+            if marker_name in results and isinstance(results[marker_name], int):
+                if results[marker_name] != -1:
+                    logger.info(f"Skipping: {display_name} as it has already been verified")
+                    continue
+                elif results[marker_name] == -1 and config.io.skip_failed:
+                    logger.info(f"Skipping: {display_name} as it has not been verified and is marked as failed")
+                    continue
+            files_to_process.append((file, marker_name))
 
-        json_avg_results = config.results_directory / f"tries_{config.directory.name}_{idx}_{mode}_avg.json"
+        rewriter = construct_rewriter(
+            extension_from_file_list(files),
+            (config.llm, idx),
+            config.manual_rewriters,
+        )
 
-        with open(json_avg_results, "w") as f:
-            json.dump({}, f)
-
-        results_avg: dict[int, float] = {i: 0 for i in range(config.tries + 1)}
-        lock = manager.Lock()
-
-        for run in range(config.runs):
-            logger.info(f"Run {run}")
-
-            history_dir = config.results_directory / f"history_{config.directory.name}_{idx}_{mode}_{run}"
-            history_dir.mkdir(exist_ok=True)
-            json_results = config.results_directory / f"tries_{config.directory.name}_{idx}_{mode}_{run}.json"
-
-            if not json_results.exists():
-                with open(json_results, "w") as f:
-                    json.dump({}, f)
-
-            with open(json_results) as f:
-                results = manager.dict(json.load(f))
-
-            log_tries = log_tries_mode and (log_tries_mode / f"run_{run}")
-            if log_tries is not None:
-                log_tries.mkdir(exist_ok=True)
-
-            runner_config = RunnerConfig(
-                log_tries=log_tries,
-                include_text_descriptions=TEXT_DESCRIPTIONS[mode],
-                remove_implementations=REMOVE_IMPLS_MAPPING[mode],
-                remove_helpers=(mode == "mode6"),
-            )
-
-            files_to_process: list[tuple[pathlib.Path, str]] = []
-            for file in files:
-                display_name = rename_file(file)
-                marker_name = str(file.relative_to(config.directory))
-                if marker_name in results and isinstance(results[marker_name], int):
-                    if results[marker_name] != -1:
-                        logger.info(f"Skipping: {display_name} as it has already been verified")
-                        continue
-                    elif results[marker_name] == -1 and config.io.skip_failed:
-                        logger.info(f"Skipping: {display_name} as it has not been verified and is marked as failed")
-                        continue
-                files_to_process.append((file, marker_name))
-
-            rewriter = construct_rewriter(
+        state = SharedState(lock, results)
+        with mp.Pool(processes=min(config.io.max_jobs, mp.cpu_count())) as pool:
+            process_config = ProcessFileConfig(
+                config,
+                history_dir,
+                json_results,
                 extension_from_file_list(files),
-                (config.llm, idx),
-                config.manual_rewriters,
+                all_removed,
+                Tools(rewriter, verifier, runner_config),
             )
 
-            state = SharedState(lock, results)
-            with mp.Pool(processes=min(config.io.max_jobs, mp.cpu_count())) as pool:
-                process_config = ProcessFileConfig(
-                    config,
-                    history_dir,
-                    json_results,
-                    extension_from_file_list(files),
-                    all_removed,
-                    Tools(rewriter, verifier, runner_config),
-                )
+            pool.starmap(
+                process_file,
+                ((process_config, (file, marker_name), state, idx) for file, marker_name in files_to_process),
+            )
 
-                pool.starmap(
-                    process_file,
-                    ((process_config, (file, marker_name), state, idx) for file, marker_name in files_to_process),
-                )
+        for v in state.results.values():
+            if v != -1:
+                results_avg[v] += 1
 
-            for v in state.results.values():
-                if v != -1:
-                    results_avg[v] += 1
+    for key in results_avg:
+        results_avg[key] = results_avg[key] / config.runs
 
-        for key in results_avg:
-            results_avg[key] = results_avg[key] / config.runs
+    with open(json_avg_results, "w") as f:
+        json.dump(dict(results_avg), f)
 
-        with open(json_avg_results, "w") as f:
-            json.dump(dict(results_avg), f)
-
-        logger.info(f"Averaged results for {mode}: {results_avg}")
+    logger.info(f"Averaged results for {mode}: {results_avg}")
 
 
 @click.command()
@@ -231,6 +230,8 @@ def run_mode(
 @click.option("--skip-failed", is_flag=True, default=False)
 @click.option("--log-tries")
 @click.option("--output-logging", is_flag=True, default=False)
+@click.option("--rate-limit", help="Number of requests allowed per window", type=Optional[int], default=None)
+@click.option("--rate-window", help="Time window in seconds for rate limiting", type=Optional[int], default=None)
 def main(
     dir: str,
     filter_by_ext: Optional[str],
@@ -250,6 +251,8 @@ def main(
     skip_failed: bool,
     log_tries: Optional[str],
     output_logging: bool,
+    rate_limit: Optional[int],
+    rate_window: Optional[int],
 ):
     assert insert_conditions_mode != Mode.REGEX
 
@@ -270,20 +273,22 @@ def main(
 
     verifier = Verifier(verifier_command, verifier_timeout)
 
-    config = ProgramConfig(
-        directory,
-        tries,
-        runs,
-        insert_conditions_mode,
-        bench_types,
-        manual_rewriters,
-        log_tries_directory,
-        results_directory,
-        LLMConfig(temperature, grazie_token, llm_profile, prompts_directory),
-        IOConfig(max_jobs, skip_failed),
-    )
-    for idx, mode in enumerate(modes):
-        run_mode(config, idx, mode, files, verifier)
+    with mp.Manager() as manager:
+        throttle = Throttle(manager, rate_limit, rate_window)
+        config = ProgramConfig(
+            directory,
+            tries,
+            runs,
+            insert_conditions_mode,
+            bench_types,
+            manual_rewriters,
+            log_tries_directory,
+            results_directory,
+            LLMConfig(temperature, grazie_token, llm_profile, prompts_directory, throttle),
+            IOConfig(max_jobs, skip_failed),
+        )
+        for idx, mode in enumerate(modes):
+            run_mode(manager, config, idx, mode, files, verifier)
 
 
 if __name__ == "__main__":
