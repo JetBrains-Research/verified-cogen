@@ -67,7 +67,7 @@ class Runner:
     def preprocess(self, prg: str, mode: Mode) -> str:
         return prg
 
-    def postprocess(self, inv_prg: str) -> str:
+    def postprocess(self, inv_prg: str, error: Optional[str] = None) -> str:
         return inv_prg
 
     def get_name(self) -> str:
@@ -124,7 +124,7 @@ class Runner:
                     tries -= 1
                     if tries > 0:
                         self.logger.info(f"Retrying {self.get_name()} with {tries} tries left...")
-                        inv_prg = self.postprocess(self.ask_for_fixed(out_inv + err_inv))
+                        inv_prg = self.postprocess(self.ask_for_fixed(out_inv + err_inv), out_inv + err_inv)
         return None
 
     def run_on_file(
@@ -155,6 +155,9 @@ class Runner:
             return 0
         elif verification_result is None:
             self.logger.info(f"Verification timed out for {name}")
+        assert verification_result is not None, "Verification result should not be None"
         self.precheck(prg, mode)
-        inv_prg = self.postprocess(self.invoke(prg, mode, text_description))
+        inv_prg = self.postprocess(
+            self.invoke(prg, mode, text_description), verification_result[1] + verification_result[2]
+        )
         return self.try_fixing(total_tries, inv_prg, name)

@@ -14,7 +14,7 @@ class LLMConfig:
     prompts_directory: list[str]
     throttle: Throttle
 
-    def build(self, idx: int, history: Optional[Path]) -> LLM:
+    def build(self, idx: int, history: Optional[Path] = None) -> LLM:
         return LLM(
             self.throttle,
             self.grazie_token,
