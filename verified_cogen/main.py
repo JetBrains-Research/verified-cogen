@@ -97,6 +97,7 @@ def process_file(
             json.dump(dict(state.results), f, indent=2)
 
     llm.dump_history(config.history_dir / f"{file.stem}.txt")
+    runner.dump_history(config.history_dir / f"{file.stem}_valid.json")
 
     return tries
 
@@ -149,7 +150,7 @@ def run_mode(
             include_text_descriptions=TEXT_DESCRIPTIONS[mode],
             remove_implementations=REMOVE_IMPLS_MAPPING[mode],
             remove_helpers=(mode == "mode6"),
-
+            record_history=True,
         )
 
         files_to_process: list[tuple[pathlib.Path, str]] = []
@@ -221,6 +222,11 @@ def run_mode(
     default=lambda: os.getenv("VERIFIER_COMMAND"),
 )
 @click.option(
+    "--test-command",
+    help="command to run (cmd [file_path]) to run tests on a file",
+    default=lambda: None,
+)
+@click.option(
     "--verifier-timeout",
     help="timeout for verifier command",
     default=60,
@@ -245,6 +251,7 @@ def main(
     grazie_token: str,
     prompts_directory: list[str],
     verifier_command: str,
+    test_command: str,
     verifier_timeout: int,
     skip_failed: bool,
     log_tries: Optional[str],
@@ -269,7 +276,7 @@ def main(
     results_directory = pathlib.Path("results")
     results_directory.mkdir(exist_ok=True)
 
-    verifier = Verifier(verifier_command, verifier_timeout)
+    verifier = Verifier(verifier_command, test_command, verifier_timeout)
 
     with mp.Manager() as manager:
         throttle = Throttle(manager, rate_limit, rate_window)
