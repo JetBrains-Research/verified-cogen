@@ -10,6 +10,7 @@ from verified_cogen.runners.invariants import InvariantRunner
 from verified_cogen.runners.languages.language import LanguageDatabase
 from verified_cogen.runners.rewriters import Rewriter
 from verified_cogen.runners.step_by_step import StepByStepRunner
+from verified_cogen.runners.testing import TestingRunner
 from verified_cogen.runners.validating import ValidatingRunner
 from verified_cogen.tools.verifier import Verifier
 
@@ -32,6 +33,13 @@ def make_runner_cls(
         elif bench_type == "validating":
             return ValidatingRunner(
                 InvariantRunner(llm, logger, verifier, config, rewriter),
+                LanguageDatabase().get(extension),
+            )
+        elif bench_type == "testing":
+            return ValidatingRunner(
+                TestingRunner(
+                    InvariantRunner(llm, logger, verifier, config, rewriter), LanguageDatabase().get(extension)
+                ),
                 LanguageDatabase().get(extension),
             )
         elif bench_type == "step-by-step":
