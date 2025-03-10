@@ -107,14 +107,12 @@ class ValidatingRunner(Runner):
 
     def verify_program(self, name: str, try_n: int, prg: str, tag: str = ""):
         base_verif = self.wrapped_runner.verify_program(name, try_n, prg, tag)
-        if not base_verif[0]:
+        if base_verif is None or not base_verif[0]:
             return base_verif
-        if self.validator is not None:
-            valid_prg = self.validator.add_validators(self.starting_prg, prg)
-            valid_verif = super().verify_program(name, try_n, valid_prg, f"{tag}_valid")
-            return valid_verif
-        else:
-            return base_verif
+        assert self.starting_prg is not None
+        valid_prg = self.validator.add_validators(self.starting_prg, prg)
+        valid_verif = super().verify_program(name, try_n, valid_prg, f"{tag}_valid")
+        return valid_verif
 
     def get_history(self):
         return self.history | self.wrapped_runner.get_history()

@@ -54,7 +54,7 @@ class GenericLanguage(Language):
         validator_template_void: str,
         remove_pure: bool,
         check_patterns: list[str],
-        inline_assert_comment: str,
+        inline_assert_comment: Optional[str],
         simple_comment: str,
     ):
         self.simple_comment = simple_comment

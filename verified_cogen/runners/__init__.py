@@ -46,6 +46,7 @@ class Runner:
     test_description: Optional[str] = None
     tests: Optional[str] = None
     config: RunnerConfig
+    history: dict[str, tuple[bool, str, str]]
 
     def __init__(self, llm: LLM, logger: Logger, verifier: Verifier, config: RunnerConfig):
         self.llm = llm
@@ -128,7 +129,7 @@ class Runner:
         with open(output, "w") as f:
             f.write(prg)
         res = self.verifier.verify(output)
-        if self.config.record_history:
+        if self.config.record_history and res is not None:
             self.history[Runner.combine_name(name, try_n, tag)] = res
         return res
 
@@ -140,7 +141,7 @@ class Runner:
         with open(output, "w") as f:
             f.write(prg)
         res = self.verifier.test(output)
-        if self.config.record_history:
+        if self.config.record_history and res is not None:
             self.history[full_name] = res
         return res
 
@@ -149,7 +150,7 @@ class Runner:
 
     def dump_history(self, file: Path):
         with open(file, "w") as f:
-            json.dump({k: res for k, (res, out, err) in self.get_history().items()}, f)
+            json.dump({k: res for k, (res, _, _) in self.get_history().items()}, f)
 
     def try_fixing(
         self,
@@ -202,6 +203,7 @@ class Runner:
             prg = f.read()
         self.prepare_file(file_path, prg)
         prg = self.preprocess(prg, mode)
+        assert self.name is not None
         verification_result = self.verify_program(self.name, 0, self.postprocess(prg))
         if verification_result is not None and verification_result[0]:
             return 0

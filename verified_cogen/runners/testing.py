@@ -15,7 +15,9 @@ class TestingRunner(Runner):
         self.wrapped_runner = wrapping
         self.language = language
 
-    def _add_tests(self, inv_prg: str):
+    def _add_tests(self, inv_prg: str) -> str:
+        if self.tests is None:
+            return inv_prg
         test_prg = inv_prg + "\n" + self.language.simple_comment + " ==== tests ==== \n" + self.tests
         return test_prg
 
@@ -25,7 +27,7 @@ class TestingRunner(Runner):
 
     def verify_program(self, name: str, try_n: int, prg: str, tag: str = ""):
         base_verif = self.wrapped_runner.verify_program(name, try_n, prg, tag)
-        if not base_verif[0]:
+        if base_verif is None or not base_verif[0]:
             return base_verif
         if self.tests is not None:
             tests_prg = self._add_tests(prg)

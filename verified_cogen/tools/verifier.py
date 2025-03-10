@@ -17,7 +17,7 @@ def cleanup_z3_processes(timeout: int = 60):
 
 
 class Verifier:
-    def __init__(self, verifier_cmd: str, test_cmd: str = None, timeout: int = 60):
+    def __init__(self, verifier_cmd: str, test_cmd: Optional[str] = None, timeout: int = 60):
         self.verifier_cmd = verifier_cmd
         self.test_cmd = test_cmd
         self.timeout = timeout
