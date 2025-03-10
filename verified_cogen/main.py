@@ -23,7 +23,6 @@ from verified_cogen.several_modes.constants import (
     TEXT_DESCRIPTIONS,
     VALID_BENCH_TYPES,
 )
-
 from verified_cogen.tools import (
     ext_glob,
     extension_from_file_list,

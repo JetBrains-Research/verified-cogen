@@ -1,7 +1,7 @@
 from abc import abstractmethod
 from enum import Enum
 from re import Pattern
-from typing import Any, Pattern, List, Tuple, Optional
+from typing import Any, Optional
 
 
 class AnnotationType(Enum):

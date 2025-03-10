@@ -11,9 +11,7 @@ class TestingRunner(Runner):
     language: Language
 
     def __init__(self, wrapping: Runner, language: Language):
-        super().__init__(
-            wrapping.llm, wrapping.logger, wrapping.verifier, wrapping.config
-        )
+        super().__init__(wrapping.llm, wrapping.logger, wrapping.verifier, wrapping.config)
         self.wrapped_runner = wrapping
         self.language = language
 
@@ -31,7 +29,7 @@ class TestingRunner(Runner):
             return base_verif
         if self.tests is not None:
             tests_prg = self._add_tests(prg)
-            tests_verif = super(TestingRunner, self).test_program(name, try_n, tests_prg, f"{tag}_tests")
+            tests_verif = super().test_program(name, try_n, tests_prg, f"{tag}_tests")
             return tests_verif
         else:
             return base_verif
@@ -65,7 +63,7 @@ class TestingRunner(Runner):
         return self.wrapped_runner.precheck(prg, mode)
 
     def prepare_file(self, file: Path, prg: str):
-        super(TestingRunner, self).prepare_file(file, prg)
+        super().prepare_file(file, prg)
         self.wrapped_runner.prepare_file(file, prg)
         self.tests = None
         test_file = file.parent / "tests" / file.name

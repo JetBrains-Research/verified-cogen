@@ -38,10 +38,9 @@ def make_runner_cls(
         elif bench_type == "testing":
             return ValidatingRunner(
                 TestingRunner(
-                    InvariantRunner(llm, logger, verifier, config, rewriter),
-                    LanguageDatabase().get(extension)
+                    InvariantRunner(llm, logger, verifier, config, rewriter), LanguageDatabase().get(extension)
                 ),
-                LanguageDatabase().get(extension)
+                LanguageDatabase().get(extension),
             )
         elif bench_type == "step-by-step":
             return ValidatingRunner(

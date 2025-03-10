@@ -1,12 +1,13 @@
+import json
 import pathlib
 from dataclasses import dataclass
 from logging import Logger
 from pathlib import Path
 from typing import Optional
-import json
 
 from verified_cogen.llm import LLM
-from verified_cogen.tools import basename, get_cache_dir
+from verified_cogen.tools import basename as basename
+from verified_cogen.tools import get_cache_dir
 from verified_cogen.tools.modes import Mode
 from verified_cogen.tools.verifier import Verifier
 
@@ -181,9 +182,7 @@ class Runner:
     def prepare_file(self, file: Path, prg: str):
         self.text_description = None
         if self.config.include_text_descriptions:
-            text_description_file = (
-                    file.parent / "text-descriptions" / f"{file.stem}.txt"
-            )
+            text_description_file = file.parent / "text-descriptions" / f"{file.stem}.txt"
             self.text_description = text_description_file.read_text()
             self.logger.info(f"Text description: {self.text_description}")
 

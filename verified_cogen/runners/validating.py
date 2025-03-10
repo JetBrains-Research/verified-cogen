@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
-from subprocess import CalledProcessError, run
 from pathlib import Path
-from typing import Optional, List
+from subprocess import CalledProcessError, run
+from typing import Optional
 
 from verified_cogen.llm import prompts
 from verified_cogen.llm.llm import LLM
@@ -111,14 +111,13 @@ class ValidatingRunner(Runner):
             return base_verif
         if self.validator is not None:
             valid_prg = self.validator.add_validators(self.starting_prg, prg)
-            valid_verif = super(ValidatingRunner, self).verify_program(name, try_n, valid_prg, f"{tag}_valid")
+            valid_verif = super().verify_program(name, try_n, valid_prg, f"{tag}_valid")
             return valid_verif
         else:
             return base_verif
 
     def get_history(self):
         return self.history | self.wrapped_runner.get_history()
-
 
     def rewrite(
         self,
@@ -161,5 +160,5 @@ class ValidatingRunner(Runner):
         return self.wrapped_runner.precheck(prg, mode)
 
     def prepare_file(self, file: Path, prg: str):
-        super(ValidatingRunner, self).prepare_file(file, prg)
+        super().prepare_file(file, prg)
         self.wrapped_runner.prepare_file(file, prg)

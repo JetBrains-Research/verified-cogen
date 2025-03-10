@@ -51,7 +51,7 @@ class Verifier:
     def test(self, file_path: Path) -> Optional[tuple[bool, str, str]]:
         try:
             res = subprocess.run(
-                '{} "{}"'.format(self.test_cmd, file_path),
+                f'{self.test_cmd} "{file_path}"',
                 capture_output=True,
                 shell=True,
                 timeout=self.timeout,
