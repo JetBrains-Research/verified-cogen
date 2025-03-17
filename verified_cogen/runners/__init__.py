@@ -18,23 +18,9 @@ LLM_GENERATED_DIR = pathlib.Path(get_cache_dir()) / "llm-generated"
 class RunnerConfig:
     log_tries: Optional[pathlib.Path] = None
     include_text_descriptions: bool = False
-    run_tests: bool = False
     remove_implementations: bool = False
     remove_helpers: bool = False
-
-    def __init__(
-        self,
-        log_tries: Optional[pathlib.Path] = None,
-        include_text_descriptions: bool = False,
-        remove_implementations: bool = False,
-        remove_helpers: bool = False,
-        record_history: bool = False,
-    ):
-        self.log_tries = log_tries
-        self.include_text_descriptions = include_text_descriptions
-        self.remove_implementations = remove_implementations
-        self.remove_helpers = remove_helpers
-        self.record_history = record_history
+    record_history: bool = False
 
 
 class Runner:
@@ -43,10 +29,9 @@ class Runner:
     verifier: Verifier
     starting_prg: Optional[str] = None
     name: Optional[str] = None
-    test_description: Optional[str] = None
-    tests: Optional[str] = None
+    text_description: Optional[str] = None
     config: RunnerConfig
-    history: dict[str, tuple[bool, str, str]]
+    _history: dict[str, tuple[bool, str, str]]
 
     def __init__(self, llm: LLM, logger: Logger, verifier: Verifier, config: RunnerConfig):
         self.llm = llm
@@ -55,7 +40,7 @@ class Runner:
         self.config = config
         if self.config.log_tries is not None:
             self.config.log_tries.mkdir(exist_ok=True, parents=True)
-        self.history = {}
+        self._history = {}
 
     def rewrite(
         self,
@@ -123,34 +108,23 @@ class Runner:
         else:
             return LLM_GENERATED_DIR / name
 
-    def verify_program(self, name: str, try_n: int, prg: str, tag: str = ""):
+    def verify_program(self, name: str, try_n: int, prg: str, tag: str = "") -> Optional[tuple[bool, str, str]]:
         LLM_GENERATED_DIR.mkdir(parents=True, exist_ok=True)
         output = self._verification_file(name, try_n, tag)
         with open(output, "w") as f:
             f.write(prg)
         res = self.verifier.verify(output)
         if self.config.record_history and res is not None:
-            self.history[Runner.combine_name(name, try_n, tag)] = res
+            self._history[Runner.combine_name(name, try_n, tag)] = res
         return res
 
-    def test_program(self, name: str, try_n: int, prg: str, tag: str = ""):
-        full_name = Runner.combine_name(name, try_n, tag)
-        working_dir = self._base_dir() / full_name.rsplit(".", 1)[0]
-        working_dir.mkdir(parents=True, exist_ok=True)
-        output = working_dir / full_name
-        with open(output, "w") as f:
-            f.write(prg)
-        res = self.verifier.test(output)
-        if self.config.record_history and res is not None:
-            self.history[full_name] = res
-        return res
-
-    def get_history(self):
-        return self.history
+    @property
+    def history(self):
+        return self._history
 
     def dump_history(self, file: Path):
         with open(file, "w") as f:
-            json.dump({k: res for k, (res, _, _) in self.get_history().items()}, f)
+            json.dump({k: res for k, (res, _, _) in self.history.items()}, f)
 
     def try_fixing(
         self,

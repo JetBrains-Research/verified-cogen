@@ -25,19 +25,26 @@ class TestingRunner(Runner):
         self.wrapped_runner.starting_prg = prg
         return prg
 
-    def verify_program(self, name: str, try_n: int, prg: str, tag: str = ""):
+    def verify_program(self, name: str, try_n: int, prg: str, tag: str = "") -> Optional[tuple[bool, str, str]]:
+        full_name = Runner.combine_name(name, try_n, tag)
         base_verif = self.wrapped_runner.verify_program(name, try_n, prg, tag)
-        if base_verif is None or not base_verif[0]:
-            return base_verif
-        if self.tests is not None:
-            tests_prg = self._add_tests(prg)
-            tests_verif = super().test_program(name, try_n, tests_prg, f"{tag}_tests")
-            return tests_verif
-        else:
+        if base_verif is None or not base_verif[0] or self.tests is None:
             return base_verif
 
-    def get_history(self):
-        return self.history | self.wrapped_runner.get_history()
+        tests_prg = self._add_tests(prg)
+        working_dir = self._base_dir() / full_name.rsplit(".", 1)[0]
+        working_dir.mkdir(parents=True, exist_ok=True)
+        output = working_dir / full_name
+        with open(output, "w") as f:
+            f.write(tests_prg)
+        tests_verif = self.verifier.test(output)
+        if self.config.record_history and tests_verif is not None:
+            self._history[full_name] = tests_verif
+        return tests_verif
+
+    @property
+    def history(self):
+        return self._history | self.wrapped_runner.history
 
     def rewrite(
         self,

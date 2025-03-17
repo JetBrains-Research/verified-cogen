@@ -100,10 +100,7 @@ class ValidatingRunner(Runner):
                     .replace("{helpers}", ",".join(self.pure_non_helpers))
                 )
                 self.llm.add_response("understood")
-        return self.wrapped_runner.postprocess(inv_prg)
-        # return self._add_validators(
-        #     self.starting_prg, self.wrapped_runner.postprocess(inv_prg)
-        # )
+        return self.wrapped_runner.postprocess(inv_prg, error)
 
     def verify_program(self, name: str, try_n: int, prg: str, tag: str = ""):
         base_verif = self.wrapped_runner.verify_program(name, try_n, prg, tag)
@@ -114,8 +111,9 @@ class ValidatingRunner(Runner):
         valid_verif = super().verify_program(name, try_n, valid_prg, f"{tag}_valid")
         return valid_verif
 
-    def get_history(self):
-        return self.history | self.wrapped_runner.get_history()
+    @property
+    def history(self):
+        return self._history | self.wrapped_runner.history
 
     def rewrite(
         self,
