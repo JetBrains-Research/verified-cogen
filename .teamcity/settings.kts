@@ -22,7 +22,7 @@ object Build : BuildType({
 
     params {
         password("env.GRAZIE_JWT_TOKEN", "credentialsJSON:1965ecbb-d8a2-404c-bbbd-1a1b80f733d8")
-        param("verifier.command", "\"dafny verify --verification-time-limit 20\"")
+        param("env.VERIFIER_COMMAND", "dafny verify --verification-time-limit 20")
     }
 
     steps {
@@ -39,7 +39,6 @@ object Build : BuildType({
                     --bench-types=validating,validating,validating,validating,validating,validating
                     --tries 10
                     --runs 5
-                    --verifier-command=%verifier.command%
                     --filter-by-ext dfy
                     --output-logging
                     --dir benches/HumanEval-Dafny
