@@ -26,10 +26,6 @@ object Build : BuildType({
     }
 
     steps {
-        script {
-            scriptContent = "docker build . -t verified-cogen:latest"
-        }
-
         python {
             environment = poetry { }
             command = module {
@@ -46,7 +42,7 @@ object Build : BuildType({
                     --prompts-directory=prompts/dafny_eval,prompts/dafny_eval,prompts/dafny_eval_without_impls,prompts/dafny_eval_without_impls_textd,prompts/dafny_eval_without_impls_textd,prompts/dafny_eval_without_impls_textd
                 """.trimIndent().replace("\n", " ")
             }
-            dockerImage = "verified-cogen:latest"
+            dockerImage = "weethet/verified-cogen:latest"
         }
     }
 
