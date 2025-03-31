@@ -21,7 +21,7 @@ object Build : BuildType({
     }
 
     params {
-        param("env.GRAZIE_JWT_TOKEN", "credentialsJSON:1965ecbb-d8a2-404c-bbbd-1a1b80f733d8")
+        password("env.GRAZIE_JWT_TOKEN", "credentialsJSON:1965ecbb-d8a2-404c-bbbd-1a1b80f733d8")
         param("verifier.command", "\"dafny verify --verification-time-limit 20\"")
     }
 

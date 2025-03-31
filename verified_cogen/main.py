@@ -273,6 +273,8 @@ def main(
 
     verifier = Verifier(verifier_command, verifier_timeout)
 
+    logger.info(f"LLM token: {grazie_token[:3]}...{grazie_token[-3:]}")
+
     with mp.Manager() as manager:
         throttle = Throttle(manager, rate_limit, rate_window)
         config = ProgramConfig(

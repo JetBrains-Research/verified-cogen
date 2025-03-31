@@ -62,7 +62,7 @@ class LLM:
         self.grazie = GrazieApiGatewayClient(
             url=GrazieApiGatewayUrls.STAGING,
             grazie_jwt_token=grazie_token,
-            auth_type=AuthType.USER,
+            auth_type=AuthType.APPLICATION,
         )
         self.profile = ExtendedProfile.get_by_name(profile)
         self.prompt_dir = prompt_dir
