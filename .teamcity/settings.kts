@@ -49,6 +49,11 @@ object Build : BuildType({
             dockerImage = "verified-cogen:latest"
         }
     }
+
+    artifactRules = """
+        results/** => results.zip
+        -:results/archive/**
+    """.trimIndent()
 })
 
 object HttpsGithubComJetBrainsResearchVerifiedCogenRefsHeadsMain : GitVcsRoot({
