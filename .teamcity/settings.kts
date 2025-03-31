@@ -22,7 +22,16 @@ object Build : BuildType({
 
     params {
         password("env.GRAZIE_JWT_TOKEN", "credentialsJSON:1965ecbb-d8a2-404c-bbbd-1a1b80f733d8")
-        param("env.VERIFIER_COMMAND", "dafny verify --verification-time-limit 20")
+        text("env.VERIFIER_COMMAND", "dafny verify --verification-time-limit 20", display = ParameterDisplay.PROMPT, allowEmpty = false)
+        text("directory", "benches/HumanEval-Dafny", display = ParameterDisplay.PROMPT, allowEmpty = false)
+        text(
+            "prompts",
+            "prompts/dafny_eval,prompts/dafny_eval,prompts/dafny_eval_without_impls,prompts/dafny_eval_without_impls_textd,prompts/dafny_eval_without_impls_textd,prompts/dafny_eval_without_impls_textd",
+            display = ParameterDisplay.PROMPT,
+            allowEmpty = false
+        )
+        text("extension", "dfy", display = ParameterDisplay.PROMPT, allowEmpty = false)
+        text("bench-types", "validating,validating,validating,validating,validating,validating", display = ParameterDisplay.PROMPT, allowEmpty = false)
     }
 
     steps {
@@ -32,14 +41,14 @@ object Build : BuildType({
                 module = "verified_cogen"
                 scriptArguments = """--insert-conditions-mode=llm-single-step
                     --llm-profile=anthropic-claude-3.5-sonnet
-                    --bench-types=validating,validating,validating,validating,validating,validating
+                    --bench-types=%bench-types%
                     --tries 10
                     --runs 5
-                    --filter-by-ext dfy
+                    --filter-by-ext %extension%
                     --output-logging
-                    --dir benches/HumanEval-Dafny
+                    --dir %directory%
                     --modes=mode1,mode2,mode3,mode4,mode5,mode6
-                    --prompts-directory=prompts/dafny_eval,prompts/dafny_eval,prompts/dafny_eval_without_impls,prompts/dafny_eval_without_impls_textd,prompts/dafny_eval_without_impls_textd,prompts/dafny_eval_without_impls_textd
+                    --prompts-directory=%prompts%
                 """.trimIndent().replace("\n", " ")
             }
             dockerImage = "weethet/verified-cogen:latest"
