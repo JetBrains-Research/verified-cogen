@@ -24,9 +24,10 @@ object Build : BuildType({
         password("env.GRAZIE_JWT_TOKEN", "credentialsJSON:1965ecbb-d8a2-404c-bbbd-1a1b80f733d8")
         text("env.VERIFIER_COMMAND", "dafny verify --verification-time-limit 20", display = ParameterDisplay.PROMPT, allowEmpty = false)
         text("directory", "benches/HumanEval-Dafny", display = ParameterDisplay.PROMPT, allowEmpty = false)
+        text("llm-profile", "anthropic-claude-3.7-sonnet", display = ParameterDisplay.PROMPT, allowEmpty = false)
         text(
             "prompts",
-            "prompts/dafny_eval,prompts/dafny_eval,prompts/dafny_eval_without_impls,prompts/dafny_eval_without_impls_textd,prompts/dafny_eval_without_impls_textd,prompts/dafny_eval_without_impls_textd",
+            "prompts/dafny_eval,prompts/dafny_eval,prompts/dafny_eval_comment_without_impls,prompts/dafny_eval_comment_without_impls_textd,prompts/dafny_eval_comment_without_impls_textd,prompts/dafny_eval_comment_without_impls_textd",
             display = ParameterDisplay.PROMPT,
             allowEmpty = false
         )
@@ -40,7 +41,7 @@ object Build : BuildType({
             command = module {
                 module = "verified_cogen"
                 scriptArguments = """--insert-conditions-mode=llm-single-step
-                    --llm-profile=anthropic-claude-3.5-sonnet
+                    --llm-profile=%llm-profile%
                     --bench-types=%bench-types%
                     --tries 10
                     --runs 5

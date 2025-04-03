@@ -16,4 +16,4 @@ PYLOG_LEVEL=INFO NOFILE=1 poetry run verified-cogen \
     --output-logging \
     --dir benches/HumanEval-Dafny \
     --modes=mode1,mode2,mode3,mode4,mode5,mode6 \
-    --prompts-directory="prompts/dafny_eval","prompts/dafny_eval","prompts/dafny_eval_without_impls","prompts/dafny_eval_without_impls_textd","prompts/dafny_eval_without_impls_textd","prompts/dafny_eval_without_impls_textd"
+    --prompts-directory="prompts/dafny_eval","prompts/dafny_eval","prompts/dafny_eval_comment_without_impls","prompts/dafny_eval_comment_without_impls_textd","prompts/dafny_eval_comment_without_impls_textd","prompts/dafny_eval_comment_without_impls_textd"
