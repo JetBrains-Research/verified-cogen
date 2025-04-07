@@ -1,7 +1,7 @@
 from abc import abstractmethod
 from enum import Enum
 from re import Pattern
-from typing import Any
+from typing import Any, Optional
 
 
 class AnnotationType(Enum):
@@ -40,7 +40,7 @@ class GenericLanguage(Language):
     pure_regex: Pattern[str]
     validator_template: str
     check_patterns: list[str]
-    inline_assert_comment: str
+    inline_assert_comment: Optional[str]
     remove_pure: bool
 
     def __init__(  # type: ignore
@@ -54,7 +54,7 @@ class GenericLanguage(Language):
         validator_template_void: str,
         remove_pure: bool,
         check_patterns: list[str],
-        inline_assert_comment: str,
+        inline_assert_comment: Optional[str],
         simple_comment: str,
     ):
         self.simple_comment = simple_comment
@@ -230,7 +230,7 @@ class GenericLanguage(Language):
             cleaned_code = re.sub(pattern, "", cleaned_code, flags=re.DOTALL)
         cleaned_code = re.sub(r"\n\s*\n", "\n", cleaned_code)
         lines = cleaned_code.split("\n")
-        lines = [line for line in lines if self.inline_assert_comment not in line]
+        lines = [line for line in lines if self.inline_assert_comment is None or self.inline_assert_comment not in line]
         return "\n".join(lines).strip()
 
     def check_helpers(self, code: str, pure_non_helpers: list[str]) -> tuple[list[str], str]:

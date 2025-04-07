@@ -36,7 +36,7 @@ class DafnyLanguage(GenericLanguage):
             AnnotationType.PRE_CONDITIONS: r" *// pre-conditions-start.*?// pre-conditions-end\n",
             AnnotationType.POST_CONDITIONS: r" *// post-conditions-start.*?// post-conditions-end\n",
             AnnotationType.IMPLS: r" *// impl-start.*?// impl-end\n",
-            AnnotationType.PURE: r"function.*?// pure-end\n",
+            AnnotationType.PURE: r"(function|lemma|predicate|class).*?// pure-end\n",
         }
         super().__init__(
             re.compile(r"method\s+(\w+)\s*\((.*?)\)\s*returns\s*\((.*?)\)(.*?)\{", re.DOTALL),
@@ -51,7 +51,7 @@ class DafnyLanguage(GenericLanguage):
             DAFNY_VALIDATOR_TEMPLATE_VOID,
             AnnotationType.PURE in remove_annotations,
             [annotation_by_type[annotation_type] for annotation_type in remove_annotations],
-            "// assert-line",
+            "// assert-line" if AnnotationType.ASSERTS in remove_annotations else None,
             "//",
         )
 

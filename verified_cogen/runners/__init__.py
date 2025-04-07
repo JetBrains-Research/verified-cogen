@@ -1,3 +1,4 @@
+import json
 import pathlib
 from dataclasses import dataclass
 from logging import Logger
@@ -5,7 +6,8 @@ from pathlib import Path
 from typing import Optional
 
 from verified_cogen.llm import LLM
-from verified_cogen.tools import basename, get_cache_dir
+from verified_cogen.tools import basename as basename
+from verified_cogen.tools import get_cache_dir
 from verified_cogen.tools.modes import Mode
 from verified_cogen.tools.verifier import Verifier
 
@@ -18,6 +20,7 @@ class RunnerConfig:
     include_text_descriptions: bool = False
     remove_implementations: bool = False
     remove_helpers: bool = False
+    record_history: bool = False
 
 
 class Runner:
@@ -26,7 +29,9 @@ class Runner:
     verifier: Verifier
     starting_prg: Optional[str] = None
     name: Optional[str] = None
+    text_description: Optional[str] = None
     config: RunnerConfig
+    _history: dict[str, tuple[bool, str, str]]
 
     def __init__(self, llm: LLM, logger: Logger, verifier: Verifier, config: RunnerConfig):
         self.llm = llm
@@ -35,6 +40,7 @@ class Runner:
         self.config = config
         if self.config.log_tries is not None:
             self.config.log_tries.mkdir(exist_ok=True, parents=True)
+        self._history = {}
 
     def rewrite(
         self,
@@ -85,19 +91,40 @@ class Runner:
         self.logger.info(f"Invocation done for {self.get_name()}")
         return inv_prg
 
-    def _verification_file(self, name: str, try_n: int) -> pathlib.Path:
+    @staticmethod
+    def combine_name(name: str, try_n: int, tag: str = "") -> str:
+        base, extension = name.rsplit(".", 1)
+        return f"{base}{tag}_{try_n}.{extension}"
+
+    def _base_dir(self):
         if self.config.log_tries is not None:
-            base, extension = name.rsplit(".", 1)
-            return self.config.log_tries / f"{base}_{try_n}.{extension}"
+            return self.config.log_tries
+        else:
+            return LLM_GENERATED_DIR
+
+    def _verification_file(self, name: str, try_n: int, tag: str = "") -> pathlib.Path:
+        if self.config.log_tries is not None:
+            return self.config.log_tries / Runner.combine_name(name, try_n, tag)
         else:
             return LLM_GENERATED_DIR / name
 
-    def verify_program(self, name: str, try_n: int, prg: str):
+    def verify_program(self, name: str, try_n: int, prg: str, tag: str = "") -> Optional[tuple[bool, str, str]]:
         LLM_GENERATED_DIR.mkdir(parents=True, exist_ok=True)
-        output = self._verification_file(name, try_n)
+        output = self._verification_file(name, try_n, tag)
         with open(output, "w") as f:
             f.write(prg)
-        return self.verifier.verify(output)
+        res = self.verifier.verify(output)
+        if self.config.record_history and res is not None:
+            self._history[Runner.combine_name(name, try_n, tag)] = res
+        return res
+
+    @property
+    def history(self):
+        return self._history
+
+    def dump_history(self, file: Path):
+        with open(file, "w") as f:
+            json.dump({k: res for k, (res, _, _) in self.history.items()}, f)
 
     def try_fixing(
         self,
@@ -127,37 +154,37 @@ class Runner:
                         inv_prg = self.postprocess(self.ask_for_fixed(out_inv + err_inv), out_inv + err_inv)
         return None
 
+    def prepare_file(self, file: Path, prg: str):
+        self.text_description = None
+        if self.config.include_text_descriptions:
+            text_description_file = file.parent / "text-descriptions" / f"{file.stem}.txt"
+            self.text_description = text_description_file.read_text()
+            self.logger.info(f"Text description: {self.text_description}")
+
+        self.starting_prg = prg
+        self.name = file.name
+
     def run_on_file(
         self,
         mode: Mode,
         total_tries: int,
         file: str,
     ) -> Optional[int]:
-        name = basename(file)
         self.logger.info(f"Running on {file}")
 
         file_path = Path(file)
         with file_path.open() as f:
             prg = f.read()
-
-        text_description = None
-        if self.config.include_text_descriptions:
-            text_description_file = file_path.parent / "text-descriptions" / f"{file_path.stem}.txt"
-            text_description = text_description_file.read_text()
-            self.logger.info(f"Text description for {name}: {text_description}")
-
-        self.starting_prg = prg
-        self.name = name
+        self.prepare_file(file_path, prg)
         prg = self.preprocess(prg, mode)
-
-        verification_result = self.verify_program(name, 0, self.postprocess(prg))
+        assert self.name is not None
+        verification_result = self.verify_program(self.name, 0, self.postprocess(prg))
         if verification_result is not None and verification_result[0]:
             return 0
         elif verification_result is None:
-            self.logger.info(f"Verification timed out for {name}")
-        assert verification_result is not None, "Verification result should not be None"
+            self.logger.info(f"Verification timed out for {self.name}")
+        if total_tries == 0:
+            return None
         self.precheck(prg, mode)
-        inv_prg = self.postprocess(
-            self.invoke(prg, mode, text_description), verification_result[1] + verification_result[2]
-        )
-        return self.try_fixing(total_tries, inv_prg, name)
+        inv_prg = self.postprocess(self.invoke(prg, mode, self.text_description))
+        return self.try_fixing(total_tries, inv_prg, self.name)
