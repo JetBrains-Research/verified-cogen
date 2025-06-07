@@ -1,8 +1,7 @@
 import logging
 import re
 import textwrap
-
-from typing_extensions import Optional
+from typing import Optional
 
 from verified_cogen.llm import LLM
 from verified_cogen.runners import Runner, RunnerConfig
@@ -82,19 +81,24 @@ class InvariantRunner(Runner):
             if while_count > 1:
                 raise ValueError("Multiple loops in program, not supported in regex mode")
 
-    def postprocess(self, inv_prg: str) -> str:
+    def postprocess(self, inv_prg: str, error: Optional[str] = None) -> str:
         if self.rewriter is not None:
-            prg, prompt = self.rewriter.rewrite(inv_prg)
+            prg, prompt = self.rewriter.rewrite(inv_prg, error)
 
             if prompt != "":
-                self.logger.info(f"Manually rewrite for {self.get_name()}:")
-                self.logger.info(inv_prg)
-                self.logger.info(f"Manual rewriting results for {self.get_name()}:")
-                self.logger.info(prompt)
+                self.logger.debug(
+                    textwrap.dedent(
+                        f"""Manually rewrite for {self.get_name()}:
+                            {inv_prg}
+                            Manual rewriting results for {self.get_name()}:
+                            {prompt}
+                        """
+                    )
+                )
                 self.llm.add_user_prompt(prompt)
                 self.llm.add_response("understood")
         else:
-            prg = super().postprocess(inv_prg)
+            prg = super().postprocess(inv_prg, error)
 
         self.previous_prg = prg
 

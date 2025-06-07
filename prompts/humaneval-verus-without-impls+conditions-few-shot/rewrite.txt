@@ -1,4 +1,4 @@
-The following Nagini code contains no implementations of functions, pre/postconditions, invariants and assertions.
+The following Verus code contains no implementations of functions, pre/postconditions, invariants and assertions.
 Using text description and helper functions you should add implementations and relevant pre/postconditions. Prefer loops to recursion. You should also add invariants/assertions.
 Use helper functions only in preconditions, postconditions, invariants, asserts and conditions (in `if` or `while` conditions). Don't use helpers in the plain code.
 Do not change helper functions (annotated with spec).

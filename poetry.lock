@@ -450,14 +450,14 @@ woff = ["brotli (>=1.0.1)", "brotlicffi (>=0.8.0)", "zopfli (>=0.1.4)"]
 
 [[package]]
 name = "grazie-api-gateway-client"
-version = "0.1.10"
+version = "0.1.14"
 description = "Api client for Grazie services"
 optional = false
 python-versions = ">=3.8"
 groups = ["main"]
 files = [
-    {file = "grazie_api_gateway_client-0.1.10-py3-none-any.whl", hash = "sha256:b20051d0f356475f4996003d5a08d038dda7fd23639626003fcd9aeb5dcf9000"},
-    {file = "grazie_api_gateway_client-0.1.10.tar.gz", hash = "sha256:547f8eef314b9341485348c2de2b20534dbb476eed72fc76cda29aadbddebbd4"},
+    {file = "grazie_api_gateway_client-0.1.14-py3-none-any.whl", hash = "sha256:8b07d47e6878590fabb21082380f7514971b72b96ab647739c59882fe6212cb5"},
+    {file = "grazie_api_gateway_client-0.1.14.tar.gz", hash = "sha256:b64c0d23fd2c2a195d2277f42918bda8836b65e6475e3b8053d9fc5f561bf511"},
 ]
 
 [package.dependencies]

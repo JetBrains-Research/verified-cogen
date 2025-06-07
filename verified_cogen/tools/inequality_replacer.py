@@ -1,12 +1,11 @@
 import ast
 from _ast import Compare, expr
-from typing import List
 
 
 class InequalityReplacer(ast.NodeTransformer):
     def visit_Compare(self, node: Compare):
         if len(node.comparators) > 1:
-            new_nodes: List[expr] = []
+            new_nodes: list[expr] = []
             left: expr = node.left
             left = self.visit(left)
             for op, right in zip(node.ops, node.comparators):

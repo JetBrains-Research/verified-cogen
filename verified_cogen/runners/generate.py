@@ -67,7 +67,7 @@ class GenerateRunner(Runner):
         logger.info(f"Running on {file}")
         self.name = basename(file)
 
-        with open(file, "r") as f:
+        with open(file) as f:
             prg = f.read()
         self.precheck(prg, mode)
         inv_prg = self.invoke(prg, mode)

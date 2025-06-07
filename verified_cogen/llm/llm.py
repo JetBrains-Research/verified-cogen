@@ -1,8 +1,10 @@
 import logging
+import time
 from http.client import RemoteDisconnected
 from pathlib import Path
 from typing import Optional
 
+import attrs
 from grazie.api.client.chat.prompt import ChatPrompt
 from grazie.api.client.chat.response import ChatResponse
 from grazie.api.client.endpoints import GrazieApiGatewayUrls
@@ -13,17 +15,43 @@ from grazie.api.client.gateway import (
 )
 from grazie.api.client.llm_parameters import LLMParameters
 from grazie.api.client.parameters import Parameters
-from grazie.api.client.profiles import Profile
+from grazie.api.client.profiles import LLMProfile, Profile
 
 import verified_cogen.llm.prompts as prompts
 from verified_cogen.tools import extract_code_from_llm_output
+from verified_cogen.tools.throttle import Throttle
 
 logger = logging.getLogger(__name__)
+
+
+@attrs.define(auto_attribs=True, frozen=True)
+class GoogleChatGeminiFlash2ThinkingProfile(LLMProfile):
+    name: str = "google-chat-gemini-thinking-flash-2.0"
+
+
+@attrs.define(auto_attribs=True, frozen=True)
+class AnthropicClaude37SonnetProfile(LLMProfile):
+    name: str = "anthropic-claude-3.7-sonnet"
+
+
+class ExtendedProfile(Profile):
+    GOOGLE_CHAT_GEMINI_FLASH_2 = GoogleChatGeminiFlash2ThinkingProfile()
+    ANTHROPIC_CLAUDE_37_SONNET = AnthropicClaude37SonnetProfile()
+
+    @classmethod
+    def get_by_name(cls, name: str) -> LLMProfile:
+        """Used to get profile string. Mainly to be able to pass profile as a string argument in argparse."""
+        for attr in dir(cls):
+            value = getattr(cls, attr)
+            if isinstance(value, LLMProfile) and value.name == name:
+                return value
+        raise ValueError(f"Unknown profile name: {name}")
 
 
 class LLM:
     def __init__(
         self,
+        throttle: Throttle,
         grazie_token: str,
         profile: str,
         prompt_dir: str,
@@ -34,9 +62,9 @@ class LLM:
         self.grazie = GrazieApiGatewayClient(
             url=GrazieApiGatewayUrls.STAGING,
             grazie_jwt_token=grazie_token,
-            auth_type=AuthType.USER,
+            auth_type=AuthType.APPLICATION,
         )
-        self.profile = Profile.get_by_name(profile)
+        self.profile = ExtendedProfile.get_by_name(profile)
         self.prompt_dir = prompt_dir
         self.is_gpt = "gpt" in self.profile.name
         self.user_prompts: list[str] = []
@@ -47,6 +75,7 @@ class LLM:
         self.temperature = temperature
         self.system_prompt = system_prompt if system_prompt else prompts.sys_prompt(self.prompt_dir)
         self.history = history
+        self.throttle = throttle
 
     def add_user_prompt(self, prompt: str, temporary: bool = False):
         self.user_prompts.append(prompt)
@@ -75,7 +104,7 @@ class LLM:
             raise Exception("Exhausted tries to get response from Grazie API")
         if temperature is None:
             temperature = self.temperature
-        prompt = ChatPrompt().add_system(self.system_prompt)
+        prompt = ChatPrompt().add_system(self.system_prompt)  # type: ignore
         current_prompt_user = 0
         current_response = 0
         while current_prompt_user < len(self.user_prompts) or current_response < len(self.responses):
@@ -93,14 +122,20 @@ class LLM:
             parameters: dict[Parameters.Key, Parameters.Value] = {}
             if self.profile.name != "openai-o1":
                 parameters[LLMParameters.Temperature] = Parameters.FloatValue(temperature)
-            return self.grazie.chat(
-                chat=prompt,
-                profile=self.profile,
-                parameters=parameters,
-            )
+            with self.throttle:
+                return self.grazie.chat(
+                    chat=prompt,
+                    profile=self.profile,
+                    parameters=parameters,
+                )
         except (RemoteDisconnected, RequestFailedException) as e:
             logger.warning("Grazie API is down, retrying...")
             logger.warning(f"Error: {e}")
+
+            backoff_time = 2 ** (5 - tries)  # 1s, 2s, 4s, 8s, 16s
+            logger.info(f"Waiting {backoff_time} seconds before retry...")
+            time.sleep(backoff_time)
+
             return self._request(temperature, tries - 1)
         except Exception as e:
             self.dump_history(Path("err_dump.txt"))

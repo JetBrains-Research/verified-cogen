@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
+from pathlib import Path
 from subprocess import CalledProcessError, run
-from typing import List, Optional
+from typing import Optional
 
 from verified_cogen.llm import prompts
 from verified_cogen.llm.llm import LLM
@@ -49,7 +50,7 @@ class ValidatingRunner(Runner):
     validator: Validator
     language: Language
     summarizer_llm: LLM
-    pure_non_helpers: List[str]
+    pure_non_helpers: list[str]
 
     def __init__(
         self,
@@ -60,6 +61,7 @@ class ValidatingRunner(Runner):
         super().__init__(wrapping.llm, wrapping.logger, wrapping.verifier, wrapping.config)
         token = wrapping.llm.grazie._grazie_jwt_token  # type: ignore
         self.summarizer_llm = LLM(
+            throttle=wrapping.llm.throttle,
             grazie_token=token,
             profile=wrapping.llm.profile.name,
             prompt_dir=wrapping.llm.prompt_dir,
@@ -80,10 +82,10 @@ class ValidatingRunner(Runner):
         self.wrapped_runner.starting_prg = res_prg
         return res_prg
 
-    def postprocess(self, inv_prg: str) -> str:
+    def postprocess(self, inv_prg: str, error: Optional[str] = None) -> str:
         assert self.starting_prg is not None
         if self.config.remove_implementations:
-            invalid_helpers: List[str] = []
+            invalid_helpers: list[str] = []
             try:
                 invalid_helpers, inv_prg = self.language.check_helpers(inv_prg, self.pure_non_helpers)
                 self.logger.info(f"invalid_helpers for {self.get_name()}: {','.join(invalid_helpers)}")
@@ -98,7 +100,20 @@ class ValidatingRunner(Runner):
                     .replace("{helpers}", ",".join(self.pure_non_helpers))
                 )
                 self.llm.add_response("understood")
-        return self.validator.add_validators(self.starting_prg, self.wrapped_runner.postprocess(inv_prg))
+        return self.wrapped_runner.postprocess(inv_prg, error)
+
+    def verify_program(self, name: str, try_n: int, prg: str, tag: str = ""):
+        base_verif = self.wrapped_runner.verify_program(name, try_n, prg, tag)
+        if base_verif is None or not base_verif[0]:
+            return base_verif
+        assert self.starting_prg is not None
+        valid_prg = self.validator.add_validators(self.starting_prg, prg)
+        valid_verif = super().verify_program(name, try_n, valid_prg, f"{tag}_valid")
+        return valid_verif
+
+    @property
+    def history(self):
+        return self._history | self.wrapped_runner.history
 
     def rewrite(
         self,
@@ -106,7 +121,7 @@ class ValidatingRunner(Runner):
         text_description: Optional[str] = None,
         additional_prompt: str = "",
     ) -> str:
-        if self.config.remove_implementations:
+        if self.config.remove_implementations and self.pure_non_helpers:
             additional_prompt += prompts.helpers_prompt(self.llm.prompt_dir).replace(
                 "{helpers}", ",".join(self.pure_non_helpers)
             )
@@ -139,3 +154,7 @@ class ValidatingRunner(Runner):
 
     def precheck(self, prg: str, mode: Mode):
         return self.wrapped_runner.precheck(prg, mode)
+
+    def prepare_file(self, file: Path, prg: str):
+        super().prepare_file(file, prg)
+        self.wrapped_runner.prepare_file(file, prg)

@@ -1,11 +1,11 @@
-from typing import List, Tuple
+from typing import Optional
 
 from verified_cogen.runners.rewriters import Rewriter
 
 
 class NaginiRewriter(Rewriter):
-    def rewrite(self, prg: str) -> Tuple[str, str]:
-        pos_implications: List[Tuple[int, int]] = []
+    def rewrite(self, prg: str, error: Optional[str] = None) -> tuple[str, str]:
+        pos_implications: list[tuple[int, int]] = []
 
         for idx, line in enumerate(prg.splitlines()):
             for j in range(0, len(line) - 2):

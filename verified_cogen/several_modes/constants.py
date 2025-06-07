@@ -1,5 +1,7 @@
 from verified_cogen.runners.languages import AnnotationType
 
+VALID_BENCH_TYPES = ["invariants", "generic", "generate", "validating", "testing", "step-by-step", "step-by-step-flusn"]
+
 MODE_MAPPING = {
     "mode1": [AnnotationType.INVARIANTS, AnnotationType.ASSERTS],
     "mode2": [

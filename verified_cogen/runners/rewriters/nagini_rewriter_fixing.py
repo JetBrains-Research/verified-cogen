@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional, Tuple
+from typing import Optional
 
 from verified_cogen.runners.rewriters.__init__ import Rewriter
 
@@ -11,7 +11,7 @@ class NaginiRewriterFixing(Rewriter):
         self.wrapped_rewriter = rewriter
 
     def replace_impl(self, prg: str):
-        indices: List[Tuple[int, str]] = []
+        indices: list[tuple[int, str]] = []
 
         for i in range(len(prg) - 2):
             if prg[i : i + 3] == "==>":
@@ -34,11 +34,11 @@ class NaginiRewriterFixing(Rewriter):
                     elif prg[j] == "(":
                         cnt += 1
 
-        dict: Dict[int, str] = {}
+        dict_: dict[int, str] = {}
         for i, st in indices:
-            if i not in dict:
-                dict[i] = ""
-            dict[i] = dict[i] + st
+            if i not in dict_:
+                dict_[i] = ""
+            dict_[i] = dict_[i] + st
 
         new_prg = ""
 
@@ -49,14 +49,14 @@ class NaginiRewriterFixing(Rewriter):
                 new_prg += ","
             else:
                 new_prg += prg[j]
-            if j in dict:
-                for s in dict[j]:
+            if j in dict_:
+                for s in dict_[j]:
                     new_prg += s
             j = j + 1
 
         return new_prg
 
-    def rewrite(self, prg: str) -> Tuple[str, str]:
+    def rewrite(self, prg: str, error: Optional[str] = None) -> tuple[str, str]:
         prompt: str = ""
 
         if self.wrapped_rewriter is not None:

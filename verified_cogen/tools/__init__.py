@@ -5,6 +5,7 @@ import sys
 from typing import Optional
 
 import appdirs  # type: ignore
+import click
 
 
 def get_cache_dir() -> str:
@@ -101,3 +102,16 @@ def rewrite_error(prg: str, error: str) -> str:
             ln = "\n".join(prg.splitlines()[num_st:num_end])
             res_error += ln + "\n"
     return res_error
+
+
+def make_split_commas(valid_list: Optional[list[str]] = None):
+    def wrapped(ctx: click.Context, param: str, value: str) -> list[str]:
+        parsed_values: list[str] = []
+        for v in value:
+            parsed_values.extend(v.split(","))
+        for v in parsed_values:
+            if valid_list and v not in valid_list:
+                raise click.BadParameter(f"{v} is not in {valid_list}")
+        return parsed_values
+
+    return wrapped

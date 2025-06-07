@@ -83,7 +83,7 @@ class StepByStepRunner(Runner):
         rewrite_step = Step(pathlib.Path(self.llm.prompt_dir) / "rewrite")
         assert len(steps) == 0 or len(rewrite_step.examples) == len(steps[0].examples)
 
-        examples: list[list[Substep]] = list(zip(*([step.examples for step in steps] + [rewrite_step.examples])))
+        examples: list[list[Substep]] = list(zip(*([step.examples for step in steps] + [rewrite_step.examples])))  # type: ignore
 
         for example in examples:
             for sub_step in example:
@@ -100,8 +100,8 @@ class StepByStepRunner(Runner):
 
         return response
 
-    def postprocess(self, inv_prg: str) -> str:
-        return self.wrapped_runner.postprocess(inv_prg)
+    def postprocess(self, inv_prg: str, error: Optional[str] = None) -> str:
+        return self.wrapped_runner.postprocess(inv_prg, error)
 
     def produce(self, prg: str) -> str:
         return self.wrapped_runner.produce(prg)

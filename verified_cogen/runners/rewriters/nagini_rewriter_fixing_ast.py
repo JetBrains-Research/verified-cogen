@@ -1,4 +1,4 @@
-from typing import Optional, Tuple
+from typing import Optional
 
 from verified_cogen.runners.rewriters.__init__ import Rewriter
 from verified_cogen.tools.inequality_replacer import (
@@ -14,7 +14,7 @@ class NaginiRewriterFixingAST(Rewriter):
         super().__init__()
         self.wrapped_rewriter = rewriter
 
-    def rewrite(self, prg: str) -> Tuple[str, str]:
+    def rewrite(self, prg: str, error: Optional[str] = None) -> tuple[str, str]:
         prompt: str = ""
 
         if self.wrapped_rewriter is not None:
