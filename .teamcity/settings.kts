@@ -22,7 +22,8 @@ object Build : BuildType({
 
     params {
         password("env.GRAZIE_JWT_TOKEN", "credentialsJSON:1965ecbb-d8a2-404c-bbbd-1a1b80f733d8")
-        text("env.VERIFIER_COMMAND", "dafny verify --verification-time-limit 20", display = ParameterDisplay.PROMPT, allowEmpty = false)
+        // text("env.VERIFIER_COMMAND", "dafny verify --verification-time-limit 20", display = ParameterDisplay.PROMPT, allowEmpty = false)
+        text("env.VERIFIER_COMMAND", "rm -rf .mypy_cache; nagini", display = ParameterDisplay.PROMPT, allowEmpty = false)
         // text("directory", "benches/HumanEval-Dafny", display = ParameterDisplay.PROMPT, allowEmpty = false)
         text("directory", "benches/HumanEval-Nagini/Bench", display = ParameterDisplay.PROMPT, allowEmpty = false)
         text("llm-profile", "anthropic-claude-3.7-sonnet", display = ParameterDisplay.PROMPT, allowEmpty = false)
