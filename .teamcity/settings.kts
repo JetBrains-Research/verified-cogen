@@ -22,16 +22,20 @@ object Build : BuildType({
 
     params {
         password("env.GRAZIE_JWT_TOKEN", "credentialsJSON:1965ecbb-d8a2-404c-bbbd-1a1b80f733d8")
-        text("env.VERIFIER_COMMAND", "dafny verify --verification-time-limit 20", display = ParameterDisplay.PROMPT, allowEmpty = false)
-        text("directory", "benches/HumanEval-Dafny", display = ParameterDisplay.PROMPT, allowEmpty = false)
+        // text("env.VERIFIER_COMMAND", "dafny verify --verification-time-limit 20", display = ParameterDisplay.PROMPT, allowEmpty = false)
+        text("env.VERIFIER_COMMAND", "rm -rf .mypy_cache; nagini", display = ParameterDisplay.PROMPT, allowEmpty = false)
+        // text("directory", "benches/HumanEval-Dafny", display = ParameterDisplay.PROMPT, allowEmpty = false)
+        text("directory", "benches/HumanEval-Nagini/Bench", display = ParameterDisplay.PROMPT, allowEmpty = false)
         text("llm-profile", "anthropic-claude-3.7-sonnet", display = ParameterDisplay.PROMPT, allowEmpty = false)
         text(
             "prompts",
-            "prompts/dafny_eval,prompts/dafny_eval,prompts/dafny_eval_comment_without_impls,prompts/dafny_eval_comment_without_impls_textd,prompts/dafny_eval_comment_without_impls_textd,prompts/dafny_eval_comment_without_impls_textd",
+            // "prompts/dafny_eval,prompts/dafny_eval,prompts/dafny_eval_comment_without_impls,prompts/dafny_eval_comment_without_impls_textd,prompts/dafny_eval_comment_without_impls_textd,prompts/dafny_eval_comment_without_impls_textd",
+            "prompts/humaneval-nagini-few-shot,prompts/humaneval-nagini-without-conditions-few-shot,prompts/humaneval-nagini-without-impls-few-shot,prompts/humaneval-nagini-without-impls-few-shot-text-description,prompts/humaneval-nagini-without-impls+conditions-few-shot,prompts/humaneval-nagini-without-helpers-few-shot",
             display = ParameterDisplay.PROMPT,
             allowEmpty = false
         )
-        text("extension", "dfy", display = ParameterDisplay.PROMPT, allowEmpty = false)
+        // text("extension", "dfy", display = ParameterDisplay.PROMPT, allowEmpty = false)
+        text("extension", "py", display = ParameterDisplay.PROMPT, allowEmpty = false)
         text("bench-types", "validating,validating,validating,validating,validating,validating", display = ParameterDisplay.PROMPT, allowEmpty = false)
     }
 
