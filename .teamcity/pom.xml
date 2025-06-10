@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <project>
   <modelVersion>4.0.0</modelVersion>
-  <name>Sandbox_StanislavAlekseev_VerifiedCogen Config DSL Script</name>
-  <groupId>Sandbox_StanislavAlekseev_VerifiedCogen</groupId>
-  <artifactId>Sandbox_StanislavAlekseev_VerifiedCogen_dsl</artifactId>
+  <name>Sandbox_VerifiedCogen Config DSL Script</name>
+  <groupId>Sandbox_VerifiedCogen</groupId>
+  <artifactId>Sandbox_VerifiedCogen_dsl</artifactId>
   <version>1.0-SNAPSHOT</version>
 
   <parent>
