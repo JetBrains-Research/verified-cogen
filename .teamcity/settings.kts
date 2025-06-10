@@ -72,7 +72,7 @@ object HttpsGithubComJetBrainsResearchVerifiedCogenRefsHeadsMain : GitVcsRoot({
     branch = "refs/heads/main"
     branchSpec = "refs/heads/*"
     authMethod = password {
-        userName = "WeetHet"
-        password = "credentialsJSON:75f50a52-aad8-4471-b408-a43fbd2d0b79"
+        userName = "alex28sh"
+        password = "%github.token%"
     }
 })
