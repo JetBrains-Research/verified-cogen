@@ -40,6 +40,10 @@ object Build : BuildType({
     }
 
     steps {
+        script {
+            scriptContent = "docker build . -t verified-cogen:latest"
+        }
+
         python {
             environment = poetry { }
             command = module {
