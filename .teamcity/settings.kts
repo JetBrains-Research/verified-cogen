@@ -40,6 +40,10 @@ object Build : BuildType({
     }
 
     steps {
+        script {
+            scriptContent = "docker build . -t verified-cogen:latest"
+        }
+
         python {
             environment = poetry { }
             command = module {
@@ -56,7 +60,7 @@ object Build : BuildType({
                     --prompts-directory=%prompts%
                 """.trimIndent().replace("\n", " ")
             }
-            dockerImage = "weethet/verified-cogen:latest"
+            dockerImage = "verified-cogen:latest"
         }
     }
 
