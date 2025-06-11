@@ -1,6 +1,8 @@
 package patches.buildTypes
 
 import jetbrains.buildServer.configs.kotlin.*
+import jetbrains.buildServer.configs.kotlin.buildSteps.dockerCommand
+import jetbrains.buildServer.configs.kotlin.buildSteps.python
 import jetbrains.buildServer.configs.kotlin.ui.*
 
 /*
@@ -15,6 +17,30 @@ changeBuildType(RelativeId("Build")) {
         }
         update {
             password("env.GRAZIE_JWT_TOKEN", "credentialsJSON:a9d047e5-e89d-4325-97b8-d9be361af6fc")
+        }
+    }
+
+    expectSteps {
+        python {
+            environment = poetry {
+            }
+            command = module {
+                module = "verified_cogen"
+                scriptArguments = "--insert-conditions-mode=llm-single-step                     --llm-profile=%llm-profile%                     --bench-types=%bench-types%                     --tries 10                     --runs 5                     --filter-by-ext %extension%                     --output-logging                     --dir %directory%                     --modes=mode1,mode2,mode3,mode4,mode5,mode6                     --prompts-directory=%prompts%"
+            }
+            dockerImage = "weethet/verified-cogen:latest"
+        }
+    }
+    steps {
+        insert(1) {
+            dockerCommand {
+                id = "DockerCommand"
+                commandType = build {
+                    source = file {
+                        path = "Dockerfile"
+                    }
+                }
+            }
         }
     }
 }
