@@ -56,7 +56,7 @@ object Build : BuildType({
                     --prompts-directory=%prompts%
                 """.trimIndent().replace("\n", " ")
             }
-            dockerImage = "weethet/verified-cogen:latest"
+            dockerImage = "verified-cogen:latest"
         }
     }
 
