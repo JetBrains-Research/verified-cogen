@@ -19,6 +19,9 @@ changeBuildType(RelativeId("Build")) {
             password("env.GRAZIE_JWT_TOKEN", "credentialsJSON:a9d047e5-e89d-4325-97b8-d9be361af6fc")
         }
         add {
+            password("docker.password", "credentialsJSON:d7e770b7-d9b5-49fe-9a6e-6ca39ddd0ce8")
+        }
+        add {
             param("docker.username", "alex28sh")
         }
     }
