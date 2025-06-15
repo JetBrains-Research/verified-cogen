@@ -60,7 +60,7 @@ object Build : BuildType({
                     --prompts-directory=%prompts%
                 """.trimIndent().replace("\n", " ")
             }
-            dockerImage = "alex28sh/verified-cogen:latest"
+            dockerImage = "alex28sh/verus-env:latest"
         }
     }
 
