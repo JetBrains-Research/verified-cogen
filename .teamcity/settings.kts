@@ -40,9 +40,9 @@ object Build : BuildType({
     }
 
     steps {
-        script {
-            scriptContent = "docker build . -t verified-cogen:latest"
-        }
+//        script {
+//            scriptContent = "docker build . -t verified-cogen:latest"
+//        }
 
         python {
             environment = poetry { }
@@ -60,7 +60,7 @@ object Build : BuildType({
                     --prompts-directory=%prompts%
                 """.trimIndent().replace("\n", " ")
             }
-            dockerImage = "verified-cogen:latest"
+            dockerImage = "alex28sh/verified-cogen:latest"
         }
     }
 
