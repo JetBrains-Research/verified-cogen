@@ -37,6 +37,9 @@ object Build : BuildType({
         // text("extension", "dfy", display = ParameterDisplay.PROMPT, allowEmpty = false)
         text("extension", "py", display = ParameterDisplay.PROMPT, allowEmpty = false)
         text("bench-types", "validating,validating,validating,validating,validating,validating", display = ParameterDisplay.PROMPT, allowEmpty = false)
+        text("temperature", "0.0", display = ParameterDisplay.PROMPT, allowEmpty = false)
+        text("manual-rewriters", "", display = ParameterDisplay.PROMPT, allowEmpty = true)
+        text("max-jobs", "10", display = ParameterDisplay.PROMPT, allowEmpty = false)
     }
 
     steps {
@@ -58,6 +61,9 @@ object Build : BuildType({
                     --dir %directory%
                     --modes=mode1,mode2,mode3,mode4,mode5,mode6
                     --prompts-directory=%prompts%
+                    --temperature=$temperature%
+                    --manual-rewriters %manual-rewriters%
+                    --max-jobs %max-jobs%
                 """.trimIndent().replace("\n", " ")
             }
             dockerImage = "alex28sh/verus-env:latest"
