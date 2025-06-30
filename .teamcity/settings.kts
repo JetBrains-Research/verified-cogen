@@ -62,8 +62,8 @@ object Build : BuildType({
                     --modes=mode1,mode2,mode3,mode4,mode5,mode6
                     --prompts-directory=%prompts%
                     --temperature=%temperature%
-                    --manual-rewriters %manual-rewriters%
                     --max-jobs=%max-jobs%
+                    --manual-rewriters %manual-rewriters%
                 """.trimIndent().replace("\n", " ")
             }
             dockerImage = "alex28sh/verus-env:latest"
