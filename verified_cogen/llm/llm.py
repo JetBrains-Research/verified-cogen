@@ -62,7 +62,7 @@ class LLM:
         self.grazie = GrazieApiGatewayClient(
             url=GrazieApiGatewayUrls.STAGING,
             grazie_jwt_token=grazie_token,
-            auth_type=AuthType.APPLICATION,
+            auth_type=AuthType.USER,
         )
         self.profile = ExtendedProfile.get_by_name(profile)
         self.prompt_dir = prompt_dir
@@ -131,6 +131,7 @@ class LLM:
         except (RemoteDisconnected, RequestFailedException) as e:
             logger.warning("Grazie API is down, retrying...")
             logger.warning(f"Error: {e}")
+            print(e)
 
             backoff_time = 2 ** (5 - tries)  # 1s, 2s, 4s, 8s, 16s
             logger.info(f"Waiting {backoff_time} seconds before retry...")
