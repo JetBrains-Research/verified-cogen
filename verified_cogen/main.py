@@ -216,7 +216,7 @@ def run_mode(
 )
 @click.option("--manual-rewriters", multiple=True, default=[], callback=make_split_commas())
 @click.option("--llm-profile", default="gpt-4-1106-preview")
-@click.option("-t", "--temperature", help="model temperature", default=0)
+@click.option("-t", "--temperature", type=float, help="model temperature", default=0)
 @click.option("--grazie-token", default=lambda: os.getenv("GRAZIE_JWT_TOKEN"))
 @click.option("--prompts-directory", multiple=True, default=[], callback=make_split_commas())
 @click.option(
