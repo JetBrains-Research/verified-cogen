@@ -51,6 +51,14 @@ object Build : BuildType({
             environment = poetry { }
             command = module {
                 module = "verified_cogen"
+
+                val manualRewriters = "%manual-rewriters%"
+                val manualRewritersArg = if (!manualRewriters.isNullOrBlank()) {
+                    "--manual-rewriters $manualRewriters"
+                } else {
+                    ""
+                }
+
                 scriptArguments = """--insert-conditions-mode=llm-single-step
                     --llm-profile=%llm-profile%
                     --bench-types=%bench-types%
@@ -63,7 +71,7 @@ object Build : BuildType({
                     --prompts-directory=%prompts%
                     --temperature=%temperature%
                     --max-jobs=%max-jobs%
-                    --manual-rewriters %manual-rewriters%
+                    $manualRewritersArg
                 """.trimIndent().replace("\n", " ")
             }
             dockerImage = "alex28sh/verus-env:latest"
