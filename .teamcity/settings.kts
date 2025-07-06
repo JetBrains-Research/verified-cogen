@@ -40,6 +40,7 @@ object Build : BuildType({
         text("temperature", "0.0", display = ParameterDisplay.PROMPT, allowEmpty = false)
         text("manual-rewriters", "", display = ParameterDisplay.PROMPT, allowEmpty = true)
         text("max-jobs", "10", display = ParameterDisplay.PROMPT, allowEmpty = false)
+        text("modes", "mode1,mode2,mode3,mode4,mode5,mode6", display = ParameterDisplay.PROMPT, allowEmpty = false)
     }
 
     steps {
@@ -52,13 +53,6 @@ object Build : BuildType({
             command = module {
                 module = "verified_cogen"
 
-                val manualRewriters = "%manual-rewriters%"
-                val manualRewritersArg = if (!manualRewriters.isNullOrBlank()) {
-                    "--manual-rewriters $manualRewriters"
-                } else {
-                    ""
-                }
-
                 scriptArguments = """--insert-conditions-mode=llm-single-step
                     --llm-profile=%llm-profile%
                     --bench-types=%bench-types%
@@ -67,11 +61,11 @@ object Build : BuildType({
                     --filter-by-ext %extension%
                     --output-logging
                     --dir %directory%
-                    --modes=mode1,mode2,mode3,mode4,mode5,mode6
+                    --modes=%modes%
                     --prompts-directory=%prompts%
                     --temperature=%temperature%
                     --max-jobs=%max-jobs%
-                    $manualRewritersArg
+                    %manual-rewriters%
                 """.trimIndent().replace("\n", " ")
             }
             dockerImage = "alex28sh/verus-env:latest"
