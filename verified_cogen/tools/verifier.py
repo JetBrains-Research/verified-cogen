@@ -45,6 +45,8 @@ class Verifier:
                 res.stderr.decode("utf-8"),
             )
         except subprocess.TimeoutExpired:
+            process.kill()
+            process.wait()
             cleanup_z3_processes(self.timeout)
             return None
 

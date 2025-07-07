@@ -8,8 +8,19 @@ RUN pacman -Syu --noconfirm && \
     dotnet-runtime dotnet-sdk \
     unzip
 
+RUN pacman -Syu --noconfirm && \
+    pacman -S --noconfirm jdk-openjdk && \
+    pacman -Scc --noconfirm \
+
+ENV JAVA_HOME=/usr/lib/jvm/default
+ENV PATH="${JAVA_HOME}/bin:${PATH}"
+
 RUN useradd -m builder && \
     echo "builder ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/builder
+
+RUN java -version
+
+ENV JAVA_TOOL_OPTIONS="--enable-native-access=ALL-UNNAMED"
 
 USER builder
 WORKDIR /home/builder
@@ -30,6 +41,10 @@ RUN python3.9 -m venv nagini_venv && \
     cd nagini && pip install . && cd ..
 
 ENV PATH="/home/builder/nagini_venv/bin:${PATH}"
+
+COPY benches/HumanEval-Nagini/Bench/000-has-close-elements.py .
+
+RUN nagini 000-has-close-elements.py
 
 # Install Dafny
 RUN git clone https://aur.archlinux.org/dafny-bin.git && \
