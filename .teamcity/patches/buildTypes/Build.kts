@@ -20,4 +20,10 @@ changeBuildType(RelativeId("Build")) {
             password("grazie.token", "credentialsJSON:06b1d6ac-e033-4f37-a075-61540c30b43a")
         }
     }
+
+    requirements {
+        add {
+            noLessThan("teamcity.agent.hardware.cpuCount", "16")
+        }
+    }
 }
