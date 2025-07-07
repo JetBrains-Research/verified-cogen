@@ -17,7 +17,7 @@ changeBuildType(RelativeId("Build")) {
             password("env.GRAZIE_JWT_TOKEN", "credentialsJSON:40d05b0a-9c5e-4cd9-a0d7-b91ce83a7806")
         }
         add {
-            password("grazie.token", "credentialsJSON:afc03b68-ee53-4c37-a220-0fcbec44a3e4")
+            password("grazie.token", "credentialsJSON:06b1d6ac-e033-4f37-a075-61540c30b43a")
         }
     }
 }
