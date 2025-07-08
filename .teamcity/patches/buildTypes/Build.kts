@@ -28,10 +28,4 @@ changeBuildType(RelativeId("Build")) {
         }
         executionTimeoutMin = 12000
     }
-
-    requirements {
-        add {
-            noLessThan("teamcity.agent.hardware.cpuCount", "8")
-        }
-    }
 }
