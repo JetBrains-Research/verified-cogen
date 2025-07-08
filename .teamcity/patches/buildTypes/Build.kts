@@ -17,7 +17,15 @@ changeBuildType(RelativeId("Build")) {
             password("env.GRAZIE_JWT_TOKEN", "credentialsJSON:40d05b0a-9c5e-4cd9-a0d7-b91ce83a7806")
         }
         add {
-            password("grazie.token", "credentialsJSON:afc03b68-ee53-4c37-a220-0fcbec44a3e4")
+            password("grazie.token", "credentialsJSON:91f6563f-7960-49ab-a50f-cabffdea7074")
         }
+    }
+
+    failureConditions {
+
+        check(executionTimeoutMin == 0) {
+            "Unexpected option value: executionTimeoutMin = $executionTimeoutMin"
+        }
+        executionTimeoutMin = 12000
     }
 }
