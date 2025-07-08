@@ -21,9 +21,17 @@ changeBuildType(RelativeId("Build")) {
         }
     }
 
+    failureConditions {
+
+        check(executionTimeoutMin == 0) {
+            "Unexpected option value: executionTimeoutMin = $executionTimeoutMin"
+        }
+        executionTimeoutMin = 12000
+    }
+
     requirements {
         add {
-            noLessThan("teamcity.agent.hardware.cpuCount", "16")
+            noLessThan("teamcity.agent.hardware.cpuCount", "8")
         }
     }
 }
