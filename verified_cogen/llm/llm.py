@@ -33,25 +33,36 @@ class GoogleChatGeminiFlash2ThinkingProfile(LLMProfile):
 class AnthropicClaude37SonnetProfile(LLMProfile):
     name: str = "anthropic-claude-3.7-sonnet"
 
+
 @attrs.define(auto_attribs=True, frozen=True)
 class AnthropicClaude4SonnetProfile(LLMProfile):
     name: str = "anthropic-claude-4-sonnet"
+
 
 @attrs.define(auto_attribs=True, frozen=True)
 class AnthropicClaude4OpusProfile(LLMProfile):
     name: str = "anthropic-claude-4-opus"
 
+
 @attrs.define(auto_attribs=True, frozen=True)
 class OpenAIO3Profile(LLMProfile):
     name: str = "openai-o3"
+
 
 @attrs.define(auto_attribs=True, frozen=True)
 class OpenAIO3MiniProfile(LLMProfile):
     name: str = "openai-o3-mini"
 
+
 @attrs.define(auto_attribs=True, frozen=True)
 class OpenAIO4MiniProfile(LLMProfile):
     name: str = "openai-o4-mini"
+
+
+@attrs.define(auto_attribs=True, frozen=True)
+class GPT41Profile(LLMProfile):
+    name: str = "openai-gpt4.1"
+
 
 class ExtendedProfile(Profile):
     GOOGLE_CHAT_GEMINI_FLASH_2 = GoogleChatGeminiFlash2ThinkingProfile()
@@ -61,6 +72,7 @@ class ExtendedProfile(Profile):
     OPENAI_O3 = OpenAIO3Profile()
     OPENAI_O3_MINI = OpenAIO3MiniProfile()
     OPENAI_O4_MINI = OpenAIO4MiniProfile()
+    OPENAI_GPT41 = GPT41Profile()
 
     @classmethod
     def get_by_name(cls, name: str) -> LLMProfile:
