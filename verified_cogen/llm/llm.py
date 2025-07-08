@@ -33,10 +33,34 @@ class GoogleChatGeminiFlash2ThinkingProfile(LLMProfile):
 class AnthropicClaude37SonnetProfile(LLMProfile):
     name: str = "anthropic-claude-3.7-sonnet"
 
+@attrs.define(auto_attribs=True, frozen=True)
+class AnthropicClaude4SonnetProfile(LLMProfile):
+    name: str = "anthropic-claude-4-sonnet"
+
+@attrs.define(auto_attribs=True, frozen=True)
+class AnthropicClaude4OpusProfile(LLMProfile):
+    name: str = "anthropic-claude-4-opus"
+
+@attrs.define(auto_attribs=True, frozen=True)
+class OpenAIO3Profile(LLMProfile):
+    name: str = "openai-o3"
+
+@attrs.define(auto_attribs=True, frozen=True)
+class OpenAIO3MiniProfile(LLMProfile):
+    name: str = "openai-o3-mini"
+
+@attrs.define(auto_attribs=True, frozen=True)
+class OpenAIO4MiniProfile(LLMProfile):
+    name: str = "openai-o4-mini"
 
 class ExtendedProfile(Profile):
     GOOGLE_CHAT_GEMINI_FLASH_2 = GoogleChatGeminiFlash2ThinkingProfile()
     ANTHROPIC_CLAUDE_37_SONNET = AnthropicClaude37SonnetProfile()
+    ANTHROPIC_CLAUDE_4_SONNET = AnthropicClaude4SonnetProfile()
+    ANTHROPIC_CLAUDE_4_OPUS = AnthropicClaude4OpusProfile()
+    OPENAI_O3 = OpenAIO3Profile()
+    OPENAI_O3_MINI = OpenAIO3MiniProfile()
+    OPENAI_O4_MINI = OpenAIO4MiniProfile()
 
     @classmethod
     def get_by_name(cls, name: str) -> LLMProfile:
@@ -120,7 +144,7 @@ class LLM:
 
         try:
             parameters: dict[Parameters.Key, Parameters.Value] = {}
-            if self.profile.name != "openai-o1":
+            if "openai-o" not in self.profile.name:
                 parameters[LLMParameters.Temperature] = Parameters.FloatValue(temperature)
             with self.throttle:
                 return self.grazie.chat(
