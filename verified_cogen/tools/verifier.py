@@ -38,6 +38,8 @@ class Verifier:
                 stderr=stderr,
             )
             cleanup_z3_processes(self.timeout)
+            process.kill()
+            process.wait()
 
             return (
                 res.returncode == 0,
@@ -45,9 +47,9 @@ class Verifier:
                 res.stderr.decode("utf-8"),
             )
         except subprocess.TimeoutExpired:
+            cleanup_z3_processes(self.timeout)
             process.kill()
             process.wait()
-            cleanup_z3_processes(self.timeout)
             return None
 
     def test(self, file_path: Path) -> Optional[tuple[bool, str, str]]:
